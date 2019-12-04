@@ -1,0 +1,22 @@
+classdef AdjustOOMTask < PipelineTask
+    %ADJUSTOOMTASK Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+    end
+    
+    methods
+        
+        
+        function this = PipelineTask(xChannel, yChannel)
+        end
+        
+        function returnedData = process(this, data)
+            % Must implement this method in derived class
+            error('not implemented task');
+        end
+        
+    end
+    
+end
+

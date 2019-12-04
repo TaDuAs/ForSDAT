@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document type="struct">
+   <data type="JpkFDCDataAccessor">
+      <parser type="ForceDistanceCurveParser">
+         <fdCurve type="double"/>
+         <currentSegmentDataList type="double"/>
+         <currentSegment type="double"/>
+         <dataFileSettings type="double"/>
+         <allDataRows isList="true" type="cell"/>
+         <currentDataRowIndex type="double">0</currentDataRowIndex>
+         <totalDataRowsCount type="double">0</totalDataRowsCount>
+         <shouldFlipExtendSegments type="logical">1</shouldFlipExtendSegments>
+      </parser>
+      <wantedSegments type="double">1  2  3</wantedSegments>
+   </data>
+</document>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document type="struct">
+   <data type="struct">
+      <measurement type="struct">
+        <samplingRate type="double">2048</samplingRate>
+        <speed type="double">0.8</speed>
+        <linker type="Simple.Scientific.PEG">
+            <Mw type="double">4618</Mw>
+        </linker>
+        <molecule type="Simple.Scientific.Peptide">
+            <sequence type="char">SVSVGMKPSPRP</sequence>
+        </molecule>
+        <noiseAnomally type="ForSDAT.Core.NoiseAnomally">
+            <length type="double">2</length>
+            <speed type="double">0.8</speed>
+            <samplingRate type="double">2048</samplingRate>
+        </noiseAnomally>
+      </measurement>
+   </data>
+</document>

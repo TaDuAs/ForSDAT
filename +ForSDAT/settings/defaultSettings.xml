@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document type="struct">
+   <data type="struct">
+      <parser type="struct">
+         <parseSegmentIndices type="double">1</parseSegmentIndices>
+         <retractSegmentIndex type="double">1</retractSegmentIndex>
+      </parser>
+      <measurement type="struct">
+         <samplingRate type="double">2048</samplingRate>
+         <speed type="double">0.8</speed>
+         <linker type="Simple.Scientific.PEG">
+            <repeatingUnitMw type="double">44</repeatingUnitMw>
+            <repeatingUnitStretchedLength type="double">0.35116</repeatingUnitStretchedLength>
+            <experimentalPersistenceLength type="double">0.38</experimentalPersistenceLength>
+            <Mw type="double">4618</Mw>
+         </linker>
+         <molecule type="Simple.Scientific.Peptide">
+            <repeatingUnitStretchedLength type="double">0.34299</repeatingUnitStretchedLength>
+            <sequence type="char">SVSVGMKPSPRP</sequence>
+         </molecule>
+      </measurement>
+      <curveAnalysis type="struct">
+         <noiseAnomallyLength type="double">2</noiseAnomallyLength>
+         <adjustments type="struct">
+            <shouldFixNonLinearBaseline type="logical">0</shouldFixNonLinearBaseline>
+            <longwaveDisturbanceFitRange isList="true" type="cell">
+               <entry type="double">0.8</entry>
+               <entry type="char">end</entry>
+            </longwaveDisturbanceFitRange>
+            <oom type="struct">
+               <f type="Simple.Math.OOM">-12</f>
+               <z type="Simple.Math.OOM">-9</z>
+            </oom>
+            <smoothing type="struct">
+               <algorithm type="char">sgolay</algorithm>
+               <span type="double">7</span>
+               <degree type="double">3</degree>
+            </smoothing>
+         </adjustments>
+         <baseline type="struct">
+            <simple type="struct">
+               <fragment type="double">0.1</fragment>
+               <stdScore type="double">3</stdScore>
+               <isBaselineTilted type="logical">0</isBaselineTilted>
+            </simple>
+            <histogram type="struct">
+               <binningMethod type="double">10</binningMethod>
+               <minimalBinsNumber type="double">15</minimalBinsNumber>
+               <fitR2Threshold type="double">0.5</fitR2Threshold>
+               <stdScore type="double">1</stdScore>
+               <order type="double">3</order>
+            </histogram>
+            <composite type="struct">
+               <stdThreshold type="double">0.1</stdThreshold>
+            </composite>
+         </baseline>
+         <contact type="struct">
+            <fragment type="double">0.025</fragment>
+            <iterativeApproachR2Threshold type="double">0.97</iterativeApproachR2Threshold>
+            <isSoftSurface type="logical">0</isSoftSurface>
+         </contact>
+         <steps type="struct">
+            <detection type="struct">
+               <stepSlopeDeviation type="double">10</stepSlopeDeviation>
+            </detection>
+            <filtering type="struct">
+               <rupturePositionError type="double">25</rupturePositionError>
+            </filtering>
+         </steps>
+      </curveAnalysis>
+      <dataAnalysis type="struct">
+         <binningMethod type="char">fd</binningMethod>
+         <minimalBinsNumber type="double">7</minimalBinsNumber>
+         <distributionModel type="char">gauss</distributionModel>
+         <histogramGausFitR2Threshold type="double">0.6</histogramGausFitR2Threshold>
+      </dataAnalysis>
+      <manualSupervision type="logical">0</manualSupervision>
+   </data>
+</document>

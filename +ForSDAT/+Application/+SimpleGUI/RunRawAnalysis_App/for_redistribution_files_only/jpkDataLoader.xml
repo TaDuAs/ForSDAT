@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document type="struct">
+   <data type="JpkFDCDataAccessor">
+	  <shouldFlipExtendSegments type="logical">1</shouldFlipExtendSegments>
+      <wantedSegments type="double">1  2  3</wantedSegments>
+	  <batchPath type="char">C:\Users\taldu\Desktop\ForSDAT_Processing\processed_2018-06-19_17.28.05.690</batchPath>
+	  <exporter type="MXmlDataExporter"><notEmpty /></exporter>
+   </data>
+</document>

@@ -1,0 +1,97 @@
+classdef ContactPointDetector < handle
+    %CONTACTPOINTDETECTOR Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        fragment = 0.025;
+        iterativeApproachR2Threshold = 0.985;
+        isSorftSurface = false;
+    end
+    
+    methods
+        
+        function this = ContactPointDetector(fragment, iterativeApproachR2Threshold, isSorftSurface)
+            if exist('fragment', 'var')
+                this.fragment = fragment;
+            end
+            if exist('iterativeApproachR2Threshold', 'var')
+                this.iterativeApproachR2Threshold = iterativeApproachR2Threshold;
+            end
+            if exist('isSorftSurface', 'var')
+                this.isSorftSurface = isSorftSurface;
+            end
+        end
+        
+        function [contact, x, coefficients, s, mu] = detect(this, x, y, baseline)
+        % Find the contact point of the curve by finding the point of
+        % contact between the baseline and the contact linear extrapolation
+        % Returns:
+        %   contact - the numeric value of the surface contact point
+        %   x - the x varriable, after adjustment if any was done
+        %   coefficients - the coefficients of the contact force polynomial fit
+        %   s - standard error values
+        %   mu - [avg, std]
+            
+            if ~exist('baseline', 'var')
+                baseline = [0 0];
+            end
+            
+            if this.isSorftSurface
+                contact = findSoftSurfaceContactPoint(this, x, y, baseline);
+                coefficients = [];
+                s = [];
+                mu = {0 0}; 
+            else
+                [contact, coefficients, s, mu] = findHardSurfaceContactPoint(this, x, y, baseline);
+                mu = {mu(1) mu(2)};
+            end
+        end
+        
+        
+        function [x1, y1] = getXYSegment(this, x, y)
+            import Simple.croparr;
+            if length(this.fragment) == 2
+                x1 = croparr(x, this.fragment);
+                y1 = croparr(y, this.fragment);
+            else
+                x1 = croparr(x, this.fragment, 'start');
+                y1 = croparr(y, this.fragment, 'start');
+            end
+        end
+    end
+    
+    methods (Access=private)
+        
+        function [contact, coefficients, s, mu] = findHardSurfaceContactPoint(this, x, y, baseline)
+            % Fit 1st order polynom to the beginning of the curve
+            [xSeg, ySeg] = this.getXYSegment(x, y);
+            [coefficients, s, mu] = Simple.Math.epolyfit(xSeg, ySeg, 1);
+            
+            if (s > this.iterativeApproachR2Threshold)
+                % pad shorter coefficients array with zeros
+                coeffLength = length(coefficients);
+                bslLength = length(baseline);
+                if coeffLength > bslLength
+                    baseline = [zeros(1,coeffLength-bslLength) baseline];
+                elseif coeffLength < bslLength
+                    coefficients = [zeros(1,bslLength-coeffLength) coefficients];
+                end
+                contact = -(coefficients(2)-baseline(2))/(coefficients(1)-baseline(1));
+            else
+                % Bug fix for curves with extremely noisy contact domain
+                bsl = baseline(length(baseline));
+                contact = this.findSoftSurfaceContactPoint(x, y, bsl);
+            end
+        end
+        
+        function contact = findSoftSurfaceContactPoint(this, x, y, baseline)
+            i = 1;
+            while i < length(x) && y(i) > baseline
+                i = i+1;
+            end
+            contact = x(i);
+        end
+    end
+    
+end
+

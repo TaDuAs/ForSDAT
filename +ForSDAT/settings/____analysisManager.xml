@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document type="struct">
+   <data type="RawDataAnalyzer">
+      <settings type="char">C:\Users\taldu\Google Drive\Matlab\Data Simulator\settings.xml</settings>
+      <pipeline type="Simple.Pipeline">
+         <shouldPrintTaskTimespan type="logical">0</shouldPrintTaskTimespan>
+         <list isList="true" type="Simple.List">
+            <entry type="AdjustmentTask">
+               <adjuster type="FDCurveOOMAdjuster">
+                  <FOOM type="Simple.Math.OOM">-12</FOOM>
+                  <ZOOM type="Simple.Math.OOM">-9</ZOOM>
+               </adjuster>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+			   <shouldAdjustOriginalData type="logical">0</shouldAdjustOriginalData>
+               <shouldAffectOriginalData type="logical">1</shouldAffectOriginalData>
+            </entry>
+			<entry type="AdjustmentTask">
+               <adjuster type="DataSmoothingAdjuster">
+                  <algorithm type="char">sgolay</algorithm>
+                  <span type="double">7</span>
+                  <degree type="double">4</degree>
+				  <edgeNonSmoothRange type="double" />
+               </adjuster>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+			   <shouldAdjustOriginalData type="logical">1</shouldAdjustOriginalData>
+               <shouldAffectOriginalData type="logical">1</shouldAffectOriginalData>
+            </entry>
+            <entry type="BaselineDetectorTask">
+               <detector type="CompositeBaselineDetector">
+                  <primary type="SimpleBaselineDetector">
+                     <fragment type="double">0.1</fragment>
+                     <stdScore type="double">2</stdScore>
+                     <isBaselineTilted_value type="logical">0</isBaselineTilted_value>
+                  </primary>
+                  <secondary type="HistogramBaselineDetector">
+                     <binningMethod type="double">10</binningMethod>
+                     <minimalBins type="double">15</minimalBins>
+                     <gaussFitOpts type="struct">
+                        <fitR2Threshold type="double">0.5</fitR2Threshold>
+                        <useMatlabFit type="logical">1</useMatlabFit>
+                        <order type="double">3</order>
+                     </gaussFitOpts>
+                     <stdScore type="double">1</stdScore>
+                  </secondary>
+                  <stdThreshold type="double">0.1</stdThreshold>
+               </detector>
+               <baselineOffsetFactorMultiplier type="double">2</baselineOffsetFactorMultiplier>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+            </entry>
+            <entry type="ContactPointDetectorTask">
+               <detector type="ContactPointDetector">
+                  <fragment type="double">0.025</fragment>
+                  <iterativeApproachR2Threshold type="double">0.97</iterativeApproachR2Threshold>
+                  <isSorftSurface type="logical">0</isSorftSurface>
+               </detector>
+               <shouldEstimateCantileverSpringConstant type="logical">1</shouldEstimateCantileverSpringConstant>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+            </entry>
+            <entry type="TipHeightAdjustTask">
+               <adjuster type="TipHeightAdjuster">
+                  <springConstant type="double"/>
+                  <foom type="Simple.Math.OOM">-12</foom>
+                  <doom type="Simple.Math.OOM">-9</doom>
+               </adjuster>
+               <shouldEstimateCantileverSpringConstant type="logical">1</shouldEstimateCantileverSpringConstant>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+            </entry>
+            <!--entry type="RuptureEventDetectorTask">
+               <ruptureDetector type="RuptureDetector">
+                  <baselineDetector type="CompositeBaselineDetector">
+                     <primary type="SimpleBaselineDetector">
+                        <fragment type="double">0.1</fragment>
+                        <stdScore type="double">2</stdScore>
+                        <isBaselineTilted_value type="logical">0</isBaselineTilted_value>
+                     </primary>
+                     <secondary type="HistogramBaselineDetector">
+                        <binningMethod type="double">10</binningMethod>
+                        <minimalBins type="double">15</minimalBins>
+                        <gaussFitOpts type="struct">
+                           <fitR2Threshold type="double">0.5</fitR2Threshold>
+                           <useMatlabFit type="logical">1</useMatlabFit>
+                           <order type="double">3</order>
+                        </gaussFitOpts>
+                        <stdScore type="double">1</stdScore>
+                     </secondary>
+                     <stdThreshold type="double">0.1</stdThreshold>
+                  </baselineDetector>
+                  <stepSlopeDeviation type="double">0.17453</stepSlopeDeviation>
+               </ruptureDetector>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+            </entry>
+            <entry type="ChainFitTask">
+               <chainFitter type="WLCLoadFitter">
+                  <T type="double">298</T>
+                  <loadingRateFitRange type="double">0.1</loadingRateFitRange>
+                  <polynomialOrder type="double">1</polynomialOrder>
+                  <xshiftValue type="double">0</xshiftValue>
+                  <shouldShiftX type="logical">1</shouldShiftX>
+               </chainFitter>
+               <loadingDomainDetector type="NoiseOffsetLoadingDomainDetector">
+                    <notEmpty />
+               </loadingDomainDetector>
+               <smoothingAdjuster type="double"/>
+               <plotChainfitFromContactPoint type="logical">1</plotChainfitFromContactPoint>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+            </entry>
+            <entry type="SingleInteractionFilterTask">
+               <filter type="SingleInteractionFilter">
+                    <acceptedRange type="double">25</acceptedRange--> <!-- in nm -->
+                    <!--angleDefiningSeparationFromContactDomain type="double">35</angleDefiningSeparationFromContactDomain>
+               </filter>
+               <yChannel type="char">Force</yChannel>
+               <xChannel type="char">Distance</xChannel>
+               <segment type="char">retract</segment>
+            </entry-->
+         </list>
+         <currentTaskIndex type="double">8</currentTaskIndex>
+      </pipeline>
+   </data>
+</document>
