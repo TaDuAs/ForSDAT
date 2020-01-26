@@ -8,6 +8,7 @@ classdef ForceSpecAnalysisController < appd.AppController
         analyzedSegment;
         processingProgressListener;
         progressbar;
+        serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
 
     properties (Dependent)
@@ -16,12 +17,12 @@ classdef ForceSpecAnalysisController < appd.AppController
     
     methods % property accessors
         function this = set.settings(this, obj)
-            this.app.persistenceContainer.set([class(this), '_Settings'], obj);
+            this.App.persistenceContainer.set([class(this), '_Settings'], obj);
             this.initCookedAnalyzer();
             this.initRawAnalyzer();
         end
         function obj = get.settings(this)
-            obj = this.app.persistenceContainer.get([class(this), '_Settings']);
+            obj = this.App.persistenceContainer.get([class(this), '_Settings']);
         end
         function setSettings(this, settingsFilePath)
             if nargin < 2
@@ -31,11 +32,11 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.rawAnalyzer(this, obj)
-            this.app.persistenceContainer.set([class(this), '_RawAnalyzer'], obj);
+            this.App.persistenceContainer.set([class(this), '_RawAnalyzer'], obj);
             this.initRawAnalyzer(obj);
         end
         function obj = get.rawAnalyzer(this)
-            obj = this.app.persistenceContainer.get([class(this), '_RawAnalyzer']);
+            obj = this.App.persistenceContainer.get([class(this), '_RawAnalyzer']);
         end
         function setRawAnalyzer(this, settingsFilePath)
             if isa(settingsFilePath, 'RawDataAnalyzer')
@@ -51,11 +52,11 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.cookedAnalyzer(this, obj)
-            this.app.persistenceContainer.set([class(this), '_CookedAnalyzer'], obj);
+            this.App.persistenceContainer.set([class(this), '_CookedAnalyzer'], obj);
             this.initCookedAnalyzer(obj);
         end
         function obj = get.cookedAnalyzer(this)
-            obj = this.app.persistenceContainer.get([class(this), '_CookedAnalyzer']);
+            obj = this.App.persistenceContainer.get([class(this), '_CookedAnalyzer']);
         end
         function setCookedAnalyzer(this, settingsFilePath)
             if isa(settingsFilePath, 'CookedDataAnalyzer')
@@ -71,11 +72,11 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.dataAccessor(this, obj)
-            this.app.persistenceContainer.set([class(this), '_DataAccessor'], obj);
+            this.App.persistenceContainer.set([class(this), '_DataAccessor'], obj);
             this.initCookedAnalyzer();
         end
         function obj = get.dataAccessor(this)
-            obj = this.app.persistenceContainer.get([class(this), '_DataAccessor']);
+            obj = this.App.persistenceContainer.get([class(this), '_DataAccessor']);
         end
         function setDataAccessor(this, settingsFilePath)
             if isa(settingsFilePath, 'Simple.DataAccess.DataAccessor')
@@ -86,13 +87,19 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.analyzedSegment(this, value)
-            this.app.persistenceContainer.set([class(this), '_AnalyzedSegment'], value);
+            this.App.persistenceContainer.set([class(this), '_AnalyzedSegment'], value);
         end
         function obj = get.analyzedSegment(this)
-            obj = this.app.persistenceContainer.get([class(this), '_AnalyzedSegment']);
+            obj = this.App.persistenceContainer.get([class(this), '_AnalyzedSegment']);
         end
         function setAnalyzedSegment(this, seg)
             this.analyzedSegment = seg;
+        end
+    end
+    
+    methods % ctor
+        function this = ForceSpecAnalysisController(serializer)
+            this.serializer = serializer;
         end
     end
     
@@ -102,7 +109,7 @@ classdef ForceSpecAnalysisController < appd.AppController
                 obj = this.cookedAnalyzer;
             end
             if ~isempty(obj)
-            	obj.init(this.app.persistenceContainer, this.dataAccessor, this.settings);
+            	obj.init(this.App.persistenceContainer, this.dataAccessor, this.settings);
             end
         end
         
@@ -117,7 +124,7 @@ classdef ForceSpecAnalysisController < appd.AppController
         
         function wf = buildWF(this)
             wf = ForSDAT.Application.Workflows.ForceSpecWF(...
-                this.app.persistenceContainer,...
+                this.App.persistenceContainer,...
                 this.rawAnalyzer,...
                 this.cookedAnalyzer,...
                 this.dataAccessor,...
@@ -151,8 +158,8 @@ classdef ForceSpecAnalysisController < appd.AppController
             end
             data = wf.analyzeCurve(curveFileName);
             
-            message = Simple.App.RelayMessage('ForSDAT.Client.FDC_Analyzed');
-            this.app.messenger.send(message);
+            message = appd.RelayMessage('ForSDAT.Client.FDC_Analyzed');
+            this.App.messenger.send(message);
         end
 
         function [data, newCurveName] = acceptAndNext(this, plotTask)
@@ -161,7 +168,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.acceptCurve();
             
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.app.messenger.send(message);
+            this.App.messenger.send(message);
         end
         
         function plotLastAnalyzedCurve(this, plotTask, sp)
@@ -170,7 +177,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             
             if nargin < 2
                 wf.plotLastAnalyzedCurve(sp);
-            elseif ~isempty(plotTask) && (ischar(plotTask) || isnumeric(plotTask) || isa(plotTask, 'Simple.PipelineTask'))
+            elseif ~isempty(plotTask) && (ischar(plotTask) || isnumeric(plotTask) || isa(plotTask, 'lists.PipelineTask'))
                 wf.plotLastAnalyzedCurve(sp, plotTask);
             end
         end
@@ -181,7 +188,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.rejectCurve();
 
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.app.messenger.send(message);
+            this.App.messenger.send(message);
         end
 
         function [data, newCurveName] = undoLastDecision(this, plotTask)
@@ -190,7 +197,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.undo();
             
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.app.messenger.send(message);
+            this.App.messenger.send(message);
         end
         
         function analyzeAutomatically(this)
@@ -206,7 +213,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.makeDecision();
             
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.app.messenger.send(message);
+            this.App.messenger.send(message);
         end
         
         function output = wrapUpAndAnalyze(this)

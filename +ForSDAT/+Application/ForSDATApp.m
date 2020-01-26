@@ -1,6 +1,6 @@
 classdef ForSDATApp < mvvm.GuiApp
     properties (GetAccess=public, SetAccess=protected)
-        Mode (1,1) string {mustBeMember(Mode, ["gui", "console"])} = 'console';
+        Mode (1,1) string {mustBeMember(Mode, ["gui", "console"])} = "console";
         DIConfig (1,1) ForSDAT.Application.DependencyInjectionConfig = ForSDAT.Application.DependencyInjectionConfig();
         MainView ForSDAT.Application.Client.MainWindow;
     end
@@ -32,19 +32,19 @@ classdef ForSDATApp < mvvm.GuiApp
             
             % Register data analysis controllers
             this.registerController(...
-                appd.AppControllerBuilder(...
+                appd.IoCControllerBuilder(...
                     'ForceSpecAnalysisController',...
-                    @ForSDAT.Application.ForceSpecAnalysisController));
+                    IoC.ContainerGetter(this.IocContainer)));
                 
             % Register data analysis controllers
             this.registerController(...
-                appd.AppControllerBuilder(...
+                appd.IoCControllerBuilder(...
                     'ProcessSetupController',...
-                    @ForSDAT.Application.ProcessSetupController));
+                    IoC.ContainerGetter(this.IocContainer)));
         end
         
         function init(this)
-            if strcmp(this.Mode, 'gui')
+            if strcmp(this.Mode, "gui")
                 this.MainView = ForSDAT.Application.Client.MainWindow(this);
             end
         end
