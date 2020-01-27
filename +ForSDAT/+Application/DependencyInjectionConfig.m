@@ -14,7 +14,7 @@ classdef DependencyInjectionConfig < handle
             
             % controllers
             ioc.set('ForceSpecAnalysisController', @ForSDAT.Application.ForceSpecAnalysisController, 'mxml.GenericSerializer');
-            
+            ioc.set('ProcessSetupController', @ForSDAT.Application.ProcessSetupController, 'MFactory', 'mxml.GenericSerializer');
             
             % gui
             ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App');

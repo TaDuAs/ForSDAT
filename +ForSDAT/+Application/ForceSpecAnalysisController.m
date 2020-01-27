@@ -17,12 +17,12 @@ classdef ForceSpecAnalysisController < appd.AppController
     
     methods % property accessors
         function this = set.settings(this, obj)
-            this.App.persistenceContainer.set([class(this), '_Settings'], obj);
+            this.App.Context.set([class(this), '_Settings'], obj);
             this.initCookedAnalyzer();
             this.initRawAnalyzer();
         end
         function obj = get.settings(this)
-            obj = this.App.persistenceContainer.get([class(this), '_Settings']);
+            obj = this.App.Context.get([class(this), '_Settings']);
         end
         function setSettings(this, settingsFilePath)
             if nargin < 2
@@ -32,11 +32,11 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.rawAnalyzer(this, obj)
-            this.App.persistenceContainer.set([class(this), '_RawAnalyzer'], obj);
+            this.App.Context.set([class(this), '_RawAnalyzer'], obj);
             this.initRawAnalyzer(obj);
         end
         function obj = get.rawAnalyzer(this)
-            obj = this.App.persistenceContainer.get([class(this), '_RawAnalyzer']);
+            obj = this.App.Context.get([class(this), '_RawAnalyzer']);
         end
         function setRawAnalyzer(this, settingsFilePath)
             if isa(settingsFilePath, 'RawDataAnalyzer')
@@ -52,11 +52,11 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.cookedAnalyzer(this, obj)
-            this.App.persistenceContainer.set([class(this), '_CookedAnalyzer'], obj);
+            this.App.Context.set([class(this), '_CookedAnalyzer'], obj);
             this.initCookedAnalyzer(obj);
         end
         function obj = get.cookedAnalyzer(this)
-            obj = this.App.persistenceContainer.get([class(this), '_CookedAnalyzer']);
+            obj = this.App.Context.get([class(this), '_CookedAnalyzer']);
         end
         function setCookedAnalyzer(this, settingsFilePath)
             if isa(settingsFilePath, 'CookedDataAnalyzer')
@@ -72,11 +72,11 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.dataAccessor(this, obj)
-            this.App.persistenceContainer.set([class(this), '_DataAccessor'], obj);
+            this.App.Context.set([class(this), '_DataAccessor'], obj);
             this.initCookedAnalyzer();
         end
         function obj = get.dataAccessor(this)
-            obj = this.App.persistenceContainer.get([class(this), '_DataAccessor']);
+            obj = this.App.Context.get([class(this), '_DataAccessor']);
         end
         function setDataAccessor(this, settingsFilePath)
             if isa(settingsFilePath, 'Simple.DataAccess.DataAccessor')
@@ -87,10 +87,10 @@ classdef ForceSpecAnalysisController < appd.AppController
         end
         
         function this = set.analyzedSegment(this, value)
-            this.App.persistenceContainer.set([class(this), '_AnalyzedSegment'], value);
+            this.App.Context.set([class(this), '_AnalyzedSegment'], value);
         end
         function obj = get.analyzedSegment(this)
-            obj = this.App.persistenceContainer.get([class(this), '_AnalyzedSegment']);
+            obj = this.App.Context.get([class(this), '_AnalyzedSegment']);
         end
         function setAnalyzedSegment(this, seg)
             this.analyzedSegment = seg;
@@ -109,7 +109,7 @@ classdef ForceSpecAnalysisController < appd.AppController
                 obj = this.cookedAnalyzer;
             end
             if ~isempty(obj)
-            	obj.init(this.App.persistenceContainer, this.dataAccessor, this.settings);
+            	obj.init(this.App.Context, this.dataAccessor, this.settings);
             end
         end
         
@@ -124,7 +124,7 @@ classdef ForceSpecAnalysisController < appd.AppController
         
         function wf = buildWF(this)
             wf = ForSDAT.Application.Workflows.ForceSpecWF(...
-                this.App.persistenceContainer,...
+                this.App.Context,...
                 this.rawAnalyzer,...
                 this.cookedAnalyzer,...
                 this.dataAccessor,...
