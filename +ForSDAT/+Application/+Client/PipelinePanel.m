@@ -1,9 +1,8 @@
-classdef PipelinePanel < handle
+classdef PipelinePanel < mvvm.view.ComponentView
     %PIPELINEPANEL Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        App;
         FlowContainer;
         ScrollableContentContainer;
         FlowResizeListener;
@@ -12,8 +11,7 @@ classdef PipelinePanel < handle
     
     methods
         function this = PipelinePanel(container, app)
-            this.App = app;
-            this.initializeComponents(container);
+            this@mvvm.view.ComponentView(container, 'App', app);
         end
         
         function delete(this)
@@ -43,7 +41,7 @@ classdef PipelinePanel < handle
             this.PipelineBinder = mvvm.Repeater(...
                 'rawAnalyzer.pipeline.list', ...
                 this.FlowContainer,...
-                ForSDAT.Application.Client.PipelineTaskTemplate(this.App));
+                ForSDAT.Application.Client.PipelineTaskTemplate(this.App.ResourcePath));
             
             this.FlowResizeListener = this.FlowContainer.addlistener('SizeChanged', @this.onFlowResize);
             this.onFlowResize();

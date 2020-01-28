@@ -3,22 +3,22 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
     %   Detailed explanation goes here
     
     properties
-        App;
+        ResourcePath;
         ViewTaskImage;
         EditTaskImage;
     end
     
     methods
-        function this = PipelineTaskTemplate(app)
-            this.App = app;
-            this.ViewTaskImage = imread(fullfile(app.getApp().ResourcePath, 'Tasks', 'display.png'));
-            this.EditTaskImage = imread(fullfile(app.getApp().ResourcePath, 'Tasks', 'edit.png'));
+        function this = PipelineTaskTemplate(resourcesPath)
+            this.ResourcePath = resourcesPath;
+            this.ViewTaskImage = imread(fullfile(resourcesPath, 'Tasks', 'display.png'));
+            this.EditTaskImage = imread(fullfile(resourcesPath, 'Tasks', 'edit.png'));
         end
         function h = build(this, scope, container)
             task = scope.getModel();
             h.box = uipanel('Parent', container, 'Units', 'pixels', 'Position', [1 1 112 64]);
             
-            taskImg = imread(fullfile(app.ResourcePath, 'Tasks', [task.name '.png']));
+            taskImg = imread(fullfile(this.ResourcePath, 'Tasks', [task.name '.png']));
             h.taskButton = uicontrol('Style', 'button', 'Parent', h.box, 'Units', 'pixels', ...
                 'Position', [1 1 64 64],...
                 'CData', taskImg);
@@ -39,7 +39,12 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
         end
         
         function teardown(this, scope, container, h)
-            error('not implemented');
+            delete(h.showAllCmd);
+            delete(h.taskButton);
+            delete(h.editTaskCmd);
+            delete(h.editTask);
+            delete(h.viewTaskCmd);
+            delete(h.viewTask);
         end
     end
 end
