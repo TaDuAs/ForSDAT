@@ -27,7 +27,8 @@ classdef MainWindow < mvvm.view.MainAppView
             mvvm.BindingManager.setModProv(this.Fig,...
                 mvvm.providers.ControllerProvider('ForceSpecAnalysisController', this.Session));
             
-            sui.jframe(this.Fig, 0, 'Maximized', 1);
+%             sui.jframe(this.Fig, 0, 'Maximized', 1);
+            this.Fig.WindowState = 'maximized';
             
             % layout of all panels from the top to the bottom
             this.MainContainer = uiextras.VBoxFlex('Parent', this.Fig,...
@@ -43,7 +44,8 @@ classdef MainWindow < mvvm.view.MainAppView
             
             set(this.MainContainer, 'Sizes', [100 -10]);
             
-            this.PlotPanel = ForSDAT.Application.Client.PlotPanel(this.MainInfoContainer);
+            controller = this.Session.getController('ForceSpecAnalysisController');
+            this.PlotPanel = ForSDAT.Application.Client.PlotPanel(this.MainInfoContainer, this.Messenger, controller);
             this.EditPanel = ForSDAT.Application.Client.EditPanel(this.MainInfoContainer);
             
         end

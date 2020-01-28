@@ -8,7 +8,7 @@ classdef PlotPanel < mvvm.view.ComponentView
     end
     
     methods
-        function this = PlotPanel(messenger, controller, parent)
+        function this = PlotPanel(parent, messenger, controller)
             this@mvvm.view.ComponentView(parent, 'Messenger', messenger);
             this.Controller = controller;
         end
@@ -24,8 +24,7 @@ classdef PlotPanel < mvvm.view.ComponentView
             this.Axis = axes(this.Container.getContainerHandle(), 'Position', [0 0 1 1]);
             
             % plot again after switching FDC
-            messenger = this.App.messenger;
-            messenger.register('ForSDAT.Client.FDC_Analyzed', @this.plot);
+            this.Messenger.register('ForSDAT.Client.FDC_Analyzed', @this.plot);
         end
     end
 end
