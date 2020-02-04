@@ -58,11 +58,28 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         function output = wrapUpAndAnalyze(this)
             valuesCellArray = this.getDataList().values;
             values = [valuesCellArray{:}];
+            
+            % setup
+            output = struct();
+            output.batch = this.dataAccessor.batchPath;
+            output.binningMethod = this.dataAnalyzer.binningMethod;
+            output.minimalBins = this.dataAnalyzer.minimalBins;
+            output.fittingModel = this.dataAnalyzer.model;
+            output.speed = this.settings.measurement.speed;
+            output.gausFitR2Threshold = this.dataAnalyzer.fitR2Threshold;
+
+            if isempty(values)
+                output.mpf = [];
+                output.mpfStd = [];
+                output.mpfErr = [];
+                output.lr = [];
+                output.lrErr = [];
+                return;
+            end
+            
             options = [];
             options.showHistogram = true;
             [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([values.f], [values.z], [values.slope], this.settings.measurement.speed, [values.lr], options);
-            
-            output = [];
             
             % results
             output.mpf = mpf;
@@ -71,14 +88,6 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             output.lr = lr;
             output.lrErr = lrErr;
             
-            % setup
-            output.batch = this.dataAccessor.batchPath;
-            output.binningMethod = this.dataAnalyzer.binningMethod;
-            output.minimalBins = this.dataAnalyzer.minimalBins;
-            output.fittingModel = this.dataAnalyzer.model;
-            output.speed = this.settings.measurement.speed;
-            output.gausFitR2Threshold = this.dataAnalyzer.fitR2Threshold;
-
             this.dataAccessor.saveResults(values, output);
         end
 
