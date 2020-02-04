@@ -1,4 +1,4 @@
-classdef PipelineDATask < Simple.PipelineTask
+classdef PipelineDATask < lists.PipelineTask
     %PIPELINETASK Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -21,7 +21,7 @@ classdef PipelineDATask < Simple.PipelineTask
     
     methods
         function this = PipelineDATask(xChannel, yChannel, segment)
-            this = this@Simple.PipelineTask();
+            this = this@lists.PipelineTask();
             this.xChannel = xChannel;
             this.yChannel = yChannel;
             this.segment = segment;
@@ -39,7 +39,7 @@ classdef PipelineDATask < Simple.PipelineTask
             elseif isa(sp, 'matlab.graphics.axis.Axes')
                 subplot(sp);
             else
-                throw(MException('Simple:PipelineTask:plotData:InvalidSubPlotOrFigure', 'subplot must be either a figure or an axes object'));
+                throw(MException('ForSDAT:Core:Tasks:PipelineDATask:plotData:InvalidSubPlotOrFigure', 'subplot must be either a figure or an axes object'));
             end
         end
         

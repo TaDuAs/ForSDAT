@@ -37,6 +37,10 @@ classdef ForceSpecWF < handle
     
     methods % API Methods
 
+        function start(this)
+            this.clearDataQueue();
+        end
+        
         function n = getQueueSize(this)
         % Gets the size of the data queue
             n = this.dataQueue.length();
@@ -274,7 +278,6 @@ classdef ForceSpecWF < handle
     end
     
     methods (Access=protected)
-        
 
         function queue = getDataQueue(this)
             repKey = [class(this) '_dataQueue'];
@@ -287,6 +290,13 @@ classdef ForceSpecWF < handle
                     queue = this.dataAccessor.loadQueue();
                     this.persistenceContainer.set(repKey, queue);
                 end
+            end
+        end
+        
+        function clearDataQueue(this)
+            repKey = [class(this) '_dataQueue'];
+            if this.persistenceContainer.hasEntry(repKey)
+                this.persistenceContainer.removeEntry(repKey);
             end
         end
         

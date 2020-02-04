@@ -28,7 +28,11 @@ classdef ForceSpecAnalysisController < appd.AppController
             if nargin < 2
                 settingsFilePath = [];
             end
-            this.settings = this.loadSettings(settingsFilePath);
+            if isStringScalar(settingsFilePath) || ischar(settingsFilePath)
+                this.settings = this.loadSettings(settingsFilePath);
+            else
+                this.settings = settingsFilePath;
+            end
         end
         
         function this = set.rawAnalyzer(this, obj)
@@ -39,14 +43,14 @@ classdef ForceSpecAnalysisController < appd.AppController
             obj = this.App.Context.get([class(this), '_RawAnalyzer']);
         end
         function setRawAnalyzer(this, settingsFilePath)
-            if isa(settingsFilePath, 'RawDataAnalyzer')
+            if isa(settingsFilePath, 'ForSDAT.Core.RawDataAnalyzer')
                 curveAnalyzer = settingsFilePath;
             else
-                curveAnalyzer = Simple.IO.MXML.load(settingsFilePath);
+                curveAnalyzer = this.serializer.load(settingsFilePath);
             end
             
-            if isempty(curveAnalyzer) || ~isa(curveAnalyzer, 'RawDataAnalyzer')
-                error('Force-Spectroscopy analysis should be performed by a RawDataAnalyzer');
+            if isempty(curveAnalyzer) || ~isa(curveAnalyzer, 'ForSDAT.Core.RawDataAnalyzer')
+                error('Force-Spectroscopy analysis should be performed by a ForSDAT.Core.RawDataAnalyzer');
             end
             this.rawAnalyzer = curveAnalyzer;
         end
@@ -59,14 +63,14 @@ classdef ForceSpecAnalysisController < appd.AppController
             obj = this.App.Context.get([class(this), '_CookedAnalyzer']);
         end
         function setCookedAnalyzer(this, settingsFilePath)
-            if isa(settingsFilePath, 'CookedDataAnalyzer')
+            if isa(settingsFilePath, 'ForSDAT.Application.Workflows.CookedDataAnalyzer')
                 analyzer = settingsFilePath;
             else
-                analyzer = Simple.IO.MXML.load(settingsFilePath);
+                analyzer = this.serializer.load(settingsFilePath);
             end
             
-            if isempty(analyzer) || ~isa(analyzer, 'CookedDataAnalyzer')
-                error('Force-Spectroscopy final analysis should be performed by a CookedDataAnalyzer');
+            if isempty(analyzer) || ~isa(analyzer, 'ForSDAT.Application.Workflows.CookedDataAnalyzer')
+                error('Force-Spectroscopy final analysis should be performed by a ForSDAT.Application.Workflows.CookedDataAnalyzer');
             end
             this.cookedAnalyzer = analyzer;
         end
@@ -82,7 +86,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             if isa(settingsFilePath, 'Simple.DataAccess.DataAccessor')
                 this.dataAccessor = settingsFilePath;
             else
-                this.dataAccessor = Simple.IO.MXML.load(settingsFilePath);
+                this.dataAccessor = this.serializer.load(settingsFilePath);
             end
         end
         
@@ -137,6 +141,11 @@ classdef ForceSpecAnalysisController < appd.AppController
     end
 
     methods
+        function start(this)
+            wf = this.buildWF();
+            wf.start();
+        end
+        
         function [results, progress, workLeft] = getAnalysisReport(this)
             wf = this.buildWF();
             
@@ -227,7 +236,7 @@ classdef ForceSpecAnalysisController < appd.AppController
         
         function settings = loadSettings(this, settingsFile)
             if nargin > 1 && ~isempty(settingsFile)
-                settings = Simple.IO.MXML.load(settingsFile);
+                settings = this.serializer.load(settingsFile);
             else
                 % default settings
                 

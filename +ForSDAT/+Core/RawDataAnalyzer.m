@@ -16,7 +16,7 @@ classdef RawDataAnalyzer < handle & mfc.IDescriptor
             if nargin >= 1 && ~isempty(pipeline)
                 this.pipeline = pipeline;
             else
-                this.pipeline = Simple.Pipeline();
+                this.pipeline = lists.Pipeline();
             end
         end
         
