@@ -5,6 +5,7 @@ classdef RuptureDetector < handle & mfc.IDescriptor
     properties
         baselineDetector = [];
         stepSlopeDeviation = deg2rad(10);
+        thresholdingMethods ForSDAT.Core.Ruptures.Thresholding.IThresholdMethod = ForSDAT.Core.Ruptures.Thresholding.SizeVsNoiseMethod.empty();
     end
     
     methods % factory meta data
@@ -69,12 +70,19 @@ classdef RuptureDetector < handle & mfc.IDescriptor
         %                      fitting opperations
         
             [steps, derivative] = this.detectRuptureEvents(frc, dist);
-            
-            % Remove noise related discontinuities
-            steps = steps(:, steps(3, :) > 2*noiseAmp);
-            
-            % Remove discontinuities in the contact domain
-            steps = steps(:, dist(steps(1, :)) > 0);
+%             
+%             % Remove noise related discontinuities
+%             steps = steps(:, steps(3, :) > 2*noiseAmp);
+%             
+%             % Remove discontinuities in the contact domain
+%             steps = steps(:, dist(steps(1, :)) > 0);
+
+            % filter out steps according to applicable thresholding methods
+            trueRuptures = true(1, size(steps, 2));
+            for method = this.thresholdingMethods
+                trueRuptures = trueRuptures & method.apply(steps, frc, dist, noiseAmp);
+            end
+            steps = steps(:, trueRuptures);
         end
     end
     

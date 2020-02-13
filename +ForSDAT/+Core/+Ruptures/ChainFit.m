@@ -31,7 +31,11 @@ classdef ChainFit < handle
             end
         end
         
-        function [func, isGoodFit, s, mu] = dofit(this, x, y)
+        function [func, modelParams, isGoodFit, s, mu] = dofit(this, x, y)
+            error('implement in derived class');
+        end
+        
+        function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
             error('implement in derived class');
         end
     end

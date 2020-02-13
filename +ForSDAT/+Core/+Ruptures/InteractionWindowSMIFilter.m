@@ -6,6 +6,7 @@ classdef InteractionWindowSMIFilter < handle
         molecule;
         linker;
         noiseAnomally;
+        filterType char {mustBeMember(filterType, {'all', 'last'})} = 'all';
         
         acceptedRange;
         startAt;
@@ -65,10 +66,13 @@ classdef InteractionWindowSMIFilter < handle
                 dist(flaggedRuptureEvents(2, :)) <= this.endAt;
             
             % only the last interaction within the linker window
-            temp = flaggedRuptureEvents(:, flaggedRuptureEvents(end,:) == 1);
-            if ~isempty(temp)
-                lastRupture = max(temp(2, :));
-                flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & flaggedRuptureEvents(2,:) == lastRupture;
+            switch this.filterType
+                case 'last'
+                    temp = flaggedRuptureEvents(:, flaggedRuptureEvents(end,:) == 1);
+                    if ~isempty(temp)
+                        lastRupture = max(temp(2, :));
+                        flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & flaggedRuptureEvents(2,:) == lastRupture;
+                    end
             end
         end
         

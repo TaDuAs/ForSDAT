@@ -168,7 +168,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             data = wf.analyzeCurve(curveFileName);
             
             message = appd.RelayMessage('ForSDAT.Client.FDC_Analyzed');
-            this.App.messenger.send(message);
+            this.App.Messenger.send(message);
         end
 
         function [data, newCurveName] = acceptAndNext(this, plotTask)
@@ -177,7 +177,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.acceptCurve();
             
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.messenger.send(message);
+            this.App.Messenger.send(message);
         end
         
         function plotLastAnalyzedCurve(this, plotTask, sp)
@@ -197,7 +197,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.rejectCurve();
 
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.messenger.send(message);
+            this.App.Messenger.send(message);
         end
 
         function [data, newCurveName] = undoLastDecision(this, plotTask)
@@ -206,7 +206,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             [data, newCurveName] = wf.undo();
             
             message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.messenger.send(message);
+            this.App.Messenger.send(message);
         end
         
         function analyzeAutomatically(this)
@@ -221,8 +221,13 @@ classdef ForceSpecAnalysisController < appd.AppController
 
             [data, newCurveName] = wf.makeDecision();
             
-            message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.messenger.send(message);
+            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
+        end
+        
+        function tf = discloseDecision(this)
+            wf = this.buildWF();
+            
+            tf = wf.discloseDecision();
         end
         
         function output = wrapUpAndAnalyze(this)

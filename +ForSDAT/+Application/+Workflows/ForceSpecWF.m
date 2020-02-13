@@ -100,9 +100,9 @@ classdef ForceSpecWF < handle
         end
         
         function [data, curveName] = rejectCurve(this, curveName)
-            % acceptCurve() - Rejects the current curve in the queue and
+            % rejectCurve() - Rejects the current curve in the queue and
             %       analyzes the next one
-            % acceptCurve(curveName) - Jumps to the specified curve in the
+            % rejectCurve(curveName) - Jumps to the specified curve in the
             %       queue, rejects it, and analyzes the next curve in one
             if nargin < 2
                 curveName = [];
@@ -190,6 +190,16 @@ classdef ForceSpecWF < handle
             % Data is only taken from the data queue and analyzed by the
             % WF's raw analyzer.
             [data, curveName] = this.decideAndMoveOn(data);
+        end
+        
+        function tf = discloseDecision(this)
+            % Determines if the current curve should be accepted or
+            % rejected
+            
+            % No need to analyze the current curve again if already did
+            data = this.getCurrentCurveAnalysis();
+            
+            tf = this.cookedAnalyzer.examineCurveAnalysisResults(data);
         end
         
         function plotLastAnalyzedCurve(this, fig, taskNameOrIndex)

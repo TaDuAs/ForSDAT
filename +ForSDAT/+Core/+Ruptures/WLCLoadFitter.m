@@ -67,6 +67,21 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
             this.initFromLinker(settings.measurement.linker);
         end
         
+        function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
+            kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
+            [p, l, s, mu] = Simple.Math.wlc.fitAll(x, y, ruptureIdx, this.estimatedPersistenceLength, this.estimatedContourLength, this.T);
+            
+            n = numel(ruptureIdx);
+            for i = n:-1:1
+                funcs(i) = Simple.Math.wlc.createExpretion(kBT, p(i), l(i));
+            end
+            
+            isGoodFit = all(l(:) >= reshape(x(ruptureIdx), [], 1) & p(:) > 0);
+            if isGoodFit && ~isempty(this.constraintsFunc)
+                isGoodFit = this.constraintsFunc(func, wlcFit, s, mu);
+            end
+        end
+        
         function [func, isGoodFit, s, mu] = dofit(this, x, y)
             import Simple.Math.*;
             kBT = Simple.Scientific.PhysicalConstants.kB * this.T;

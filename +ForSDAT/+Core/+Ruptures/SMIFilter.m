@@ -2,12 +2,17 @@ classdef (Abstract) SMIFilter < handle
     
     properties
         angleDefiningSeparationFromContactDomain = 35;
+        filterType char {mustBeMember(filterType, {'all', 'last'})} = 'last';
     end
     
     methods
-        function this = SMIFilter(angleDefiningSeparationFromContactDomain)
-            if exist('angleDefiningSeparationFromContactDomain', 'var') && ~isempty(angleDefiningSeparationFromContactDomain)
+        function this = SMIFilter(angleDefiningSeparationFromContactDomain, filterType)
+            if nargin >= 1 && ~isempty(angleDefiningSeparationFromContactDomain)
                 this.angleDefiningSeparationFromContactDomain = angleDefiningSeparationFromContactDomain;
+            end
+            
+            if nargin >= 2 && ~isempty(filterType)
+                this.filterType = filterType;
             end
         end
     end
@@ -21,15 +26,17 @@ classdef (Abstract) SMIFilter < handle
  
             % meaning its not equal to [] (which is a signal for theres no pre-filter)
             if size(prefilteredRuptures, 1) > 0 
-                % only the last interaction in the prefiltered ruptures
                 if isempty(prefilteredRuptures)
                     i = 1;
                     flaggedRuptureEvents(end, :) = 0;
                 else
-                    [lastRupture, i] = max(prefilteredRuptures(2,:));
-                    flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & flaggedRuptureEvents(2, :) == lastRupture;
+                    if strcmp(this.filterType, 'last')
+                        % only the last interaction in the prefiltered ruptures
+                        [lastRupture, i] = max(prefilteredRuptures(2,:));
+                        flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & flaggedRuptureEvents(2, :) == lastRupture;
+                    end
                 end
-            else
+            elseif strcmp(this.filterType, 'last')
                 % only the last interaction
                 [lastRupture, i] = max(flaggedRuptureEvents(2, :));
                 flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & flaggedRuptureEvents(2,:) == lastRupture;

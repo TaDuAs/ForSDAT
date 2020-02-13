@@ -1,8 +1,18 @@
-classdef BaselineThresholdSMIFilter < ForSDAT.Core.Ruptures.SMIFilter
+classdef BaselineThresholdSMIFilter < ForSDAT.Core.Ruptures.SMIFilter & mfc.IDescriptor
+    
+    methods (Hidden) % factory meta data
+        % provides initialization description for mfc.MFactory
+        % ctorParams is a cell array which contains the parameters passed to
+        % the ctor and which properties are to be set during construction
+        function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
+            ctorParams = {'angleDefiningSeparationFromContactDomain', 'filterType'};
+            defaultValues = {'angleDefiningSeparationFromContactDomain', [], 'filterType', []};
+        end
+    end
     
     methods
-        function this = BaselineThresholdSMIFilter(angleDefiningSeparationFromContactDomain)
-            this@ForSDAT.Core.Ruptures.SMIFilter(angleDefiningSeparationFromContactDomain);
+        function this = BaselineThresholdSMIFilter(angleDefiningSeparationFromContactDomain, filterType)
+            this@ForSDAT.Core.Ruptures.SMIFilter(angleDefiningSeparationFromContactDomain, filterType);
         end
         
         function [lsRsRe, indexOfSpecificInteractionInRuptureEventsMatrix] = ...

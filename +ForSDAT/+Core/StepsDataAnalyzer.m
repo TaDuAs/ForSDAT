@@ -135,9 +135,11 @@ classdef StepsDataAnalyzer < mfc.IDescriptorStruct
                 end
             elseif strcmpi(this.model, ForSDAT.Core.StepsDataAnalyzer.supportedModels.gamma)
                 [mpv, std, gammaParams, goodness] = Histool.fitGamma(bins, freq, fitOptions);
-                pdf = {@(x) gampdf(x, gammaParams.alpha, gammaParams.theta)};
-                amplitude = max(pdf(mpv));
+                gpdf = this.generateGammaPDF(gammaParams.alpha, gammaParams.theta);
+                amplitude = max(gpdf(mpv));
+                pdf = {gpdf};
             else
+%                 [pdca,gn,gl] = fitdist(x, this.model)
                 throw(MException('ForSDAT:Core:StepsDataAnalyzer:InvalidModelFitting', 'Model %s is not supported. use either gauss (with order) or gamma (without order).', this.model));
             end
         end
@@ -184,6 +186,14 @@ classdef StepsDataAnalyzer < mfc.IDescriptorStruct
     end
     
     methods (Access=private)
+        function pdf = generateGammaPDF(this, galpha, gtheta)
+            function y = gammaDistPDF(x)
+                y = gampdf(x, galpha, gtheta);
+            end
+            
+            pdf = @gammaDistPDF;
+        end
+        
         function pdf = generateDistPdf(this, distFitType, varargin)
             fitobj = cfit(distFitType, varargin{:});
             pdf = @(x) feval(fitobj, x);

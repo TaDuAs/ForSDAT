@@ -10,18 +10,19 @@ classdef SmoothingSMIFilter < ForSDAT.Core.Ruptures.SMIFilter & mfc.IDescriptor
         % ctorParams is a cell array which contains the parameters passed to
         % the ctor and which properties are to be set during construction
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'baselineDetector', 'smoothingAdjuster', 'angleDefiningSeparationFromContactDomain'};
+            ctorParams = {'baselineDetector', 'smoothingAdjuster', 'angleDefiningSeparationFromContactDomain', 'filterType'};
             defaultValues = {...
                 'baselineDetector', ForSDAT.Core.Baseline.SimpleBaselineDetector.empty(), ...
                 'smoothingAdjuster', ForSDAT.Core.Adjusters.DataSmoothingAdjuster.empty(),...
-                'angleDefiningSeparationFromContactDomain', []};
+                'angleDefiningSeparationFromContactDomain', [],...
+                'filterType', []};
         end
     end
     
     methods
         
-        function this = SmoothingSMIFilter(baselineDetector, smoothingAdjuster, angleDefiningSeparationFromContactDomain)
-            this@ForSDAT.Core.Ruptures.SMIFilter(angleDefiningSeparationFromContactDomain);
+        function this = SmoothingSMIFilter(baselineDetector, smoothingAdjuster, angleDefiningSeparationFromContactDomain, filterType)
+            this@ForSDAT.Core.Ruptures.SMIFilter(angleDefiningSeparationFromContactDomain, filterType);
             
             this.baselineDetector = baselineDetector;
             this.smoothingAdjuster = smoothingAdjuster;
