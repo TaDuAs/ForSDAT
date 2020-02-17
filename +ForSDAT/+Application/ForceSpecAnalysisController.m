@@ -159,16 +159,15 @@ classdef ForceSpecAnalysisController < appd.AppController
             list = wf.getCurvesList();
         end
         
-        function data = analyzeCurve(this, curveFileName, plotTask)
+        function [data, curveName] = analyzeCurve(this, curveFileName, plotTask)
             wf = this.buildWF();
             
             if nargin < 2
                 curveFileName = [];
             end
-            data = wf.analyzeCurve(curveFileName);
+            [data, curveName] = wf.analyzeCurve(curveFileName);
             
-            message = appd.RelayMessage('ForSDAT.Client.FDC_Analyzed');
-            this.App.Messenger.send(message);
+            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
         end
 
         function [data, newCurveName] = acceptAndNext(this, plotTask)
@@ -176,8 +175,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             
             [data, newCurveName] = wf.acceptCurve();
             
-            message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.Messenger.send(message);
+            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
         end
         
         function plotLastAnalyzedCurve(this, plotTask, sp)
@@ -196,8 +194,7 @@ classdef ForceSpecAnalysisController < appd.AppController
             
             [data, newCurveName] = wf.rejectCurve();
 
-            message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.Messenger.send(message);
+            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
         end
 
         function [data, newCurveName] = undoLastDecision(this, plotTask)
@@ -205,8 +202,7 @@ classdef ForceSpecAnalysisController < appd.AppController
 
             [data, newCurveName] = wf.undo();
             
-            message.Type = 'ForSDAT.Client.FDC_Analyzed';
-            this.App.Messenger.send(message);
+            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
         end
         
         function analyzeAutomatically(this)
