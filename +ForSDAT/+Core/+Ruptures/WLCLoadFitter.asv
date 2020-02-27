@@ -69,7 +69,7 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         
         function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
             kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
-            [p, l, s, mu] = Simple.Math.wlc.fitAll(x, y, ruptureIdx, [0, 0.75], this.T);
+            [p, l, s, mu] = Simple.Math.wlc.fitAll(x, y, ruptureIdx, , this.T);
             
             n = numel(ruptureIdx);
             for i = n:-1:1

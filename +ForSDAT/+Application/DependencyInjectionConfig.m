@@ -15,12 +15,20 @@ classdef DependencyInjectionConfig < handle
             % controllers
             ioc.set('ForceSpecAnalysisController', @ForSDAT.Application.ForceSpecAnalysisController, 'mxml.GenericSerializer');
             ioc.set('ProcessSetupController', @ForSDAT.Application.ProcessSetupController, 'MFactory', 'mxml.GenericSerializer');
+            ioc.set('NoiseAnomally', @this.getNoiseAnomally, 'App');
             
             % gui
             ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App');
             
             % Simple framework
             
+        end
+    end
+    
+    methods (Access=private)
+        function anomally = getNoiseAnomally(this, app)
+            ctrl = app.getController('ForceSpecAnalysisController');
+            anomally = ctrl.settings.measurement.noiseAnomally;
         end
     end
 end

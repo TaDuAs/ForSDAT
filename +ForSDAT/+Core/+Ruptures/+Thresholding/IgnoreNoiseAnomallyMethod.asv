@@ -1,0 +1,20 @@
+classdef IgnoreNoiseAnomallyMethod < ForSDAT.Core.Ruptures.Thresholding.IThresholdMethod
+    %SIZEVSNOISEMETHOD Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        noiseAnomally ForSDAT.Core.NoiseAnomally;
+    end
+    
+    methods
+
+        function mask = apply(this, rsReRf, frc, dist, noiseAmp)
+            mask
+            for i = 1:size(rsReRf, 2)
+                
+                mask = frc(rsReRf(1, :)) > 0;
+            end
+        end
+    end
+end
+
