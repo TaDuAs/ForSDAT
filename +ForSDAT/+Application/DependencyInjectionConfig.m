@@ -1,7 +1,7 @@
 classdef DependencyInjectionConfig < handle 
     methods
         function configure(this, ioc)
-            
+            % Application configuration
             ioc.set('RootPath', @(app) app.RootPath, 'App');
             ioc.setPerSession('MFactory', @mfc.MFactory, '@IoCContainer', 'IoC');
             ioc.set('mxml.XmlSerializer', @mxml.XmlSerializer, '@Factory', 'MFactory');
@@ -10,18 +10,22 @@ classdef DependencyInjectionConfig < handle
                 {'xml', 'json'}, ...
                 IoC.Injectable(["mxml.XmlSerializer", "mxml.JsonSerializer"]), ...
                 '@Factory', 'MFactory');
+            
+            % Simple framework
             ioc.setSingleton('BindingManager', @mvvm.BindingManager.forceNewInstance);
             
             % controllers
             ioc.set('ForceSpecAnalysisController', @ForSDAT.Application.ForceSpecAnalysisController, 'mxml.GenericSerializer');
             ioc.set('ProcessSetupController', @ForSDAT.Application.ProcessSetupController, 'MFactory', 'mxml.GenericSerializer');
-            ioc.set('NoiseAnomally', @this.getNoiseAnomally, 'App');
+            
+            % configuration
+            ioc.set('NoiseAnomally', @this.getNoiseAnomally, 'Session');
+            ioc.set('NoiseAnomallyFetcher', @IoC.DependencyFetcher, 'IoC', '$NoiseAnomally');
+            
+            % ForSDAT Core
             
             % gui
             ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App');
-            
-            % Simple framework
-            
         end
     end
     
