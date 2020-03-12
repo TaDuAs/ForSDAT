@@ -7,6 +7,7 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         smoothingAdjuster = [];
         plotChainfitFromContactPoint = false;
         ruptureChannel = 'Rupture';
+        fitAllAtOnce = true;
     end
     
     methods % meta data
@@ -74,47 +75,49 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             chainFitStruct.apparentLoadingRate = zeros(1, nRuptures);
             chainFitStruct.originalRuptureIndex = rupt.originalRuptureIndex;
             
-            chainFitStruct.func = this.chainFitter.fitAll(x, y, rupt.i(2, :));
-            chainFitStruct.ruptureForce = zeros(1, nRuptures);
-            chainFitStruct.slope = zeros(1, nRuptures);
-            chainFitStruct.apparentLoadingRate = zeros(1, nRuptures);
-            
-            % calculate stuff
-            for i = 1:nRuptures
-                rupturePoint = chainFitStruct.i(2, i);
-                func = chainFitStruct.func(i);
-                derivative = func.derive();
-                slope = derivative.invoke(x(rupturePoint));
-                
-                % Save data
-                chainFitStruct.ruptureForce(i) = -func.invoke(-x(rupturePoint));
-                chainFitStruct.slope(i) = slope;
-                chainFitStruct.apparentLoadingRate(i) = -slope * data.Setup.retractSpeed;
+            if this.fitAllAtOnce
+                chainFitStruct.func = this.chainFitter.fitAll(x, y, rupt.i(2, :));
+                chainFitStruct.ruptureForce = zeros(1, nRuptures);
+                chainFitStruct.slope = zeros(1, nRuptures);
+                chainFitStruct.apparentLoadingRate = zeros(1, nRuptures);
+
+                % calculate stuff
+                for i = 1:nRuptures
+                    rupturePoint = chainFitStruct.i(2, i);
+                    func = chainFitStruct.func(i);
+                    derivative = func.derive();
+                    slope = derivative.invoke(x(rupturePoint));
+
+                    % Save data
+                    chainFitStruct.ruptureForce(i) = -func.invoke(-x(rupturePoint));
+                    chainFitStruct.slope(i) = slope;
+                    chainFitStruct.apparentLoadingRate(i) = -slope * data.Setup.retractSpeed;
+                end
+            else
+                % fit ruptures one by one
+                for i = 1:nRuptures
+                    % prepare loading domain
+                    xi = croparr(x, chainFitStruct.i(:, i)'); 
+                    yi = croparr(y, chainFitStruct.i(:, i)'); 
+                    rupturePoint = chainFitStruct.i(2, i);
+
+                    if length(xi) > 2
+                        % Chain fit
+                        func = this.chainFitter.fit(xi, yi);
+                        derivative = func.derive();
+                        slope = derivative.invoke(x(rupturePoint));
+                    else
+                        func = Zero();
+                        slope = 0;
+                    end
+
+                    % Save data
+                    chainFitStruct.func(i) = func;
+                    chainFitStruct.ruptureForce(i) = -func.invoke(x(rupturePoint));
+                    chainFitStruct.slope(i) = slope;
+                    chainFitStruct.apparentLoadingRate(i) = -slope * data.Setup.retractSpeed;
+                end
             end
-            
-%             for i = 1:nRuptures
-%                 % prepare loading domain
-%                 xi = croparr(x, chainFitStruct.i(:, i)'); 
-%                 yi = croparr(y, chainFitStruct.i(:, i)'); 
-%                 rupturePoint = chainFitStruct.i(2, i);
-% 
-%                 if length(xi) > 2
-%                     % Chain fit
-%                     func = this.chainFitter.fit(xi, yi);
-%                     derivative = func.derive();
-%                     slope = derivative.invoke(x(rupturePoint));
-%                 else
-%                     func = Zero();
-%                     slope = 0;
-%                 end
-%                 
-%                 % Save data
-%                 chainFitStruct.func(i) = func;
-%                 chainFitStruct.ruptureForce(i) = -func.invoke(x(rupturePoint));
-%                 chainFitStruct.slope(i) = slope;
-%                 chainFitStruct.apparentLoadingRate(i) = -slope * data.Setup.retractSpeed;
-%             end
-            
             
             data.ChainFit = chainFitStruct;
         end

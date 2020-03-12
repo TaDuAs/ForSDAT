@@ -4,7 +4,7 @@ classdef ChainFit < handle
     
     properties
         xshiftValue = 0;
-        shouldShiftX = true;
+        shouldShiftX = false;
     end
     
     methods

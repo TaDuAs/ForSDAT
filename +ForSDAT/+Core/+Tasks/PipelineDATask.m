@@ -92,6 +92,11 @@ classdef PipelineDATask < lists.PipelineTask
             segment = this.segment;
         end
         
+        function tf = validateChannelExists(this, data, channel)
+            chnlData = Simple.getobj(data, channel, nan());
+            tf = ~isequaln(chnlData, nan());
+        end
+        
         function chnlData = getChannelData(this, data, channel)
             channel = this.checkForXYChannels(channel);
             

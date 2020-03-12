@@ -6,6 +6,7 @@ classdef TipHeightAdjuster < handle
         springConstant = []; % N/m
         foom = Simple.Math.OOM.Normal;
         doom = Simple.Math.OOM.Normal;
+        smoothDistance = true;
     end
     
     methods
@@ -34,7 +35,7 @@ classdef TipHeightAdjuster < handle
             end
         end
         
-        function [z, f] = adjust(this, z, f, k, isKAdjusted)
+        function [z, f] = adjust(this, z, f, k, isKAdjusted, contactPointIdx)
             if ~isempty(this.springConstant)
                 k = this.adjustK(this.springConstant);
             elseif nargin < 5 || ~isKAdjusted
@@ -42,6 +43,14 @@ classdef TipHeightAdjuster < handle
             end
             
             z = z + (f/k);
+            
+            if this.smoothDistance
+                z = sort(z);
+                
+                if nargin >= 6 && ~isempty(contactPointIdx)
+                    z = z - z(contactPointIdx);
+                end
+            end
         end
         
         function k = adjustK(this, k)

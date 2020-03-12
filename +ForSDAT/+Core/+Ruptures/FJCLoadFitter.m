@@ -1,4 +1,4 @@
-classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit
+classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
     % Uses taylor approximation of the inverse langevine function:
     % F = KbT/lk*(3*x/L + (9/5)*(x/L).^3 + (297/175)*(x/L).^5 + (1539/875)*(x/L).^7);
     %
@@ -15,6 +15,20 @@ classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit
         estimatedContourLength = 1;
         estimatedKuhnLength = 1;
         constraintsFunc = [];
+    end
+    
+    methods (Hidden) % factory meta data
+        % provides initialization description for mfc.MFactory
+        % ctorParams is a cell array which contains the parameters passed to
+        % the ctor and which properties are to be set during construction
+        function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
+            ctorParams = {'T', 'estimatedContourLength', 'estimatedKuhnLength', 'constraintsFunction'};
+            defaultValues = {...
+                'T', [], ...
+                'estimatedContourLength', [], ...
+                'estimatedKuhnLength', [],...
+                'constraintsFunction', function_handle.empty()};
+        end
     end
     
     methods (Static)
@@ -63,6 +77,24 @@ classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit
             isGoodFit = L >= x(end) && lk > 0;
             if isGoodFit && ~isempty(this.constraintsFunc)
                 isGoodFit = this.constraintsFunc(func, fjcFit, s, mu);
+            end
+        end
+        
+        function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
+            kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
+            ruptureDist = x(ruptureIdx(:));
+            LcRange = [ruptureDist(:)*0.95, ruptureDist(:)*1.1];
+            klRange = repmat([0, 0.35], numel(ruptureIdx), 1);
+            [p, l, s, mu] = Simple.Math.fjc.fitAll(x, y, LcRange, klRange, this.T);
+            
+            n = numel(ruptureIdx);
+            for i = n:-1:1
+                funcs(i) = Simple.Math.fjc.createExpretion(kBT, p(i), l(i));
+            end
+            
+            isGoodFit = all(l(:) >= reshape(x(ruptureIdx), [], 1) & p(:) > 0);
+            if isGoodFit && ~isempty(this.constraintsFunc)
+                isGoodFit = this.constraintsFunc(func, wlcFit, s, mu);
             end
         end
     end
