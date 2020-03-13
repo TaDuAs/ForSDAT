@@ -70,7 +70,7 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 filteredRuptures = [];
             end
             
-            modeledItems = [];
+            modeledItems = struct();
             modeledItems.func = Simple.Math.Ex.MathematicalExpression.empty(1,0);
             for i = 1:size(rupt.i, 2)
                 modeledItems.func(i) = Simple.Math.Ex.Zero();
@@ -91,7 +91,7 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 modeledItems.ruptureForce,...
                 data.Contact.coeff(1));
             
-            singleInteraction = [];
+            singleInteraction = struct();
             singleInteraction.didDetect = ~isempty(i);
             if singleInteraction.didDetect
                 singleInteraction.i = lsRsRe(1:3,:);

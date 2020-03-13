@@ -12,9 +12,10 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
     
     properties
         T = Simple.Scientific.PhysicalConstants.RT;
-        estimatedContourLength = 1;
-        estimatedPersistenceLength = 1;
+        estimatedContourLength = 50;
+        estimatedPersistenceLength = 0.1;
         constraintsFunc = [];
+        model = 'Bustamante';
     end
     
     methods (Hidden) % factory meta data
@@ -69,13 +70,16 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         
         function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
             kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
-            [p, l, s, mu] = Simple.Math.wlc.fitAll(x, y, ruptureIdx, [0, 0.75], this.T);
-            
+            ruptureDist = x(ruptureIdx(:));
+            LcRange = [ruptureDist(:), inf];
+            LpRange = repmat([0, inf], numel(ruptureIdx), 1);
+            [p, l, s, mu] = Simple.Math.wlc.fitAll(x, y, LcRange, LpRange, this.T);
+
             n = numel(ruptureIdx);
             for i = n:-1:1
                 funcs(i) = Simple.Math.wlc.createExpretion(kBT, p(i), l(i));
             end
-            
+
             isGoodFit = all(l(:) >= reshape(x(ruptureIdx), [], 1) & p(:) > 0);
             if isGoodFit && ~isempty(this.constraintsFunc)
                 isGoodFit = this.constraintsFunc(func, wlcFit, s, mu);
@@ -85,7 +89,7 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         function [func, isGoodFit, s, mu] = dofit(this, x, y)
             import Simple.Math.*;
             kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
-            [p, l, s, mu] = Simple.Math.wlc.fit(x, -y, this.estimatedPersistenceLength, this.estimatedContourLength, this.T);
+            [p, l, s, mu] = Simple.Math.wlc.fit(x, -y, this.estimatedPersistenceLength, this.estimatedContourLength, this.T, this.model);
             
             func = wlc.createExpretion(kBT, p, l);
                         

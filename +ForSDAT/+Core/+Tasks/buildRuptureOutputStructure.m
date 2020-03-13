@@ -1,5 +1,5 @@
 function data = buildRuptureOutputStructure(data, channel, distance, events, ruptForce, originalEventIndex, df)
-    ruptures = [];
+    ruptures = struct();
     ruptures.i = events(1:3, :);
     ruptures.force = ruptForce;
     ruptures.distance = distance(events(2, :));

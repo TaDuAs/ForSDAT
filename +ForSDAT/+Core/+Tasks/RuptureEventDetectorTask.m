@@ -58,7 +58,6 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             % Detect rupture events
             [events, derivative] = this.ruptureDetector.analyze(y, x, data.NoiseAmplitude);
             
-            
             % Detect loading start point for each rupture event
             loadingDomainStartIndices = this.loadingDomainDetector.detect(...
                 x, y, ...
