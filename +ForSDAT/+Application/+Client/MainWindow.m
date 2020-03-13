@@ -27,7 +27,6 @@ classdef MainWindow < mvvm.view.MainAppView
             mvvm.BindingManager.setModProv(this.Fig,...
                 mvvm.providers.ControllerProvider('ForceSpecAnalysisController', this.Session));
             
-%             sui.jframe(this.Fig, 0, 'Maximized', 1);
             this.Fig.WindowState = 'maximized';
             
             % layout of all panels from the top to the bottom
