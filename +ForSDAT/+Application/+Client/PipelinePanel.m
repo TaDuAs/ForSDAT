@@ -10,8 +10,8 @@ classdef PipelinePanel < mvvm.view.ComponentView
     end
     
     methods
-        function this = PipelinePanel(container, app)
-            this@mvvm.view.ComponentView(container, 'App', app);
+        function this = PipelinePanel(parent, app)
+            this@mvvm.view.ComponentView(parent, 'App', app);
         end
         
         function delete(this)
@@ -25,9 +25,9 @@ classdef PipelinePanel < mvvm.view.ComponentView
     
     methods (Access=protected)       
         
-        function initializeComponents(this, container)
+        function initializeComponents(this)
             this.ScrollableContentContainer = uix.ScrollingPanel(...
-                'Parent', container,...
+                'Parent', this.Parent.getContainerHandle(),...
                 'Position', [0 0 1 1], ...
                 'BackgroundColor', 'White'); 
             
