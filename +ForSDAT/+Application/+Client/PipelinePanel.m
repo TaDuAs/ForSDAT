@@ -53,6 +53,10 @@ classdef PipelinePanel < mvvm.view.ComponentView
             this.onFlowResize();
         end
         
+        function load(this)
+            
+        end
+        
         function onFlowResize(this, ~, ~)
             scrollSize = sui.getSize(this.FlowContainer, 'pixel');
             scroller = this.ScrollableContentContainer;
