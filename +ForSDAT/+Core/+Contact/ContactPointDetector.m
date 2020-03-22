@@ -80,16 +80,19 @@ classdef ContactPointDetector < handle
             else
                 % Bug fix for curves with extremely noisy contact domain
                 bsl = baseline(length(baseline));
-                contact = this.findSoftSurfaceContactPoint(x, y, bsl);
+                [contact, coefficients] = this.findSoftSurfaceContactPoint(x, y, bsl);
             end
         end
         
-        function contact = findSoftSurfaceContactPoint(this, x, y, baseline)
+        function [contact, coefficients] = findSoftSurfaceContactPoint(this, x, y, baseline)
             i = 1;
             while i < length(x) && y(i) > baseline
                 i = i+1;
             end
             contact = x(i);
+            a = (baseline - y(1))/(contact - x(1));
+            b = y(1) - a*x(1);
+            coefficients = [a, b];
         end
     end
     

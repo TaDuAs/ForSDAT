@@ -1,7 +1,7 @@
 classdef (Abstract) SMIFilter < handle
     
     properties
-        angleDefiningSeparationFromContactDomain = 35;
+        angleDefiningSeparationFromContactDomain = 45;
         filterType char {mustBeMember(filterType, {'all', 'last'})} = 'last';
     end
     
@@ -55,9 +55,20 @@ classdef (Abstract) SMIFilter < handle
                 func = chainFitFunctions(i);
                 slope = func.derive().invoke(0);%dist(ruptureEvents(1, 1)));
                 
-                if abs(slope2angle(contactDomainSlope) - slope2angle(slope)) < deg2rad(abs(this.angleDefiningSeparationFromContactDomain))
+                v1 = [1, contactDomainSlope];
+                v2 = [1, slope];
+                
+                % ignore vector directions, calculate relative angle
+                % between both lines
+                a1 = mod(atan2( det([v1;v2;]) , dot(v1,v2) ), pi );
+                angleDiffFromContactDomain = abs((a1>pi/2)*pi-a1);
+                if angleDiffFromContactDomain < deg2rad(abs(this.angleDefiningSeparationFromContactDomain))
                     flaggedRuptureEvents(end, i) = 0;
                 end
+                
+%                 if abs(slope2angle(contactDomainSlope) - slope2angle(slope)) < deg2rad(abs(this.angleDefiningSeparationFromContactDomain))
+%                     flaggedRuptureEvents(end, i) = 0;
+%                 end
             end
         end
         

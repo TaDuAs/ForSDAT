@@ -48,14 +48,26 @@ classdef TipHeightAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescript
             f = this.getChannelData(data, 'y');
             k = data.Cantilever.springConstant;
             
-            contactIdx = [];
+            contactIdx = []; contactCoeff = [];
             if this.validateChannelExists(data, 'Contact')
-                contactIdx = this.getChannelData(data, 'Contact.i');
+                contactProps = this.getChannelData(data, 'Contact');
+                contactIdx = contactProps.i;
+                contactCoeff = contactProps.coeff;
             end
             
             [z, ~] = this.adjuster.adjust(z, f, k, data.Cantilever.springConstantEstimated, contactIdx);
             
             data.FixedDistance = z;
+            
+            % contact domain slope fix (cdsf)
+            if ~isempty(contactCoeff)
+                cdsfZ = [0, 1];
+                cdsfF = [0, contactCoeff(1)];
+                cdsfZ_fix = this.adjuster.adjust(cdsfZ, cdsfF, k, data.Cantilever.springConstantEstimated);
+                contactFixed = contactProps;
+                contactFixed.coeff(1) = contactCoeff(1)/diff(cdsfZ_fix);
+                data.FixedContact = contactFixed;
+            end
         end
         
         function plotData(this, fig, data, extras)
