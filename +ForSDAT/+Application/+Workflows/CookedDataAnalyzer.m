@@ -56,6 +56,10 @@ classdef (Abstract) CookedDataAnalyzer < handle
                 this.addToDataList(data(i), data(i).(importDetails.keyField));
             end
         end
+        
+        function startFresh(this)
+            this.clearDataList();
+        end
     end
     
     methods (Access=protected)

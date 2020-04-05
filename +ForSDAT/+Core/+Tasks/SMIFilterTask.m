@@ -6,6 +6,7 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         secondaryXChannel;
         ruptureChannel;
         prefilteredRuptureChannel;
+        contactChannel = 'Contact';
     end
     
     methods (Hidden) % factory meta data
@@ -82,6 +83,8 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             modeledItems.ruptureForce = zeros(1, size(rupt.i, 2));
             modeledItems.ruptureForce(data.ChainFit.originalRuptureIndex) = data.ChainFit.ruptureForce;
             
+            contactInfo = this.getChannelData(data, this.contactChannel);
+            
             [lsRsRe, i] = this.filter.filter(y, x, secX,...
                 [rupt.i; rupt.originalRuptureIndex],...
                 filteredRuptures,...
@@ -89,7 +92,7 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 data.BaselineOffsetFactor,...
                 modeledItems.func,...
                 modeledItems.ruptureForce,...
-                data.Contact.coeff(1));
+                contactInfo.coeff(1));
             
             singleInteraction = struct();
             singleInteraction.didDetect = ~isempty(i);

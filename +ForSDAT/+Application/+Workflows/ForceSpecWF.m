@@ -39,6 +39,7 @@ classdef ForceSpecWF < handle
 
         function start(this)
             this.clearDataQueue();
+            this.cookedAnalyzer.startFresh();
         end
         
         function n = getQueueSize(this)
