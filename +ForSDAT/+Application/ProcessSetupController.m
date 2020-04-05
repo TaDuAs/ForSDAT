@@ -1,4 +1,4 @@
-classdef ProcessSetupController < appd.AppController
+classdef ProcessSetupController < ForSDAT.Application.ProjectController
     %ProcessSetupController is an API for generating an analysis process
     
     properties
@@ -28,6 +28,23 @@ classdef ProcessSetupController < appd.AppController
         function output = loadTaskDefinitionsXml(this, taskName)
             task = this.loadTaskDefinitions(taskName);
             output = this.Serializer.serialize(task);
+        end
+        
+        function viewAndEditTask(this, task)
+            this.Project.CurrentEditedTask = task;
+            this.Project.CurrentViewedTask = task;
+        end
+        
+        function editTask(this, task)
+            this.Project.CurrentEditedTask = task;
+        end
+        
+        function viewTask(this, task)
+            this.Project.CurrentViewedTask = task;
+        end
+        
+        function removeTask(this, taskId)
+            this.Project.RawAnalyzer.pipeline.removeAt(taskId);
         end
     end
 end

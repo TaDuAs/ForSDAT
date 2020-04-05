@@ -1,47 +1,28 @@
-classdef ForceSpecAnalysisController < appd.AppController
+classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
     %ForceSpecAnalysisController exposes the API for running a data
     % analysis
-    properties (SetObservable)
-        settings;
-        rawAnalyzer ForSDAT.Core.RawDataAnalyzer;
-        dataAccessor;
-        analyzedSegment;
+    properties (Dependent, SetObservable)
+        AnalyzedSegment;
+    end
+    
+    properties (Access=private)
         processingProgressListener;
         progressbar;
         serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
-
-    properties (Dependent)
-        cookedAnalyzer;
-    end
     
     methods % property accessors
-        function this = set.settings(this, obj)
-            this.App.Context.set([class(this), '_Settings'], obj);
-            this.initCookedAnalyzer();
-            this.initRawAnalyzer();
-        end
-        function obj = get.settings(this)
-            obj = this.App.Context.get([class(this), '_Settings']);
-        end
         function setSettings(this, settingsFilePath)
             if nargin < 2
                 settingsFilePath = [];
             end
             if isStringScalar(settingsFilePath) || ischar(settingsFilePath)
-                this.settings = this.loadSettings(settingsFilePath);
+                this.Project.Settings = this.loadSettings(settingsFilePath);
             else
-                this.settings = settingsFilePath;
+                this.Project.Settings = settingsFilePath;
             end
         end
         
-        function this = set.rawAnalyzer(this, obj)
-            this.App.Context.set([class(this), '_RawAnalyzer'], obj);
-            this.initRawAnalyzer(obj);
-        end
-        function obj = get.rawAnalyzer(this)
-            obj = this.App.Context.get([class(this), '_RawAnalyzer']);
-        end
         function setRawAnalyzer(this, settingsFilePath)
             if isa(settingsFilePath, 'ForSDAT.Core.RawDataAnalyzer')
                 curveAnalyzer = settingsFilePath;
@@ -52,16 +33,9 @@ classdef ForceSpecAnalysisController < appd.AppController
             if isempty(curveAnalyzer) || ~isa(curveAnalyzer, 'ForSDAT.Core.RawDataAnalyzer')
                 error('Force-Spectroscopy analysis should be performed by a ForSDAT.Core.RawDataAnalyzer');
             end
-            this.rawAnalyzer = curveAnalyzer;
+            this.Project.RawAnalyzer = curveAnalyzer;
         end
         
-        function this = set.cookedAnalyzer(this, obj)
-            this.App.Context.set([class(this), '_CookedAnalyzer'], obj);
-            this.initCookedAnalyzer(obj);
-        end
-        function obj = get.cookedAnalyzer(this)
-            obj = this.App.Context.get([class(this), '_CookedAnalyzer']);
-        end
         function setCookedAnalyzer(this, settingsFilePath)
             if isa(settingsFilePath, 'ForSDAT.Application.Workflows.CookedDataAnalyzer')
                 analyzer = settingsFilePath;
@@ -72,32 +46,25 @@ classdef ForceSpecAnalysisController < appd.AppController
             if isempty(analyzer) || ~isa(analyzer, 'ForSDAT.Application.Workflows.CookedDataAnalyzer')
                 error('Force-Spectroscopy final analysis should be performed by a ForSDAT.Application.Workflows.CookedDataAnalyzer');
             end
-            this.cookedAnalyzer = analyzer;
+            this.Project.CookedAnalyzer = analyzer;
         end
         
-        function this = set.dataAccessor(this, obj)
-            this.App.Context.set([class(this), '_DataAccessor'], obj);
-            this.initCookedAnalyzer();
-        end
-        function obj = get.dataAccessor(this)
-            obj = this.App.Context.get([class(this), '_DataAccessor']);
-        end
         function setDataAccessor(this, settingsFilePath)
             if isa(settingsFilePath, 'Simple.DataAccess.DataAccessor')
-                this.dataAccessor = settingsFilePath;
+                this.Project.dataAccessor = settingsFilePath;
             else
-                this.dataAccessor = this.serializer.load(settingsFilePath);
+                this.Project.dataAccessor = this.serializer.load(settingsFilePath);
             end
         end
         
-        function this = set.analyzedSegment(this, value)
+        function set.AnalyzedSegment(this, value)
             this.App.Context.set([class(this), '_AnalyzedSegment'], value);
         end
-        function obj = get.analyzedSegment(this)
+        function obj = get.AnalyzedSegment(this)
             obj = this.App.Context.get([class(this), '_AnalyzedSegment']);
         end
         function setAnalyzedSegment(this, seg)
-            this.analyzedSegment = seg;
+            this.AnalyzedSegment = seg;
         end
     end
     
@@ -108,39 +75,21 @@ classdef ForceSpecAnalysisController < appd.AppController
     end
     
     methods (Access=private)
-        function initCookedAnalyzer(this, obj)
-            if nargin < 2
-                obj = this.cookedAnalyzer;
-            end
-            if ~isempty(obj)
-            	obj.init(this.App.Context, this.dataAccessor, this.settings);
-            end
-        end
-        
-        function initRawAnalyzer(this, obj)
-            if nargin < 2
-                obj = this.rawAnalyzer;
-            end
-            if ~isempty(obj) && ~isempty(this.settings)
-            	obj.init(this.settings);
-            end
-        end
-        
         function wf = buildWF(this)
             wf = ForSDAT.Application.Workflows.ForceSpecWF(...
                 this.App.Context,...
-                this.rawAnalyzer,...
-                this.cookedAnalyzer,...
-                this.dataAccessor,...
-                this.analyzedSegment);
+                this.Project.RawAnalyzer,...
+                this.Project.CookedAnalyzer,...
+                this.Project.DataAccessor,...
+                this.AnalyzedSegment);
         end
-
+        
         function reportProgress(this, args)
             this.progressbar.reportProggress(args.progressReported);
         end
     end
 
-    methods
+    methods % Analysis control
         function start(this)
             wf = this.buildWF();
             wf.start();

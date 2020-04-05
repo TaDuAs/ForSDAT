@@ -7,8 +7,8 @@ classdef EditPanel < mvvm.view.ComponentView
     end
     
     methods
-        function this = EditPanel(parent)
-            this@mvvm.view.ComponentView(parent);
+        function this = EditPanel(parent, parentView, messenger, bindingManager)
+            this@mvvm.view.ComponentView(parent, 'OwnerView', parentView, 'Messenger', messenger, 'BindingManager', bindingManager);
         end
     end
 end

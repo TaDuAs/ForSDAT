@@ -1,6 +1,6 @@
 classdef RawDataAnalyzer < handle & mfc.IDescriptor
     properties (SetObservable)
-        pipeline = [];
+        pipeline lists.Pipeline;
         settings = [];
     end
     

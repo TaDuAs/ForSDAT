@@ -8,9 +8,9 @@ classdef AnalyzerFactory < handle & mfc.IDescriptor
     % file
     
     properties
-        Serializer mxml.XmlSerializer;
+        Serializer mxml.ISerializer;
         ConfigFilePath (1,:) char;
-        App Simple.App.App;
+        Cache gen.Cache;
     end
     
     methods % factory meta data
@@ -18,15 +18,15 @@ classdef AnalyzerFactory < handle & mfc.IDescriptor
         % ctorParams is a cell array which contains the parameters passed to
         % the ctor and which properties are to be set during construction
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%MFactory', '%App', 'ConfigFilePath'};
+            ctorParams = {'%mxml.XmlSerializer', '%AppContext', 'ConfigFilePath'};
             defaultValues = {};
         end
     end
     
     methods
-        function this = AnalyzerFactory(factory, app, configFilePath)
-            this.Serializer = mxml.XmlSerializer('Factory', factory);
-            this.App = app;
+        function this = AnalyzerFactory(serializer, cache, configFilePath)
+            this.Serializer = serializer;
+            this.Cache = cache;
             this.ConfigFilePath = configFilePath;
         end
         
@@ -47,13 +47,13 @@ classdef AnalyzerFactory < handle & mfc.IDescriptor
         function cfg = getConfig(this)
             key = this.configPersistenceKey();
             
-            if ~this.App.persistenceContainer.hasEntry(key)
+            if ~this.App.Context.hasEntry(key)
 %                 path = fileparts(which(class(this)));
 %                 filename = fullfile(path, 'Defaults.xml');
                 cfg = this.Serializer.load(this.ConfigFilePath);
-                this.App.persistenceContainer.set(key, cfg);
+                this.App.Context.set(key, cfg);
             else
-                cfg = this.App.persistenceContainer.get(key);
+                cfg = this.App.Context.get(key);
             end
         end
         

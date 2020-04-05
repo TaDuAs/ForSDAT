@@ -33,20 +33,20 @@ classdef ForSDATApp < mvvm.GuiApp
             
             % Register data analysis controllers
             this.registerController(...
-                appd.IoCControllerBuilder(...
+                mvvm.IoCControllerBuilder(...
                     'ForceSpecAnalysisController',...
                     IoC.ContainerGetter(this.IocContainer)));
                 
             % Register data analysis controllers
             this.registerController(...
-                appd.IoCControllerBuilder(...
+                mvvm.IoCControllerBuilder(...
                     'ProcessSetupController',...
                     IoC.ContainerGetter(this.IocContainer)));
         end
         
         function init(this)
             if strcmp(this.Mode, "gui")
-                this.MainView = ForSDAT.Application.Client.MainWindow(this);
+                this.MainView = this.IocContainer.get('MainView');
             end
         end
     end
@@ -59,11 +59,11 @@ classdef ForSDATApp < mvvm.GuiApp
                 app = ForSDAT.Application.ForSDATApp(mode);
             end
             
-            app = appd.AppManager.load("ForSDAT", @ctor);
+            app = mvvm.AppManager.load("ForSDAT", @ctor);
             
             if nargin >= 1 && ~strcmp(app.Mode, mode)
                 app.kill();
-                app = appd.AppManager.load("ForSDAT", @ctor);
+                app = mvvm.AppManager.load("ForSDAT", @ctor);
             end
         end
     end

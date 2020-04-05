@@ -8,8 +8,8 @@ classdef PlotPanel < mvvm.view.ComponentView
     end
     
     methods
-        function this = PlotPanel(parent, messenger, controller)
-            this@mvvm.view.ComponentView(parent, 'Messenger', messenger);
+        function this = PlotPanel(parent, parentView, messenger, controller, bindingManager)
+            this@mvvm.view.ComponentView(parent, 'OwnerView', parentView, 'Messenger', messenger, 'BindingManager', bindingManager);
             this.Controller = controller;
         end
         
@@ -21,7 +21,7 @@ classdef PlotPanel < mvvm.view.ComponentView
     methods (Access=protected)
         
         function initializeComponents(this)
-            this.Axis = axes(this.Container.getContainerHandle(), 'Position', [0 0 1 1]);
+            this.Axis = axes(this.ContainerBox.getContainerHandle(), 'Position', [0 0 1 1]);
             
             % plot again after switching FDC
             this.Messenger.register('ForSDAT.Client.FDC_Analyzed', @this.plot);

@@ -10,13 +10,17 @@ classdef DependencyInjectionConfig < handle
                 {'xml', 'json'}, ...
                 IoC.Injectable(["mxml.XmlSerializer", "mxml.JsonSerializer"]), ...
                 '@Factory', 'MFactory');
+            ioc.set('AnalysisContext', @(ses) ses.Context, 'Session');
+            ioc.set('AppContext', @(app) app.Context, 'App');
+            ioc.set('AnalyzerConfigFilePath', @(app) fullfile(app.ResourcePath, 'Settings', 'Defaults.xml'), 'App');
             
             % Simple framework
             ioc.setSingleton('BindingManager', @mvvm.BindingManager.forceNewInstance);
             
             % controllers
-            ioc.set('ForceSpecAnalysisController', @ForSDAT.Application.ForceSpecAnalysisController, 'mxml.GenericSerializer');
-            ioc.set('ProcessSetupController', @ForSDAT.Application.ProcessSetupController, 'MFactory', 'mxml.GenericSerializer');
+            ioc.setSingleton('AnalyzerFactory', @ForSDAT.Application.Workflows.AnalyzerFactory, 'mxml.XmlSerializer', 'AppContext', 'AnalyzerConfigFilePath');
+            ioc.setPerSession('ForceSpecAnalysisController', @ForSDAT.Application.ForceSpecAnalysisController, 'mxml.GenericSerializer');
+            ioc.setPerSession('ProcessSetupController', @ForSDAT.Application.ProcessSetupController, 'AnalyzerFactory', 'mxml.GenericSerializer');
             
             % configuration
             ioc.set('NoiseAnomally', @this.getNoiseAnomally, 'Session');
@@ -25,14 +29,14 @@ classdef DependencyInjectionConfig < handle
             % ForSDAT Core
             
             % gui
-            ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App');
+            ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App', 'BindingManager');
         end
     end
     
     methods (Access=private)
         function anomally = getNoiseAnomally(this, app)
             ctrl = app.getController('ForceSpecAnalysisController');
-            anomally = ctrl.settings.measurement.noiseAnomally;
+            anomally = ctrl.project.Settings.measurement.noiseAnomally;
         end
     end
 end
