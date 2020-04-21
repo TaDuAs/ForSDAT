@@ -13,10 +13,11 @@ classdef MainWindow < mvvm.view.MainAppView
     end
     
     methods
-        function this = MainWindow(app, bindingManager)
+        function this = MainWindow(app, bindingManager, viewManager)
             this@mvvm.view.MainAppView(app, ...
                 'FigType', mvvm.view.FigureType.Classic, ...
-                'BindingManager', bindingManager);
+                'BindingManager', bindingManager,...
+                'ViewManager', viewManager);
         end
     end
     
@@ -57,7 +58,9 @@ classdef MainWindow < mvvm.view.MainAppView
             
             controller = this.Session.getController('ForceSpecAnalysisController');
             this.PlotPanel = ForSDAT.Application.Client.PlotPanel(this.MainInfoContainer, this, this.Messenger, controller, this.BindingManager);
-            this.EditPanel = ForSDAT.Application.Client.EditPanel(this.MainInfoContainer, this, this.Messenger, this.BindingManager);
+            this.EditPanel = ForSDAT.Application.Client.EditPanel(this.MainInfoContainer, this,...
+                this.Messenger, this.BindingManager, this.ViewManager, ...
+                this.Session.IocContainer.get('mxml.XmlSerializer'));
             
         end
     end

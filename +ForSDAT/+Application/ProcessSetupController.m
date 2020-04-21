@@ -31,11 +31,15 @@ classdef ProcessSetupController < ForSDAT.Application.ProjectController
         end
         
         function viewAndEditTask(this, task)
-            this.Project.CurrentEditedTask = task;
-            this.Project.CurrentViewedTask = task;
+            this.editTask(task);
+            this.viewTask(task);
         end
         
         function editTask(this, task)
+            % notify that the edited task is changing
+            message = mvvm.RelayMessage(ForSDAT.Application.AppMessages.PreEditedTaskChange, task);
+            this.App.Messenger.send(message);
+            
             this.Project.CurrentEditedTask = task;
         end
         

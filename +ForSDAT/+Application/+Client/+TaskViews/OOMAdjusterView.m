@@ -1,62 +1,69 @@
-classdef OOMAdjusterView
-    %OOMADJUSTERVIEW Summary of this class goes here
-    %   Detailed explanation goes here
-    
+classdef OOMAdjusterView < mvvm.view.ComponentView
     properties
-        oomValues Simple.Math.OOM;
-        
-        container;
-        foomDropdown;
-        foomLabel;
-        zoomDropdown;
-        zoomLabel;
+        OomValues Simple.Math.OOM;
+        FoomDropdown;
+        FoomLabel;
+        ZoomDropdown;
+        ZoomLabel;
     end
     
     methods
-        function this = OOMAdjusterView(parent)            
-            this.initializeComponents(parent);
+        function this = OOMAdjusterView(parent, ownerView, varargin)
+            this@mvvm.view.ComponentView(parent, 'OwnerView', ownerView, 'BoxType', @sui.FlowBox, varargin{:});
+        end
+    end
+    
+    methods (Access=protected)
+        function initializeComponents(this)
+            initializeComponents@mvvm.view.ComponentView(this);
+            
+            this.OomValues = [Simple.Math.OOM.Normal, Simple.Math.OOM.Mili, Simple.Math.OOM.Micro, Simple.Math.OOM.Nano, Simple.Math.OOM.Pico, Simple.Math.OOM.Femto];
+            prefixes = arrayfun(@getPrefix, this.OomValues, 'UniformOutput', false);
+            
+            % set container properties
+            container = this.getContainerHandle();
+            container.Spacing = 10;
+            container.Padding = 10;
+                        
+            % Force OOM
+            this.FoomLabel = uicontrol(container, 'Style', 'text', 'String', 'Force Units:', 'Position', [0 0 100 25], ...
+                'HorizontalAlignment', 'left');
+            this.FoomDropdown = uicontrol(container, 'Style', 'popupmenu', 'String', strcat(prefixes, 'N'), 'Position', [0 0 100 25]);
+            mvvm.AdaptationBinder(...
+                'Project.CurrentEditedTask.adjuster.FOOM', ...
+                this.FoomDropdown, ...
+                'Value', ...
+                mvvm.FunctionHandleDataAdapter(@this.oomModel2Gui, @this.oomGui2Model), ...
+                'Event', 'Callback');
+            sui.LineBreak('Parent', container);
+            
+            % Distance OOM
+            this.ZoomLabel = uicontrol(container, 'Style', 'text', 'String', 'Distance Units:', 'Position', [0 0 100 25], ...
+                'HorizontalAlignment', 'left');
+            this.ZoomDropdown = uicontrol(container, 'Style', 'popupmenu', 'String', strcat(prefixes, 'm'), 'Position', [0 0 100 25]);
+            mvvm.AdaptationBinder(...
+                'Project.CurrentEditedTask.adjuster.ZOOM', ...
+                this.FoomDropdown, ...
+                'Value', ...
+                mvvm.FunctionHandleDataAdapter(@this.oomModel2Gui, @this.oomGui2Model), ...
+                'Event', 'Callback');
+            sui.LineBreak('Parent', container);
+        end
+    end
+    
+    methods (Access=private)
+        function model = oomGui2Model(this, value)
+            if isempty(value); value = 1; end
+
+            model = this.OomValues(value);
         end
         
-        function initializeComponents(this, parent)
-            this.oomValues = [Simple.Math.OOM.Normal, Simple.Math.OOM.Mili, Simple.Math.OOM.Micro, Simple.Math.OOM.Nano, Simple.Math.OOM.Pico, Simple.Math.OOM.Femto];
-            prefixes = arrayfun(@getPrefix, this.oomValues, 'UniformOutput', false);
-            
-            this.container = sui.FlowBox('Parent', parent, 'Spacing', 10, 'Padding', 10);
-            
-            function value = oomModel2Gui(model)
-                if isempty(model)
-                    value = 1;
-                else
-                    value = find(this.oomValues == model);
-                end
+        function value = oomModel2Gui(this, model)
+            if isempty(model)
+                value = 1;
+            else
+                value = find(this.OomValues == model);
             end
-            function model = oomGui2Model(value)
-                if isempty(value); value = 1; end
-                
-                model = this.oomValues(value);
-            end
-            
-            this.foomLabel = uicontrol(this.container, 'Style', 'text', 'String', 'Force Units:', 'Position', [0 0 100 25], ...
-                'HorizontalAlignment', 'left');
-            this.foomDropdown = uicontrol(this.container, 'Style', 'popupmenu', 'String', strcat(prefixes, 'N'), 'Position', [0 0 100 25]);
-            mvvm.AdaptationBinder(...
-                'currentEditedTask.adjuster.FOOM', ...
-                this.foomDropdown, ...
-                'Value', ...
-                mvvm.FunctionHandleDataAdapter(@oomModel2Gui, @oomGui2Model), ...
-                'Event', 'Callback');
-            sui.LineBreak('Parent', this.container);
-            
-            this.zoomLabel = uicontrol(this.container, 'Style', 'text', 'String', 'Distance Units:', 'Position', [0 0 100 25], ...
-                'HorizontalAlignment', 'left');
-            this.zoomDropdown = uicontrol(this.container, 'Style', 'popupmenu', 'String', strcat(prefixes, 'm'), 'Position', [0 0 100 25]);
-            mvvm.AdaptationBinder(...
-                'currentEditedTask.adjuster.ZOOM', ...
-                this.foomDropdown, ...
-                'Value', ...
-                mvvm.FunctionHandleDataAdapter(@oomModel2Gui, @oomGui2Model), ...
-                'Event', 'Callback');
-            sui.LineBreak('Parent', this.container);
         end
     end
 end

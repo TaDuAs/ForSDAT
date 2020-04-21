@@ -29,7 +29,10 @@ classdef DependencyInjectionConfig < handle
             % ForSDAT Core
             
             % gui
-            ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App', 'BindingManager');
+            ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App', 'BindingManager', 'ViewManager');
+            
+            % Edit-Task Sub Views
+            ioc.set('OOM Adjuster View', @ForSDAT.Application.Client.TaskViews.OOMAdjusterView, groot());
         end
     end
     

@@ -1,7 +1,7 @@
 classdef FDCurveOOMAdjuster < handle
     % Adjusts force-distance data to the desired OOM
     
-    properties
+    properties (SetObservable)
         FOOM;
         ZOOM;
     end
