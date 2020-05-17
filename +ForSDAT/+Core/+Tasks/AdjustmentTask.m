@@ -2,7 +2,7 @@ classdef AdjustmentTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
     %ADJUSTOOMTASK Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetObservable)
         adjuster = [];
         shouldAdjustOriginalData (1,1) logical = false;
         shouldAffectOriginalData (1,1) logical = false;

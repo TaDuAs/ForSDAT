@@ -3,17 +3,17 @@ classdef (Abstract) CookedDataAnalyzer < handle
     % Cooked as opposed to raw data
     
     properties (GetAccess=public, SetAccess=private)
-        persistenceContainer;
+        context;
         dataAccessor;
         settings;
     end
     
     methods
-        function this = CookedDataAnalyzer()
+        function this = CookedDataAnalyzer(context)
+            this.context = context;
         end
         
-        function this = init(this, persistenceContainer, dataAccessor, settings)
-            this.persistenceContainer = persistenceContainer;
+        function this = init(this, dataAccessor, settings)
             this.dataAccessor = dataAccessor;
             this.settings = settings;
         end
@@ -65,14 +65,14 @@ classdef (Abstract) CookedDataAnalyzer < handle
     methods (Access=protected)
         
         function list = getDataList(this)
-            % Gets the data list from the PersistenceContainer
+            % Gets the data list from the context
             % If it is not initialized yet, create a new one
             listRepKey = [class(this) '_DataList'];
-            if ~this.persistenceContainer.hasEntry(listRepKey)
+            if ~this.context.hasEntry(listRepKey)
                 list = this.createDataListInstance();
-                this.persistenceContainer.set(listRepKey, list);
+                this.context.set(listRepKey, list);
             else
-                list = this.persistenceContainer.get(listRepKey);
+                list = this.context.get(listRepKey);
             end
         end
         

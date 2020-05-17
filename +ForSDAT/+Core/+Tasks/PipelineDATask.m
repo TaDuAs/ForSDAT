@@ -2,7 +2,7 @@ classdef PipelineDATask < lists.PipelineTask
     %PIPELINETASK Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetObservable)
         yChannel = '';
         xChannel = '';
         segment = '';

@@ -4,7 +4,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         dataAnalyzer;
     end
     
-    methods % meta data
+    methods (Hidden) % meta data
         
         % provides initialization description for mfc.MFactory
         % ctorParams is a cell array which contains the parameters passed to
@@ -24,7 +24,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'dataAnalyzer'};
+            ctorParams = {'%AnalysisContext', 'dataAnalyzer'};
             defaultValues = {'dataAnalyzer', []};
         end
     end
@@ -49,7 +49,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
     end
     
     methods
-        function this = SMICookedDataAnalyzer(dataAnalyzer)
+        function this = SMICookedDataAnalyzer(context, dataAnalyzer)
             this@ForSDAT.Application.Workflows.CookedDataAnalyzer();
             
             this.dataAnalyzer = dataAnalyzer;

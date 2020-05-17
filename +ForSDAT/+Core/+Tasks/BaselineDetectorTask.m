@@ -2,7 +2,7 @@ classdef BaselineDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescrip
     %BASELINEDETECTORTASK Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetObservable)
         detector = [];
         baselineOffsetFactorMultiplier;
         applyToYChannels = {};

@@ -3,7 +3,7 @@ classdef ForceSpecWF < handle
     %   Detailed explanation goes here
     
     properties (GetAccess=protected, SetAccess=private)
-        persistenceContainer;
+        context;
         rawAnalyzer;
         dataAccessor;
         dataQueue;
@@ -26,8 +26,8 @@ classdef ForceSpecWF < handle
     end
     
     methods % Ctors
-        function this = ForceSpecWF(persistenceContainer, rawAnalyzer, cookedAnalyzer, dataAccessor, segment)
-            this.persistenceContainer = persistenceContainer;
+        function this = ForceSpecWF(context, rawAnalyzer, cookedAnalyzer, dataAccessor, segment)
+            this.context = context;
             this.rawAnalyzer = rawAnalyzer;
             this.cookedAnalyzer = cookedAnalyzer;
             this.dataAccessor = dataAccessor;
@@ -292,29 +292,29 @@ classdef ForceSpecWF < handle
 
         function queue = getDataQueue(this)
             repKey = [class(this) '_dataQueue'];
-            if ~this.persistenceContainer.hasEntry(repKey)
+            if ~this.context.hasEntry(repKey)
                 queue = this.dataAccessor.loadQueue();
-                this.persistenceContainer.set(repKey, queue);
+                this.context.set(repKey, queue);
             else
-                queue = this.persistenceContainer.get(repKey);
+                queue = this.context.get(repKey);
                 if ~queue.dataLoader.equals(this.dataAccessor)
                     queue = this.dataAccessor.loadQueue();
-                    this.persistenceContainer.set(repKey, queue);
+                    this.context.set(repKey, queue);
                 end
             end
         end
         
         function clearDataQueue(this)
             repKey = [class(this) '_dataQueue'];
-            if this.persistenceContainer.hasEntry(repKey)
-                this.persistenceContainer.removeEntry(repKey);
+            if this.context.hasEntry(repKey)
+                this.context.removeEntry(repKey);
             end
         end
         
         function [data, key] = getLastAnalyzedItem(this)
             repkey = this.getLastAnalyzedItemContainerKey();
-            if this.persistenceContainer.hasEntry(repkey)
-                item = this.persistenceContainer.get(this.getLastAnalyzedItemContainerKey());
+            if this.context.hasEntry(repkey)
+                item = this.context.get(this.getLastAnalyzedItemContainerKey());
                 data = item.data;
                 key = item.key;
             else
@@ -326,7 +326,7 @@ classdef ForceSpecWF < handle
         function setLastAnalyzedItem(this, data, key)
             item.data = data;
             item.key = key;
-            this.persistenceContainer.set(this.getLastAnalyzedItemContainerKey(), item);
+            this.context.set(this.getLastAnalyzedItemContainerKey(), item);
         end
     end
     
