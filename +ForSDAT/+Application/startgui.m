@@ -1,1 +1,3 @@
-ForSDAT.Application.ForSDATApp.ensureAppLoaded("gui");
+function app = startgui()
+    app = ForSDAT.Application.ForSDATApp.ensureAppLoaded("gui");
+end

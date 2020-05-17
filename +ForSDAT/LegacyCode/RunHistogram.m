@@ -1,6 +1,13 @@
 import Simple.*;
 import Simple.UI.*;
 
+%% prepare setup
+settupPath = 
+app = ForSDAT.Application.startconsole();
+[~, session] = app.startSession();
+controller = session.getController('ForceSpecAnalysisController');
+controller.setCookedAnalyzer();
+
 %% Load Data File
 if ~exist('pathName', 'var') || isempty(pathName) || ~ischar(pathName)
     pathName = [pwd '\..\Reches Lab Share\TADA\Results\Force Spectroscopy\'];
@@ -26,19 +33,28 @@ plotTitle = dlgInputValues(...
 % read file
 filePath = [pathName fileName];
 if any(regexp(filePath, '.+\.xml$'))
-    [data,meta] = Simple.IO.MXML.load(filePath);
-    steps = Simple.List(data, length(data), Simple.IO.MXML.newempty(data(1)));
-    try
-        stepsFD = steps.foreach(@(obj, i) [obj.z; obj.f; obj.slope; cond(isempty(obj.lr), NaN, obj.lr)], 3).vector;
-        slope = stepsFD(3,:);
-        lrArr = stepsFD(4,:);
-    catch ex
-        stepsFD = steps.foreach(@(obj, i) [obj.z; obj.f], 3).vector;
-        slope = zeros(1, size(stepsFD, 2));
-        lrArr = [];
-    end
-    distances = stepsFD(1,:);
-    forces = stepsFD(2,:);
+    serializer = app.IocContainer.get('mxml.XmlSerializer');
+    data = serializer.load(filePath);
+    metadata = data.meta;
+    data = data.data;
+%     steps = Simple.List(data, length(data), Simple.IO.MXML.newempty(data(1)));
+    
+    distances = [data.z];
+    forces = [data.f];
+    slope = arrayfun(@(obj) cond(isempty(obj.slope), NaN, obj.slope), data);
+    lrArr = arrayfun(@(obj) cond(isempty(obj.lr), NaN, obj.lr), data);
+    
+%     try
+%         stepsFD = steps.foreach(@(obj, i) [obj.z; obj.f; obj.slope; cond(isempty(obj.lr), NaN, obj.lr)], 3).vector;
+%         slope = stepsFD(3,:);
+%         lrArr = stepsFD(4,:);
+%     catch ex
+%         stepsFD = steps.foreach(@(obj, i) [obj.z; obj.f], 3).vector;
+%         slope = zeros(1, size(stepsFD, 2));
+%         lrArr = [];
+%     end
+%     distances = stepsFD(1,:);
+%     forces = stepsFD(2,:);
 else
 %     M = tdfread(filePath, 'tab');
     M = readtable(filePath);
@@ -75,6 +91,8 @@ speed = RunHistogram_inputOptionsValues{1};
 binningMethod = RunHistogram_inputOptionsValues{2};
 histogramGausFitR2Threshold = RunHistogram_inputOptionsValues{3};
 fittingModel = RunHistogram_inputOptionsValues{4};
+
+
 
 settings = MainSMFSDA.loadSettings(MainSMFSDA.loadSettingsMethods.default);
 

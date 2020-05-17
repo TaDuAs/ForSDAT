@@ -129,11 +129,13 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             if ~exist('options', 'var')
                 options = [];
             end
-                        
+            
+            import Simple.Math.*;
+            
             % Analyze the values using a histogram (not ploting yet...)
-            [mpf, sigma, bins, pdf, goodness] = this.histogramAnaylzeValues(frc);
-            err = ForSDAT.util.econfi(mpf, this.alpha, sigma, numel(frc));
-            [mpf, err] = ForSDAT.util.roundError(mpf, err);
+            [mpf, sigma, bins, amplitude, pdf, goodness] = this.histogramAnaylzeValues(frc);
+            err = econfi(mpf, this.alpha, sigma, length(frc));
+            [mpf, err] = roundError(mpf, err);
             
             % Calculate the average loading rate & confidence interval
             lrVector = lrVector(~isnan(lrVector));
@@ -141,22 +143,22 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 lrVector = -1*slope(slope<0)*speed;
             end
             lr = mean(lrVector);
-            lrErr = ForSDAT.util.econfi(lrVector, this.alpha);
+            lrErr = econfi(lrVector, this.alpha);
             if isnumeric(lr) && ~isnan(lr) && ~isempty(lr)
-                [lr, lrErr] = ForSDAT.util.roundError(lr, lrErr);
+                [lr, lrErr] = roundError(lr, lrErr);
             end
             
             % Show histogram if needed
-            showHistogram = mvvm.getobj(options, 'showHistogram', false);
+            showHistogram = Simple.getobj(options, 'showHistogram', false);
             if (showHistogram)
-                plotOpt = mvvm.getobj(options, 'plotOptions', []);
-                this.plotHistogram(dist, frc, bins, mpf, err, lr, lrErr, pdf, plotOpt);
+                plotOpt = Simple.getobj(options, 'plotOptions', []);
+                this.plotHistogram(dist, frc, bins, mpf, err, lr, lrErr, amplitude, pdf, plotOpt);
             end
             
-            returnedOpts = struct('fitGoodness', goodness);
+            returnedOpts = struct('amp', amplitude, 'fitGoodness', goodness);
         end
         
-        function [mpv, sigma, bins, pdfoo, goodness] = histogramAnaylzeValues(this, y)
+        function [mpv, std, bins, amplitude, pdfoo, goodness] = histogramAnaylzeValues(this, y)
             if range(y) == 0
                 error('The data range is 0, that means all values are exactly the same, which is impossible! Go check your data before you come back!')
             end
@@ -176,7 +178,8 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 
             % fit multiple gauss peaks
             if startsWith(lower(this.model), ForSDAT.Core.StepsDataAnalyzer.supportedModels.gauss) && order > 1
-                [mpv, sigma, ~, goodness, gaussFit] = Simple.Math.Histool.calcGaussian(bins, freq, fitOptions);
+               
+                [mpv, std, amplitude, goodness, gaussFit] = Simple.Math.Histool.calcGaussian(bins, freq, fitOptions);
                 pdfoo = cell(1, order+1);
                 pdfoo{1} = @(x) feval(gaussFit, x);
                 for i = 1:order
@@ -184,37 +187,17 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 end
             else
                 % fit any other distribution
-                pd = fitdist(y(:), this.model);
-                pdfoo = {@(x) pdf(pd, x)};
-                binx = this.bins2x(bins);
-                mpv = this.calcMode(pd, binx);
-                sigma = std(pd);
-                goodness = pd.ParameterCovariance;
+                pd = fitdist(y, this.model);
+                pdfoo = @(x) pdf(pd, x);
+                binx = 
+                mpv = this.calcMode(pd, );
             end
         end
         
-        function x = bins2x(this, bins)
-            intervals = diff(bins);
-            x = linspace(min(bins), max(bins)+intervals(1), 1000)';
-        end
-        
-        function [x, y] = normalizePdf(this, pdfs, bins)
-            % calculate normalization factor
-            binsize = bins(2)-bins(1);
-            normFactor = numel(bins) * binsize;
-            
-            % calculate x vector
-            x = this.bins2x(bins);
-            
-            % calculate y vectors
-            y = cell2mat(cellfun(@(pdfoo) pdfoo(x), pdfs, 'UniformOutput', false));
-            
-            % multiply y vectors by normalization factor
-            y = y * normFactor;
-        end
-        
-        function plotHistogram(this, dist, frc, bins, mpf, err, lr, lrErr, pdfs, options)
-            figureIndex = mvvm.getobj(options, 'figure', []);
+        function plotHistogram(~, dist, frc, bins, mpf, err, lr, lrErr, amplitude, pdf, options)
+            import Simple.*;
+            import Simple.Math.*;
+            figureIndex = getobj(options, 'figure', []);
             if isempty(figureIndex)
                 figure();
             else
@@ -222,23 +205,25 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             end
             
             h1 = histogram(frc, bins);
+            h1.Normalization = 'probability';
 
-            % generate distribution plot
-            [pdfX, pdfY] = this.normalizePdf(pdfs, bins);
-            
+            % generate gauss plot
+            pdfX = linspace(min(bins),max(bins),1000)';
+            pdfY = cell2mat(cellfun(@(pdfFoo) pdfFoo(pdfX), pdf, 'UniformOutput', false));% * (max(h1.Values)) / max(amplitude));
+
             hold on;
             plot(pdfX, pdfY);
 
             % make figure displayable
             xlabel('Rupture Force Range [pN]');
-            ylabel('Frequency');
-            [displayMPF, displaySTD] = ForSDAT.util.roundError(mpf, err);
+            ylabel('Probability');
+            [displayMPF, displaySTD] = roundError(mpf, err);
             plotSubtitle = strcat('MPF=', num2str(displayMPF), '±', num2str(displaySTD), 'pN, L.R=',...
                 num2str(lr), '±', num2str(lrErr), 'nN/sec, N=', num2str(length(frc)));
 
             hold off;
 
-            plotTitle = mvvm.getobj(options, 'title', '');
+            plotTitle = getobj(options, 'title', '');
             if iscell(plotTitle)
                 plotTitle{length(plotTitle) + 1} = plotSubtitle;
             elseif ~isempty(plotTitle)

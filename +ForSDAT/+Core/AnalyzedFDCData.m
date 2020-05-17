@@ -32,6 +32,10 @@ classdef AnalyzedFDCData < mfc.IDescriptorStruct
 
     methods
         function this = AnalyzedFDCData(f, z, slope, file, lr, noise, x, y, i)
+            if nargin < 1
+                return;
+            end
+            
             this.f = f;
             this.z = z;
             this.slope = slope;
