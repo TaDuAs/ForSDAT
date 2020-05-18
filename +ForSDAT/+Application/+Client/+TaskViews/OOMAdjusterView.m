@@ -1,6 +1,6 @@
 classdef OOMAdjusterView < mvvm.view.ComponentView
     properties
-        OomValues Simple.Math.OOM;
+        OomValues util.OOM;
         FoomDropdown;
         FoomLabel;
         ZoomDropdown;
@@ -17,7 +17,7 @@ classdef OOMAdjusterView < mvvm.view.ComponentView
         function initializeComponents(this)
             initializeComponents@mvvm.view.ComponentView(this);
             
-            this.OomValues = [Simple.Math.OOM.Normal, Simple.Math.OOM.Mili, Simple.Math.OOM.Micro, Simple.Math.OOM.Nano, Simple.Math.OOM.Pico, Simple.Math.OOM.Femto];
+            this.OomValues = [util.OOM.Normal, util.OOM.Mili, util.OOM.Micro, util.OOM.Nano, util.OOM.Pico, util.OOM.Femto];
             prefixes = arrayfun(@getPrefix, this.OomValues, 'UniformOutput', false);
             
             % set container properties

@@ -3,8 +3,8 @@ classdef JpkDelimiterValuesExporterImporter < Simple.DataAccess.DelimiterValuesD
     %   Detailed explanation goes here
     
     properties
-        zoom = Simple.Math.OOM.Nano;
-        foom = Simple.Math.OOM.Pico;
+        zoom = util.OOM.Nano;
+        foom = util.OOM.Pico;
     end
     
     methods

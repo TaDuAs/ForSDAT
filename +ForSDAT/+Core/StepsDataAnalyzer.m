@@ -132,8 +132,8 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                         
             % Analyze the values using a histogram (not ploting yet...)
             [mpf, sigma, bins, pdf, goodness] = this.histogramAnaylzeValues(frc);
-            err = ForSDAT.util.econfi(mpf, this.alpha, sigma, numel(frc));
-            [mpf, err] = ForSDAT.util.roundError(mpf, err);
+            err = util.econfi(mpf, this.alpha, sigma, numel(frc));
+            [mpf, err] = util.roundError(mpf, err);
             
             % Calculate the average loading rate & confidence interval
             lrVector = lrVector(~isnan(lrVector));
@@ -141,9 +141,9 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 lrVector = -1*slope(slope<0)*speed;
             end
             lr = mean(lrVector);
-            lrErr = ForSDAT.util.econfi(lrVector, this.alpha);
+            lrErr = util.econfi(lrVector, this.alpha);
             if isnumeric(lr) && ~isnan(lr) && ~isempty(lr)
-                [lr, lrErr] = ForSDAT.util.roundError(lr, lrErr);
+                [lr, lrErr] = util.roundError(lr, lrErr);
             end
             
             % Show histogram if needed
@@ -232,7 +232,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             % make figure displayable
             xlabel('Rupture Force Range [pN]');
             ylabel('Frequency');
-            [displayMPF, displaySTD] = ForSDAT.util.roundError(mpf, err);
+            [displayMPF, displaySTD] = util.roundError(mpf, err);
             plotSubtitle = strcat('MPF=', num2str(displayMPF), '±', num2str(displaySTD), 'pN, L.R=',...
                 num2str(lr), '±', num2str(lrErr), 'nN/sec, N=', num2str(length(frc)));
 
