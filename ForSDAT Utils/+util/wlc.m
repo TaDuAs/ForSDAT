@@ -4,7 +4,7 @@ classdef wlc
     
     methods (Static)
         function s = S(x, p, l, T)
-            import Simple.Scientific.PhysicalConstants;
+            import chemo.PhysicalConstants;
             if nargin < 4 || isempty(T)
                 T = PhysicalConstants.RT;
             end
@@ -22,8 +22,8 @@ classdef wlc
         % tip height: D=x-f/k (f is positive in WLC)
         % ** Don't use this with multiple p,l solutions.
             
-            import Simple.Scientific.PhysicalConstants;
-            import Simple.Math.wlc;
+            import chemo.PhysicalConstants;
+            import util.wlc;
             
             % Validate & initialize valuse
             if nargin < 4 || isempty(T); T = PhysicalConstants.RT; end
@@ -44,7 +44,7 @@ classdef wlc
                 kbt = PhysicalConstants.kB * T;
                 if isempty(k)
                     
-                    wlcf = Simple.Math.wlc.getWlcFunction(kbt, p(i), l(i), model);
+                    wlcf = util.wlc.getWlcFunction(kbt, p(i), l(i), model);
                     
                     % calculate f according to WLC formula
                     % vectorized solution
@@ -56,7 +56,7 @@ classdef wlc
                     % substituting x with D=x-f/k to get correct tip height
                     % x and f are recalculated iteratively.
                     % The solution generally converges after 6 iterations.
-                    wlcf = Simple.Math.wlc.getWlcFunction(kbt, [], [], model); 
+                    wlcf = util.wlc.getWlcFunction(kbt, [], [], model); 
                     x1 = x;
                     for j = 1:6
 %                         f = double(real((kbt./p(i))*(1./(4*(1-x1).^2)-1/4+x1)));
@@ -74,8 +74,8 @@ classdef wlc
         % 
         % F = kBT/P(1/(4(1-x/L)^2) + x/L - 1/4)
         % dF/dx = kBT/PL(1/(2(1-x/L)^3) + 1)
-            import Simple.Scientific.PhysicalConstants;
-            import Simple.Math.wlc;
+            import chemo.PhysicalConstants;
+            import util.wlc;
             if nargin < 4 || isempty(T)
                 T = PhysicalConstants.RT;
             end
@@ -113,7 +113,7 @@ classdef wlc
         %   y - the calculated wlc vector for the specified x vector
         %       according to the best solution
         
-            import Simple.Math.wlc;
+            import util.wlc;
             if nargin < 4
                 T = [];
             end
@@ -162,11 +162,11 @@ classdef wlc
         end
         
         function [p, l, gof, output] = fitAll(x, y, contourRange, persistenceRange, T, model, varargin)
-            if nargin < 5; T = Simple.Scientific.PhysicalConstants.RT; end
+            if nargin < 5; T = chemo.PhysicalConstants.RT; end
             if nargin < 6 || isempty(model); model = ''; end
-            kBT = Simple.Scientific.PhysicalConstants.kB * T;
+            kBT = chemo.PhysicalConstants.kB * T;
             
-            wlcfunction = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
+            wlcfunction = util.wlc.getWlcFunction(kBT, [], [], model);
             sfoo = func2str(wlcfunction);
             
             n = size(contourRange, 1);
@@ -208,13 +208,13 @@ classdef wlc
         end
         
         function [p, l, gof, output] = fit(x, y, p, l, T, model, params)
-            import Simple.Scientific.PhysicalConstants;
+            import chemo.PhysicalConstants;
             if nargin < 5; T = PhysicalConstants.RT; end
             if nargin < 6; model = ''; end
             
             % Fit type
             kBT = PhysicalConstants.kB * T;
-            wlcfunction = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
+            wlcfunction = util.wlc.getWlcFunction(kBT, [], [], model);
             wlcf = fittype(wlcfunction);
             
             % Set fit bounds & method
@@ -239,9 +239,9 @@ classdef wlc
         
         function func = createExpretion(kBT, p, l, model)
             if nargin < 4; model = ''; end
-            wlcf = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
+            wlcf = util.wlc.getWlcFunction(kBT, [], [], model);
             symWlcf = subs(-1*sym(wlcf), {'p', 'l'}, [p, l]);
-            func = Simple.Math.Ex.Symbolic(symWlcf);
+            func = util.matex.Symbolic(symWlcf);
         end
         
         function wlcfunction = getWlcFunction(kBT, p, l, model)

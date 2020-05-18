@@ -12,8 +12,8 @@ classdef fjc
         % for a polymer chain with Kuhn length: lk
         % and contour length: L
             
-            import Simple.Scientific.PhysicalConstants;
-            import Simple.Math.fjc;
+            import chemo.PhysicalConstants;
+            import util.fjc;
             % Validate & initialize valuse
             if nargin < 4 || isempty(T)
                 T = PhysicalConstants.RT;
@@ -26,7 +26,7 @@ classdef fjc
         end
         
         function [k, l, gof, output] = fit(x, y, k, l, T, params)
-            import Simple.Scientific.PhysicalConstants;
+            import chemo.PhysicalConstants;
             if nargin < 5
                 T = PhysicalConstants.RT;
             end
@@ -35,7 +35,7 @@ classdef fjc
             % set fitting type
             % FJC extension force is given by the taylor approximation of
             % the inverse langevine function:
-            fjcFunction = Simple.Math.fjc.getFjcFunction(kBT);
+            fjcFunction = util.fjc.getFjcFunction(kBT);
             fjcf = fittype(fjcFunction);
             
             % Set fit bounds & method
@@ -60,11 +60,11 @@ classdef fjc
         
         function [k, l, gof, output] = fitAll(x, y, LcRange, klRange, T, params)
             if nargin < 5
-                T = Simple.Scientific.PhysicalConstants.RT;
+                T = chemo.PhysicalConstants.RT;
             end
-            kBT = Simple.Scientific.PhysicalConstants.kB * T;
+            kBT = chemo.PhysicalConstants.kB * T;
             
-            fjcFunction = Simple.Math.fjc.getFjcFunction(kBT);
+            fjcFunction = util.fjc.getFjcFunction(kBT);
             sfoo = func2str(fjcFunction);
             
             % generate function expression
@@ -114,7 +114,7 @@ classdef fjc
         function func = createExpretion(kBT, k, l)
             x = sym('x');
             fjcSym = -kBT/k*(3*x/l + (9/5)*(x/l).^3 + (297/175)*(x/l).^5 + (1539/875)*(x/l).^7);
-            func = Simple.Math.Ex.Symbolic(fjcSym);
+            func = util.matex.Symbolic(fjcSym);
         end
         
         function ffjc = getFjcFunction(kBT)

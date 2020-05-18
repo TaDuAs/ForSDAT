@@ -1,8 +1,8 @@
 classdef AdhesionEnergyDetector < ForSDAT.Core.Adhesion.ISectionDetector
     properties
-        EOOM Simple.Math.OOM = Simple.Math.OOM.Atto;
-        FOOM Simple.Math.OOM = Simple.Math.OOM.Pico;
-        ZOOM Simple.Math.OOM = Simple.Math.OOM.Nano;
+        EOOM util.OOM = util.OOM.Atto;
+        FOOM util.OOM = util.OOM.Pico;
+        ZOOM util.OOM = util.OOM.Nano;
     end
     
     methods        
@@ -17,8 +17,8 @@ classdef AdhesionEnergyDetector < ForSDAT.Core.Adhesion.ISectionDetector
         end
         
         function init(this, settings)
-            this.FOOM = Simple.getobj(settings, 'measurement.FOOM', this.FOOM);
-            this.ZOOM = Simple.getobj(settings, 'measurement.ZOOM', this.ZOOM);
+            this.FOOM = mvvm.getobj(settings, 'measurement.FOOM', this.FOOM);
+            this.ZOOM = mvvm.getobj(settings, 'measurement.ZOOM', this.ZOOM);
         end
     end
 end

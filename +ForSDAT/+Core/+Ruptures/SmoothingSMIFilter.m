@@ -81,14 +81,13 @@ classdef SmoothingSMIFilter < ForSDAT.Core.Ruptures.SMIFilter & mfc.IDescriptor
             [sf, ~, peakLocs, valleyLocs] = this.smoothAndFindPeaks(frc, secDist, ruptureEvents, noiseAmplitude);
             
             if any(plotArea)
-                areaColors = jet(length(valleyLocs)-1);
-                colorIndex = Simple.rearangeArray(fliplr(1:length(valleyLocs)-1), 'alt');
+                areaColors = util.rearangeArray(jet(length(valleyLocs)-1)', 'alt')';
                 
                 % area under curve
                 for i = 1:length(plotArea)
                     if plotArea(i)
                         idx = valleyLocs(i):valleyLocs(i+1);
-                        area(dist(idx), frc(idx), 'LineStyle', 'none', 'FaceAlpha', 0.3, 'FaceColor', areaColors(colorIndex(i),:), 'ShowBaseLine', 'off');
+                        area(dist(idx), frc(idx), 'LineStyle', 'none', 'FaceAlpha', 0.3, 'FaceColor', areaColors(i,:), 'ShowBaseLine', 'off');
                     end
                 end
             end

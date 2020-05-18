@@ -4,8 +4,8 @@ classdef TipHeightAdjuster < handle
     
     properties
         springConstant = []; % N/m
-        foom = Simple.Math.OOM.Normal;
-        doom = Simple.Math.OOM.Normal;
+        foom util.OOM = util.OOM.Normal;
+        doom util.OOM = util.OOM.Normal;
         smoothDistance = true;
     end
     

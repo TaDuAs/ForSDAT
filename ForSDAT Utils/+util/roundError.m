@@ -9,7 +9,7 @@ function [ret, retErr] = roundError(val, err)
     end
 
     % Find error value order of magnitude and round-to digit index
-    errOOM = ForSDAT.util.doom(err, true);
+    errOOM = util.doom(err, true);
 
     % round the error
     retErr = arrayfun(@round, err, -errOOM);
