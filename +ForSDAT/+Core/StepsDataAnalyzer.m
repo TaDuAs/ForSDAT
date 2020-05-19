@@ -100,27 +100,6 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             end
         end
         
-        function mode = calcMode(this, pd, x)
-            mode = [];
-            switch lower(pd.DistributionName)
-                case {'normal', 'gauss'}
-                    mode = mean(pd);
-                case 'gamma'
-                    if pd.a >= 1
-                        mode = (pd.a - 1)/pd.b;
-                    end
-                case 'weibull'
-                    if pd.B > 1
-                        mode = pd.A*(((pd.B-1)/pd.B)^(1/pd.B));
-                    else
-                        mode = 0;
-                    end
-            end
-            
-            if isempty(mode)
-                mode = max(pdf(pd, x), 'all');
-            end
-        end
         
         function [mpf, sigma, err, lr, lrErr, returnedOpts] = doYourThing(this, frc, dist, slope, speed, lrVector, options)
             if ~exist('lrVector', 'var')
@@ -193,26 +172,6 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             end
         end
         
-        function x = bins2x(this, bins)
-            intervals = diff(bins);
-            x = linspace(min(bins), max(bins)+intervals(1), 1000)';
-        end
-        
-        function [x, y] = normalizePdf(this, pdfs, bins)
-            % calculate normalization factor
-            binsize = bins(2)-bins(1);
-            normFactor = numel(bins) * binsize;
-            
-            % calculate x vector
-            x = this.bins2x(bins);
-            
-            % calculate y vectors
-            y = cell2mat(cellfun(@(pdfoo) pdfoo(x), pdfs, 'UniformOutput', false));
-            
-            % multiply y vectors by normalization factor
-            y = y * normFactor;
-        end
-        
         function plotHistogram(this, dist, frc, bins, mpf, err, lr, lrErr, pdfs, options)
             figureIndex = mvvm.getobj(options, 'figure', []);
             if isempty(figureIndex)
@@ -262,19 +221,6 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         function pdf = generateDistPdf(this, distFitType, varargin)
             fitobj = cfit(distFitType, varargin{:});
             pdf = @(x) feval(fitobj, x);
-        end
-        
-        function order = getModelOrder(this, model)
-            sorder = regexp(model, '\d*$', 'match');
-            if isempty(sorder)
-                order = 1;
-            else
-                order = str2double(sorder);
-                if numel(order) ~= 1 || ~isPositiveIntegerValuedNumeric(order)
-                    throw(MException('ForSDAT:Core:StepsDataAnalyzer:InvalidModelOrder', ...
-                        'Model fitting order must be a positive integer'));
-                end
-            end
         end
     end
 end
