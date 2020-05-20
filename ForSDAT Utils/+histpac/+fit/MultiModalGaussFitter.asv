@@ -1,4 +1,4 @@
-classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.SetGet
+classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.
     
     properties
         Order (1, 1) uint8 {mustBeFinite(Order), mustBePositive(Order), mustBeLessThan(10), mustBeNonNan(Order), mustBeReal(Order)} = 1;
@@ -7,11 +7,7 @@ classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.Set
     
     methods
         function this = MultiModalGaussFitter(varargin)
-            this.set(varargin{:});
-        end
-        
-        function tf = isNormalized(~)
-            tf = true;
+            
         end
         
         function [mpv, sigma, pdfunc, goodness] = fit(this, y, bins, freq)

@@ -1,4 +1,4 @@
-function statData = extractStatData(x, varargin)
+function statData = stats(x, varargin)
     options = parseHistogramInput(varargin);
     
     statData = histpac.HistStatData();
@@ -8,10 +8,12 @@ function statData = extractStatData(x, varargin)
     [statData.Frequencies, statData.BinEdges] = histcounts(y, nbins);
     
     % fit distribution to data/histogram
-    if ~isempty(options.Model)
+    model = options.Model;
+    if ~isempty(model)
         [statData.MPV, statData.StandardDeviation, statData.PDF, statData.GoodnessOfFit] = ...
-            options.Model.fit(x(:), statData.BinEdges, statData.Frequencies);
+            model.fit(x(:), statData.BinEdges, statData.Frequencies);
         statData.HasDistribution = true;
+        statData.IsNormalized = model.isNormalized();
     end
 end
 

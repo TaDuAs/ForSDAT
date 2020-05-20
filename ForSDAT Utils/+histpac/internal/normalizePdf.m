@@ -5,12 +5,9 @@ function [x, y] = normalizePdf(pdfs, bins)
     binsize = bins(2)-bins(1);
     normFactor = numel(bins) * binsize;
 
-    % calculate x vector
-    x = bins2x(bins);
-
-    % calculate y vectors
-    y = cell2mat(cellfun(@(pdfoo) pdfoo(x), pdfs, 'UniformOutput', false));
-
+    % prepare x & y vector for all ditribution functions
+    [x, y] = execPdf(pdfs, bins);
+    
     % multiply y vectors by normalization factor
     y = y * normFactor;
 end

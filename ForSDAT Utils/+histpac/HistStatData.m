@@ -7,6 +7,7 @@ classdef HistStatData
         
         % Distribution
         HasDistribution = false;
+        IsNormalized = false;
         MPV;
         StandardDeviation;
         PDF;

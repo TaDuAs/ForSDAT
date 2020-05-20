@@ -1,4 +1,4 @@
-classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter
+classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter & matlab.mixin.SetGet
     
     properties
         DistributionName char {gen.valid.mustBeTextualScalar(DistributionName)} = 'normal';
@@ -6,7 +6,15 @@ classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter
     end
     
     methods
-        function [mpv, sigma, pdfoo, goodness] = fit(this, y, bins, freq)
+        function this = BuiltinDistributionFitter(varargin)
+            this.set(varargin{:});
+        end
+        
+        function tf = isNormalized(~)
+            tf = false;
+        end
+        
+        function [mpv, sigma, normalizedPDF, goodness] = fit(this, y, bins, freq)
             % fit builtin distributions
             if strcmp(this.FittingMode, 'frequencies')
                 pd = fitdist(bins(:), this.DistributionName, ones(numel(bins), 1), freq(:));
@@ -15,7 +23,7 @@ classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter
             end
             
             % prepare probability distribution function
-            pdfoo = {@(x) pdf(pd, x)};
+            normalizedPDF = {@(x) pdf(pd, x)};
             
             % prepare 
             mpv = histpac.mode(pd, bins);

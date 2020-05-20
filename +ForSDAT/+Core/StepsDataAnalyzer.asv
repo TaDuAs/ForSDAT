@@ -66,15 +66,10 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             histoolParams = {'Model', this.model, 'ModelParams', modelParams};
             
             % Show histogram if needed
-            shouldPlot = mvvm.getobj(options, 'showHistogram', false);
-            plotOpt = mvvm.getobj(options, 'plotOptions', []);
-            if ~shouldPlot
-                stats = histpac.stats(frc, histoolParams);
+            if ~mvvm.getobj(options, 'showHistogram', false)
+                stats = histpac.stats(y, histoolParams);
             else
-                plotIntoThisElement = mvvm.getobj(plotOpt, 'figure', []);
-
-                % plot histogram and perform statistical analyzis
-                [stats, guiHandle] = histpac.histdist(frc, 'PlotTo', plotIntoThisElement, histoolParams{:});
+                stats = this.plotHistogram(y, histoolParams, opt);
             end
             
             % get mpf +/- error
@@ -94,59 +89,28 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             end
             
             returnedOpts = struct('fitGoodness', goodness);
-            
-            if shouldPlot
-                this.makePlotPresentable(mpf, err, lr, lrErr, numel(frc), plotOpt, guiHandle);
-            end
         end
         
-        function makePlotPresentable(this, mpf, err, lr, lrErr, N, plotOpt, h)
+        function plotHistogram(this, dist, frc, bins, mpf, err, lr, lrErr, pdfs, options)
 
-            fig = ancestor(h(1), 'figure');
-            ax = ancestor(h(1), 'axes');
-            
             % make figure displayable
-            xlabel(ax, 'Rupture Force Range (pN)');
-            ylabel(ax, 'Frequency');
-        
-            detailsText = {...
-                sprintf('MPF = %d±%d pN', mpf, err),...
-                sprintf('L.R = %d±%d nN/sec', lr, lrErr),...
-                sprintf('N = %d', N)};
+            xlabel('Rupture Force Range [pN]');
+            ylabel('Frequency');
+            [displayMPF, displaySTD] = util.roundError(mpf, err);
+            plotSubtitle = strcat('MPF=', num2str(displayMPF), '±', num2str(displaySTD), 'pN, L.R=',...
+                num2str(lr), '±', num2str(lrErr), 'nN/sec, N=', num2str(length(frc)));
 
-            % add details textbox
-            this.createTextElement(fig, ax, detailsText);
-            
-            % add title to axes
-            plotTitle = mvvm.getobj(plotOpt, 'title', '');
-            if ~isempty(plotTitle)
-                title(ax, plotTitle);
-            end
-        end
-        
-        function createTextElement(this, fig, ax, text)
-            % calculate position and size for the text element
-            labelSize = [150, 150];
-            margins = [5,5];
-            absPos = sui.getAbsPos(ax);
-            axSize = sui.getSize(ax, 'pixels');
-            labelPos = absPos(1:2) + axSize - labelSize - margins;
-            
-            % create text element and add to the UI hierarchi
-            if util.isUiFigure(fig)
-                uilabel(fig, ...
-                    'Text', text, ...
-                    'FontSize', 24, ...
-                    'BackgroundColor', [1 1 1], ...
-                    'Position', [labelPos, labelSize]);
+            hold off;
+
+            plotTitle = mvvm.getobj(options, 'title', '');
+            if iscell(plotTitle)
+                plotTitle{length(plotTitle) + 1} = plotSubtitle;
+            elseif ~isempty(plotTitle)
+                plotTitle = {plotTitle, plotSubtitle};
             else
-                annotation(fig, ...
-                    'Type', 'Textbox', ...
-                    'String', text, ...
-                    'FontSize', 24, ...
-                    'BackgroundColor', [1 1 1], ...
-                    'Position', [labelPos, labelSize]);
+                plotTitle = plotSubtitle;
             end
+            title(plotTitle);
         end
     end
 end
