@@ -50,7 +50,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
     
     methods
         function this = SMICookedDataAnalyzer(context, dataAnalyzer)
-            this@ForSDAT.Application.Workflows.CookedDataAnalyzer();
+            this@ForSDAT.Application.Workflows.CookedDataAnalyzer(context);
             
             this.dataAnalyzer = dataAnalyzer;
         end

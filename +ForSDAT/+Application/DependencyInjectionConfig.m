@@ -15,7 +15,7 @@ classdef DependencyInjectionConfig < handle
             ioc.set('AnalyzerConfigFilePath', @(app) fullfile(app.ResourcePath, 'Settings', 'Defaults.xml'), 'App');
             
             % Simple framework
-            ioc.setSingleton('BindingManager', @mvvm.BindingManager.forceNewInstance);
+            ioc.setSingleton('BindingManager', @mvvm.BindingManager);
             
             % controllers
             ioc.setSingleton('AnalyzerFactory', @ForSDAT.Application.Workflows.AnalyzerFactory, 'mxml.XmlSerializer', 'AppContext', 'AnalyzerConfigFilePath');

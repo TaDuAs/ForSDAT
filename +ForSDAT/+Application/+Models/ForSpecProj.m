@@ -54,7 +54,7 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
         function notifyCookedAnalyzer(this, ~, ~)
             obj = this.CookedAnalyzer;
             if ~isempty(obj)
-            	obj.init(this.Context, this.dataAccessor, this.settings);
+            	obj.init(this.DataAccessor, this.Settings);
             end
         end
         

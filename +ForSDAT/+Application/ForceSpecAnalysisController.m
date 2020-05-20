@@ -51,9 +51,9 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         
         function setDataAccessor(this, settingsFilePath)
             if isa(settingsFilePath, 'Simple.DataAccess.DataAccessor')
-                this.Project.dataAccessor = settingsFilePath;
+                this.Project.DataAccessor = settingsFilePath;
             else
-                this.Project.dataAccessor = this.serializer.load(settingsFilePath);
+                this.Project.DataAccessor = this.serializer.load(settingsFilePath);
             end
         end
         
@@ -156,7 +156,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         
         function analyzeAutomatically(this)
             wf = this.buildWF();
-            this.progressbar = Simple.UI.ConsoleProggressBar(['Analyzing Data Batch ' this.dataAccessor.batchPath ':'], wf.getQueueSize(), 10, true);
+            this.progressbar = Simple.UI.ConsoleProggressBar(['Analyzing Data Batch ' this.Project.DataAccessor.batchPath ':'], wf.getQueueSize(), 10, true);
             this.processingProgressListener = addlistener(wf, 'ReportProgress',@(obj, args) this.reportProgress(args));
             wf.completeAnalysisAutomatically();
         end
@@ -176,11 +176,11 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         end
         
         function output = wrapUpAndAnalyze(this)
-            output = this.cookedAnalyzer.wrapUpAndAnalyze();
+            output = this.Project.CookedAnalyzer.wrapUpAndAnalyze();
         end
         
         function output  = runPreviouslyCookedAnalysis(this, path)
-            this.cookedAnalyzer.loadPreviouslyProcessedDataOutput(path);
+            this.Project.CookedAnalyzer.loadPreviouslyProcessedDataOutput(path);
             output = this.wrapUpAndAnalyze();
         end
         
