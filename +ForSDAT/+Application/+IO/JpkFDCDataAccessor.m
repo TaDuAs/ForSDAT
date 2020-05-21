@@ -1,4 +1,4 @@
-classdef JpkFDCDataAccessor < Simple.DataAccess.FileSystemDataAccessor & mfc.IDescriptor
+classdef JpkFDCDataAccessor < tiers.da.FileSystemDataAccessor & mfc.IDescriptor
     properties
         parser;
         wantedSegments;
@@ -13,7 +13,7 @@ classdef JpkFDCDataAccessor < Simple.DataAccess.FileSystemDataAccessor & mfc.IDe
             defaultValues = {...
                 'wantedSegments', [],...
                 'parser', ForSDAT.Application.IO.ForceDistanceCurveParser.empty(),...
-                'exporter', Simple.DataAccess.DelimiterValuesDataExporter.empty(),...
+                'exporter', tiers.da.DelimiterValuesDataExporter.empty(),...
                 'batchPath', '', ...
                 'processedResultsPath', '',...
                 'errorLogPath', ''};
@@ -25,7 +25,7 @@ classdef JpkFDCDataAccessor < Simple.DataAccess.FileSystemDataAccessor & mfc.IDe
             if (nargin < 5); processedResultsPath = []; end
             if (nargin < 6); errorLogPath = []; end
 
-            this@Simple.DataAccess.FileSystemDataAccessor(app, exporter, batchPath, processedResultsPath, errorLogPath);
+            this@tiers.da.FileSystemDataAccessor(app, exporter, batchPath, processedResultsPath, errorLogPath);
 
             this.parser = parser;
             this.wantedSegments = wantedSegments;
