@@ -13,7 +13,7 @@ function [statData, h] = histdist(varargin)
     options = parseHistogramInput(args);
     
     % calculate histogram details and statistics
-    statData = histpac.extractStatData(x, options);
+    statData = histpac.stats(x, options);
     
     % get axes to plot to
     ax = getAxes(options.PlotTo);

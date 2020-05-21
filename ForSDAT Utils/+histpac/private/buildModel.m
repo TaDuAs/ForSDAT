@@ -1,10 +1,10 @@
 function model = buildModel(options)
     modelName = lower(char(options.Model));
     if startsWith(modelName, 'gauss')
-        model = histpac.fit.MultiModalGaussFitter(options.ModelParams);
+        model = histpac.fit.MultiModalGaussFitter(options.ModelParams{:});
         model.Order = getModelOrder(modelName);
     elseif ~isempty(modelName)
-        model = histpac.fit.BuiltinDistributionFitter(options.ModelParams);
+        model = histpac.fit.BuiltinDistributionFitter(options.ModelParams{:});
         model.DistributionName = options.Model;
     end
 end

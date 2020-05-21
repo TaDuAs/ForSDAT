@@ -5,7 +5,7 @@ function statData = stats(x, varargin)
     
     % calculate histogram details
     statData.NBins = histpac.calcNBins(x(:), options.BinningMethod, options.MinimalBins);
-    [statData.Frequencies, statData.BinEdges] = histcounts(y, nbins);
+    [statData.Frequencies, statData.BinEdges] = histcounts(x, statData.NBins);
     
     % fit distribution to data/histogram
     model = options.Model;
