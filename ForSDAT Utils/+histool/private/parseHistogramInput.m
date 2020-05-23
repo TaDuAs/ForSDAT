@@ -1,5 +1,5 @@
-function opt = parseHistogramInput(args)
-% Parses the input to histpac histogram plotting and calculation 
+function opt = parseHistogramInput(args, functionName)
+% Parses the input to histool histogram plotting and calculation 
 % functions.
 
     if numel(args) == 1 && isstruct(args{1})
@@ -8,7 +8,7 @@ function opt = parseHistogramInput(args)
     end
 
     parser = inputParser();
-    parser.FunctionName = 'histpac.calcHistogram';
+    parser.FunctionName = functionName;
     parser.CaseSensitive = false;
     
     % Histogram generation options
@@ -17,20 +17,24 @@ function opt = parseHistogramInput(args)
     
     % Distribution fitting options
     parser.addOptional('Model', '', ...
-        @(m) assert(isa(m, 'histpac.fit.IHistogramFitter') || gen.isSingleString(m),...
-                    'Model must be a name of a fittable probability distribution or an instance of histpac.fit.IHistogramFitter'));
+        @(m) assert(isa(m, 'histool.fit.IHistogramFitter') || gen.isSingleString(m),...
+                    'Model must be a name of a fittable probability distribution or an instance of histool.fit.IHistogramFitter'));
     parser.addOptional('ModelParams', {});
     
     % Plotting options
     parser.addOptional('PlotTo', [], ...
         @(h) assert(isnumeric(h) || isa(h, 'matlab.ui.Figure') || isa(h, 'matlab.graphics.axis.Axes') || isa(options.PlotTo, 'matlab.ui.control.UIAxes'),...
                     'PlotTo must be a valid figure or axes object'));
+    parser.addOptional('ShowMPV', false, ...
+        @(tf) assert(islogical(tf) && isscalar(tf), 'ShowMPV must be a logical scalar'));
+    parser.addOptional('ShowSTD', false, ...
+        @(tf) assert(islogical(tf) && isscalar(tf), 'ShowSTD must be a logical scalar'));
                 
     parser.parse(args{:});
     
     opt = parser.Results;
     
-    if gen.isSingleString(opt.Model)
+    if gen.isSingleString(opt.Model) && ~strcmp(opt.Model, '')
         opt.Model = buildModel(opt);
     end
 end

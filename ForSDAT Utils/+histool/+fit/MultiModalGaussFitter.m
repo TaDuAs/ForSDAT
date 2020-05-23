@@ -1,7 +1,7 @@
-classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.SetGet
+classdef MultiModalGaussFitter < histool.fit.IHistogramFitter & matlab.mixin.SetGet
     
     properties
-        Order (1, 1) uint8 {mustBeFinite(Order), mustBePositive(Order), mustBeLessThan(10), mustBeNonNan(Order), mustBeReal(Order)} = 1;
+        Order (1, 1) uint8 {mustBeFinite(Order), mustBePositive(Order), mustBeLessThan(Order, 9), mustBeNonNan(Order), mustBeReal(Order)} = 1;
         PlanBGoodnessThreshold = 0.7;
     end
     
@@ -32,6 +32,8 @@ classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.Set
         
             [mpv, sigma, goodness, gaussFit] = this.fitGaussianSeries(bins, freq);
             
+            order = this.Order;
+            
             % This distribution function represents the gaussian series as
             % a whole
             pdfunc = cell(1, order+1);
@@ -59,7 +61,7 @@ classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.Set
             
             % prepare bin centers vector to serve as x axis values
             binWidths = diff(bins);
-            x = bins + [binWidths(1), binWidths] * 0.5;
+            x = bins(1:end-1) + binWidths * 0.5;
             
             % fit gaussian series
             if this.Order == 1 
@@ -111,7 +113,7 @@ classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.Set
             end
         end
         
-        function [mpv, sigma, goodness] = doFitFirstOrder(this, x, freq)
+        function [mpv, sigma, goodness, gaussFit] = doFitFirstOrder(this, x, freq)
         % Fits a 1st order gaussian series to a histogram
         % Parameters:
         %   x       - histogram bin centers
@@ -135,32 +137,30 @@ classdef MultiModalGaussFitter < histpac.fit.IHistogramFitter & matlab.mixin.Set
             % generate gaussian distribution fit
             % ** gives better values than normfit, normfit uses a similar
             %    calculation as above.
-            if getobj(fittingOptions, 'useMatlabFit', false)
-                % Fit gaussian to histogram bars
-                [upper, lower] = this.prepareFitBounds(1, x, freq);
-                [fittingParams, fitModel] = this.prepareGaussFitOptions(1, upper, lower, [amplitude, mpv, sigma]); 
-                [gaussFit, goodness] = fit(x(:), freq(:), fitModel, fittingParams);
+            % Fit gaussian to histogram bars
+            [upper, lower] = this.prepareFitBounds(1, x, freq);
+            [fittingParams, fitModel] = this.prepareGaussFitOptions(1, upper, lower, [amplitude, mpv, sigma]); 
+            [gaussFit, goodness] = fit(x(:), freq(:), fitModel, fittingParams);
 
-                if goodness.rsquare >= this.PlanBGoodnessThreshold
-                    % Get fit data
-                    mpv = gaussFit.b1;
-                    sigma = abs(gaussFit.c1);
-                end
+            if goodness.rsquare >= this.PlanBGoodnessThreshold
+                % Get fit data
+                mpv = gaussFit.b1;
+                sigma = abs(gaussFit.c1);
             end
         end
         
-        function [fitOpt, fitModel] = prepareGaussFitOptions(order, upper, lower, start)
+        function [fitOpt, fitModel] = prepareGaussFitOptions(this, order, upper, lower, start)
         % Prepares fitting options for the gaussian series model
         
             nameValue = {'Upper', upper, 'Lower', lower};
-            if nargin >= 4
-                nameValue(5:6) = {'Start', start};
+            if nargin >= 5
+                nameValue = [nameValue, {'Start', start}];
             end
             fitModel = ['gauss' num2str(order)];
             fitOpt = fitoptions(fitModel, nameValue{:});
         end
         
-        function [upper, lower] = prepareFitBounds(order, x, y)
+        function [upper, lower] = prepareFitBounds(this, order, x, y)
         % Prepares lower and upper limits for the gaussian series model
         % parameter fitting
         

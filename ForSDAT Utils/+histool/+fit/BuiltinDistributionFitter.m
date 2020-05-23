@@ -1,4 +1,9 @@
-classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter & matlab.mixin.SetGet
+classdef BuiltinDistributionFitter < histool.fit.IHistogramFitter & matlab.mixin.SetGet
+% histool.fit.BuiltinDistributionFitter is a fitter object for fitting
+% builtin fittable probability distributions using the fitdist function
+% The default behaviour is to fit the normal distribution to the data set.
+%
+% Fitting modes - data, frequencies
     
     properties
         DistributionName char {gen.valid.mustBeTextualScalar(DistributionName)} = 'normal';
@@ -17,7 +22,8 @@ classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter & matlab.mixin
         function [mpv, sigma, normalizedPDF, goodness] = fit(this, y, bins, freq)
             % fit builtin distributions
             if strcmp(this.FittingMode, 'frequencies')
-                pd = fitdist(bins(:), this.DistributionName, ones(numel(bins), 1), freq(:));
+                xbins = bins(1:numel(freq));
+                pd = fitdist(xbins(:), this.DistributionName, 'Censoring', zeros(numel(freq), 1), 'Frequency', freq(:));
             else
                 pd = fitdist(y(:), this.DistributionName);
             end
@@ -26,9 +32,13 @@ classdef BuiltinDistributionFitter < histpac.fit.IHistogramFitter & matlab.mixin
             normalizedPDF = {@(x) pdf(pd, x)};
             
             % prepare 
-            mpv = histpac.mode(pd, bins);
+            mpv = histool.mode(pd, bins);
             sigma = std(pd);
-            goodness = pd.ParameterCovariance;
+            if isfield(pd, 'ParameterCovariance')
+                goodness = pd.ParameterCovariance;
+            else
+                goodness = zeros(2, 2);
+            end
         end
     end
 end
