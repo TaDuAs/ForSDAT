@@ -22,7 +22,6 @@ classdef ConsoleProggressBar < handle
     methods
         function this = ConsoleProggressBar(actionName, endAt, alertInterval,...
                 showEachIteration, iterationChar)
-            Simple.obsoleteWarning('Simple.UI');
             this.actionName = actionName;
             this.endAt = endAt;
             if nargin > 2
@@ -34,7 +33,7 @@ classdef ConsoleProggressBar < handle
             if nargin > 4 && ~isempty(iterationChar)
                 this.iterationChar = iterationChar;
             end
-            this.stopper = Simple.Stopwatch();
+            this.stopper = util.Stopwatch();
         end
         
         function reportProggress(this, howMuch)
