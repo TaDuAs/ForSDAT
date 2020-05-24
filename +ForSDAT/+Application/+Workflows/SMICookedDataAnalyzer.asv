@@ -24,8 +24,8 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', 'DataAnalyzer'};
-            defaultValues = {'DataAnalyzer', []};
+            ctorParams = {'%AnalysisContext', 'dataAnalyzer'};
+            defaultValues = {'dataAnalyzer', []};
         end
     end
     
@@ -52,7 +52,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         function this = SMICookedDataAnalyzer(context, dataAnalyzer)
             this@ForSDAT.Application.Workflows.CookedDataAnalyzer(context);
             
-            this.DataAnalyzer = dataAnalyzer;
+            this.dataAnalyzer = dataAnalyzer;
         end
         
         function output = wrapUpAndAnalyze(this)
@@ -61,12 +61,12 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             
             % setup
             output = struct();
-            output.batch = this.DataAccessor.BatchPath;
-            output.binningMethod = this.DataAnalyzer.BinningMethod;
-            output.minimalBins = this.DataAnalyzer.MinimalBins;
-            output.fittingModel = this.DataAnalyzer.Model;
+            output.batch = this.DataAccessor.batchPath;
+            output.binningMethod = this.DataAnalyzer.binningMethod;
+            output.minimalBins = this.DataAnalyzer.minimalBins;
+            output.fittingModel = this.DataAnalyzer.model;
             output.speed = this.Settings.measurement.speed;
-            output.gausFitR2Threshold = this.DataAnalyzer.FitR2Threshold;
+            output.gausFitR2Threshold = this.DataAnalyzer.fitR2Threshold;
 
             if isempty(values)
                 output.mpf = [];
@@ -88,7 +88,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             output.lr = lr;
             output.lrErr = lrErr;
             
-            this.DataAccessor.saveResults(values, output);
+            this.dataAccessor.saveResults(values, output);
         end
 
         function bool = examineCurveAnalysisResults(this, data)

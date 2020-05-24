@@ -6,7 +6,7 @@ classdef ForSProj < handle
     properties (SetObservable)
         CurrentEditedTask ForSDAT.Core.Tasks.PipelineDATask;
         CurrentViewedTask ForSDAT.Core.Tasks.PipelineDATask;
-        DataAccessor Simple.DataAccess.DataAccessor = ForSDAT.Application.IO.JpkFDCDataAccessor.empty();
+        DataAccessor dao.DataAccessor = ForSDAT.Application.IO.JpkFDCDataAccessor.empty();
     end
     
     methods 

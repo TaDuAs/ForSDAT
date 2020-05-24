@@ -121,7 +121,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         
         function createTextElement(this, fig, ax, text)
             % calculate position and size for the text element
-            labelSize = [280, 140];
+            labelSize = [150, 150];
             margins = [5,5];
             absPos = sui.getAbsPos(ax);
             axSize = sui.getSize(ax, 'pixels');
@@ -142,7 +142,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                     'BackgroundColor', [1 1 1], ...
                     'tag', 'HistLabel');
                 
-                sui.setPos(hh, [labelPos, labelSize], 'pixels');
+                sui.setPos(hh, 'Position', [labelPos, labelSize]
             end
         end
     end

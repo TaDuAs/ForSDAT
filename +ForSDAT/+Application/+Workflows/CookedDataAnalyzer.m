@@ -3,19 +3,19 @@ classdef (Abstract) CookedDataAnalyzer < handle
     % Cooked as opposed to raw data
     
     properties (GetAccess=public, SetAccess=private)
-        context;
-        dataAccessor;
-        settings;
+        Context;
+        DataAccessor;
+        Settings;
     end
     
     methods
         function this = CookedDataAnalyzer(context)
-            this.context = context;
+            this.Context = context;
         end
         
         function this = init(this, dataAccessor, settings)
-            this.dataAccessor = dataAccessor;
-            this.settings = settings;
+            this.DataAccessor = dataAccessor;
+            this.Settings = settings;
         end
         
         function [results, keys] = getAcceptedResults(this)
@@ -51,7 +51,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
         function loadPreviouslyProcessedDataOutput(this, importDetails)
         % Loads previously processed data
             this.clearDataList();
-            data = this.dataAccessor.importResults(importDetails);
+            data = this.DataAccessor.importResults(importDetails);
             for i = 1:length(data)
                 this.addToDataList(data(i), data(i).(importDetails.keyField));
             end
@@ -68,11 +68,11 @@ classdef (Abstract) CookedDataAnalyzer < handle
             % Gets the data list from the context
             % If it is not initialized yet, create a new one
             listRepKey = [class(this) '_DataList'];
-            if ~this.context.hasEntry(listRepKey)
+            if ~this.Context.hasEntry(listRepKey)
                 list = this.createDataListInstance();
-                this.context.set(listRepKey, list);
+                this.Context.set(listRepKey, list);
             else
-                list = this.context.get(listRepKey);
+                list = this.Context.get(listRepKey);
             end
         end
         
