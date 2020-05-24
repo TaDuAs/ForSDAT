@@ -7,7 +7,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
     
     properties (Access=private)
         processingProgressListener;
-        progressbar;
+        progressbar util.ConsoleProggressBar;
         serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
     
@@ -50,7 +50,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         end
         
         function setDataAccessor(this, settingsFilePath)
-            if isa(settingsFilePath, 'Simple.DataAccess.DataAccessor')
+            if isa(settingsFilePath, 'dao.DataAccessor')
                 this.Project.DataAccessor = settingsFilePath;
             else
                 this.Project.DataAccessor = this.serializer.load(settingsFilePath);
@@ -156,7 +156,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         
         function analyzeAutomatically(this)
             wf = this.buildWF();
-            this.progressbar = Simple.UI.ConsoleProggressBar(['Analyzing Data Batch ' this.Project.DataAccessor.batchPath ':'], wf.getQueueSize(), 10, true);
+            this.progressbar = util.ConsoleProggressBar(['Analyzing Data Batch ' this.Project.DataAccessor.batchPath ':'], wf.getQueueSize(), 10, true);
             this.processingProgressListener = addlistener(wf, 'ReportProgress',@(obj, args) this.reportProgress(args));
             wf.completeAnalysisAutomatically();
         end
@@ -194,9 +194,9 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
                 % Measurement setup
                 settings.measurement.samplingRate = 2048;
                 settings.measurement.speed = 0.8;
-                settings.measurement.linker = Simple.Scientific.PEG(5000);
+                settings.measurement.linker = chemo.PEG(5000);
 %                 PEG(5000 - Chemistry.Mw([Chemistry.Groups.COONHS, Chemistry.Groups.NHFmoc])); % PEG Mw = 5000Da - sidegroups Mw
-                settings.measurement.molecule = Simple.Scientific.Peptide('YFF');
+                settings.measurement.molecule = chemo.Peptide('YFF');
                 settings.noiseAnomally = ForSDAT.Core.NoiseAnomally(...
                     2, ...
                     settings.measurement.speed, ....

@@ -284,7 +284,7 @@ classdef ForceSpecWF < handle
         end
         
         function raiseReportProgress(this, progressReported, itemsProcessed, itemsRemaining)
-            notify(this, 'ReportProgress', Simple.ProcessProgressED(progressReported, itemsProcessed, itemsRemaining));
+            notify(this, 'ReportProgress', util.ProcessProgressED(progressReported, itemsProcessed, itemsRemaining));
         end
     end
     

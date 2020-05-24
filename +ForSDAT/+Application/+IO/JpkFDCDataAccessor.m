@@ -1,38 +1,34 @@
-classdef JpkFDCDataAccessor < tiers.da.FileSystemDataAccessor & mfc.IDescriptor
+classdef JpkFDCDataAccessor < dao.FileSystemDataAccessor & mfc.IDescriptor
     properties
-        parser;
-        wantedSegments;
+        Parser;
+        WantedSegments;
     end
     
-    methods % factory meta data
+    methods (Hidden) % factory meta data
         % provides initialization description for mfc.MFactory
         % ctorParams is a cell array which contains the parameters passed to
         % the ctor and which properties are to be set during construction
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%App', 'wantedSegments', 'parser', 'exporter', 'batchPath', 'processedResultsPath', 'errorLogPath'};
+            ctorParams = {'%ErrorHandler', 'WantedSegments', 'Parser', 'Exporter'};
             defaultValues = {...
-                'wantedSegments', [],...
-                'parser', ForSDAT.Application.IO.ForceDistanceCurveParser.empty(),...
-                'exporter', tiers.da.DelimiterValuesDataExporter.empty(),...
-                'batchPath', '', ...
-                'processedResultsPath', '',...
-                'errorLogPath', ''};
+                'WantedSegments', [],...
+                'Parser', ForSDAT.Application.IO.ForceDistanceCurveParser.empty(),...
+                'Exporter', dao.DelimiterValuesDataExporter.empty()};
         end
     end
     
     methods
-        function this = JpkFDCDataAccessor(app, wantedSegments, parser, exporter, batchPath, processedResultsPath, errorLogPath)
-            if (nargin < 5); processedResultsPath = []; end
-            if (nargin < 6); errorLogPath = []; end
+        function this = JpkFDCDataAccessor(wantedSegments, parser, errHandler, exporter, queueFactory)
+            if nargin < 5; queueFactory = dao.SimpleDataQueueFactory.empty(); end
 
-            this@tiers.da.FileSystemDataAccessor(app, exporter, batchPath, processedResultsPath, errorLogPath);
+            this@dao.FileSystemDataAccessor(errHandler, exporter, queueFactory);
 
-            this.parser = parser;
-            this.wantedSegments = wantedSegments;
+            this.Parser = parser;
+            this.WantedSegments = wantedSegments;
         end
         
         function item = load(this, path)
-            item = this.parser.parseJpkTextFile(fullfile(this.batchPath, path), this.wantedSegments);
+            item = this.Parser.parseJpkTextFile(fullfile(this.BatchPath, path), this.WantedSegments);
         end
         
         function filter = fileTypeFilter(this)

@@ -1,4 +1,4 @@
-classdef JpkDelimiterValuesExporterImporter < Simple.DataAccess.DelimiterValuesDataExporter
+classdef JpkDelimiterValuesExporterImporter < dao.DelimiterValuesDataExporter
     %JPKDELIMITERVALUESEXPORTERIMPORTER Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -11,7 +11,7 @@ classdef JpkDelimiterValuesExporterImporter < Simple.DataAccess.DelimiterValuesD
         
         function this = JpkDelimiterValuesExporterImporter(delimiter, zoom, foom)
             if nargin < 1; delimiter = []; end
-            this@Simple.DataAccess.DelimiterValuesDataExporter(delimiter);
+            this@dao.DelimiterValuesDataExporter(delimiter);
             
             if nargin >= 2 && ~isempty(zoom)
                 this.zoom = zoom;
@@ -40,12 +40,10 @@ classdef JpkDelimiterValuesExporterImporter < Simple.DataAccess.DelimiterValuesD
             
             fileName = {baseInfo.Filename};
             
-            dataList = Simple.List([], n, ForSDAT.Core.AnalyzedFDCData.empty);
+            data = repmat(ForSDAT.Core.AnalyzedFDCData, 1, n);
             for i = 1:n
-                dataList.add(ForSDAT.Core.AnalyzedFDCData(forces(i), distances(i), slope(i), fileName{i}, Simple.cond(isempty(lrArr), @() [], @() lrArr(i))));
+                data(i) = ForSDAT.Core.AnalyzedFDCData(forces(i), distances(i), slope(i), fileName{i}, util.cond(isempty(lrArr), @() [], @() lrArr(i)));
             end
-            
-            data = dataList.vector;
         end
         
         function f = extractForceFromSteps(this, data)

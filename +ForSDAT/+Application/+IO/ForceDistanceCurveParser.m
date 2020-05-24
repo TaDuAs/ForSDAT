@@ -1,8 +1,11 @@
 classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
+    properties (Access=private)
+        MetaPattern;
+        DataPattern;
+    end
+    
     properties
-        shouldFlipExtendSegments = false;
-        metaPattern;
-        dataPattern;
+        ShouldFlipExtendSegments = false;
     end
     
     methods (Hidden) % factory meta data
@@ -10,8 +13,8 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
         % ctorParams is a cell array which contains the parameters passed to
         % the ctor and which properties are to be set during construction
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'shouldFlipExtendSegments'};
-            defaultValues = {'shouldFlipExtendSegments', false};
+            ctorParams = {'ShouldFlipExtendSegments'};
+            defaultValues = {'ShouldFlipExtendSegments', false};
         end
     end
     
@@ -20,13 +23,13 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
             import ForSDAT.Application.IO.FDCurveTextFileSettings;
             
             % ctor
-            if exist('shouldFlipExtendSegments', 'var') && ~isempty(shouldFlipExtendSegments)
-                this.shouldFlipExtendSegments = shouldFlipExtendSegments;
+            if nargin >= 1 && ~isempty(shouldFlipExtendSegments)
+                this.ShouldFlipExtendSegments = shouldFlipExtendSegments;
             end
             dataFileSettings = FDCurveTextFileSettings();
             
             metaPrefix = dataFileSettings.settingsPrefix;
-            this.dataPattern = ['\n[^' metaPrefix ']+(' metaPrefix '|$)'];
+            this.DataPattern = ['\n[^' metaPrefix ']+(' metaPrefix '|$)'];
             
             metaProperties = {dataFileSettings.springConstant,...
                 dataFileSettings.sensitivity,...
@@ -39,7 +42,7 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
                 dataFileSettings.yPosition,...
                 dataFileSettings.fdcIndex};
             
-            this.metaPattern = ['#\s*(?<key>(', strjoin(metaProperties, ')|('), ')):\s*(?<val>[^\r\n]+)'];
+            this.MetaPattern = ['#\s*(?<key>(', strjoin(metaProperties, ')|('), ')):\s*(?<val>[^\r\n]+)'];
         end
         
         function fdc = parseJpkTextFile(this, fileName, wantedSegments)
@@ -66,10 +69,10 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
             end
             
             % Find start and end indices of the data segments
-            [segDataStartIdx, segDataEndIdx] = regexp(rawData, this.dataPattern);
+            [segDataStartIdx, segDataEndIdx] = regexp(rawData, this.DataPattern);
             segDataEndIdx(rawData(segDataEndIdx) == '#') = segDataEndIdx(rawData(segDataEndIdx) == '#') - 1;
 
-            [props, propIdx] = regexpi(rawData, this.metaPattern, 'names');
+            [props, propIdx] = regexpi(rawData, this.MetaPattern, 'names');
             
             % ascribe settings to segments
             if nargin < 3 || isempty(wantedSegments)
@@ -106,7 +109,7 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
                 end
                 
                 % set relevant data to segment
-                if this.shouldFlipExtendSegments && strcmp(segment.name, dataFileSettings.defaultExtendSegmentName)
+                if this.ShouldFlipExtendSegments && strcmp(segment.name, dataFileSettings.defaultExtendSegmentName)
                     segment.force = fliplr(data(:,dataFileSettings.forceColumnIndex)');
                     segment.distance = fliplr(data(:,dataFileSettings.distanceColumnIndex)');
                     segment.time = fliplr(data(:,dataFileSettings.timeColumnIndex)');

@@ -2,6 +2,7 @@ classdef DependencyInjectionConfig < handle
     methods
         function configure(this, ioc)
             % Application configuration
+            ioc.set('ErrorHandler', @(app) app, 'App');
             ioc.set('RootPath', @(app) app.RootPath, 'App');
             ioc.setPerSession('MFactory', @mfc.MFactory, '@IoCContainer', 'IoC');
             ioc.set('mxml.XmlSerializer', @mxml.XmlSerializer, '@Factory', 'MFactory');
