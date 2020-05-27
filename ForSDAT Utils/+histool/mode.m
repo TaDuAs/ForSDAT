@@ -71,7 +71,7 @@ function value = mode(pd, bins)
         
         % calculate the maximal value of the distribution in the specifeid
         % range
-        [~, modeIdx] = max(pdfValues, [], 'all', 'linear');
+        [~, modeIdx] = max(pdfValues(:));
         value = x(modeIdx);
     end
 end

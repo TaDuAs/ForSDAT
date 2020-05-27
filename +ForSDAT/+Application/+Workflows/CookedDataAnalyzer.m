@@ -70,6 +70,80 @@ classdef (Abstract) CookedDataAnalyzer < handle
         function startFresh(this)
             this.clearDataList();
         end
+        
+        function [chi, koff, p, R2] = bellEvansPlot(this, data, fig, plotOpt)
+            % Plots the Bell-Evans curve for a set of MPFs and LRs
+            % Returns:
+            %   chi - energy barrier distance [?]
+            %   koff - Dissosiation rate [Hz]
+            %   p - Bell-Evans regression curve coefficients
+            %   R2 - R^2
+            % Bell-Evans model:
+            %   F = (kB*T/X)*ln(Xr/kB*T*koff)
+            %   where F is the MPF
+            %         kB is boltzmans constant
+            %         T is the temperature
+            %         X is the distance of the energy barrier needed to be
+            %                  overcome for unbinding to occur allong the
+            %                  direction of applied force
+            %         r is the apparent loading rate
+            %         koff is the rate of dissosiation at equilibrium
+            
+            lr = vertcat(data.lr);
+            lrErr = vertcat(data.lrErr);
+            mpf = vertcat(data.mpf);
+            mpfErr = vertcat(data.mpfErr);
+            
+            if ~exist('plotOpt', 'var')
+                plotOpt = struct(...
+                    'Marker', 'o',...
+                    'MarkerFaceColor', 'b',...
+                    'MarkerEdgeColor', 'b',...
+                    'LineStyle', 'none');
+            end
+            
+            % Calculate reggression
+            x = log(lr);
+            xErr = lrErr./lr;
+            
+            [p, S] = polyfit(x, mpf, 1);
+            R2 = 1 - (S.normr/norm(mpf - mean(mpf)))^2;
+            
+            fig = mvvm.getobj(plotOpt, 'Fig');
+            if isempty(fig)
+                fig = gcf();
+            else
+                fig = figure(fig);
+            end
+            xyerrorbar(x, mpf, xErr, mpfErr, plotOpt);
+            
+            hold on;
+            regY = polyval(p, x);
+            plot(x, regY);
+            
+            slope = p(1); % KBT/chi
+            intersect = p(2);
+            secondParameter = intersect/slope; % ln(chi/KBT*Koff)
+            T = 298; % RT in K
+            heatEnergy = chemo.PhysicalConstants.kB*T;% KBT in J
+            chi = heatEnergy/slope; % in Angstoms
+            koff = exp(-secondParameter)/slope;
+            
+            % Create xlabel
+            xlabel({'ln(r)'}, 'FontSize', 24);
+
+            % Create ylabel
+            ylabel({'MPF (pN)'}, 'FontSize', 24);
+
+            % Create textbox
+            textbox = annotation(fig,'textbox',...
+                [0.15 0.72 0.20 0.19],...
+                'String',{['R^2=' num2str(round(R2, 4))],...
+                          ['\chi_\beta=' num2str(round(chi, 2)), char(197)],...
+                          ['k_o_f_f=' num2str(round(koff*1000, 2)) 'ª10^-^3Hz']},...
+                'FitBoxToText','on',...
+                'FontSize', 18);
+        end
     end
     
     methods (Access=protected)

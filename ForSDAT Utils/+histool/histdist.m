@@ -55,6 +55,8 @@ function [statData, h] = histdist(varargin)
 %   ShowSTD - A logical scalar which determines wheter to plot the standard 
 %             deviation on top of the plotted histogram as two vertical
 %             lines. Only applicable when a model is specifeid.
+%   plotPdfIndex - The linear/logical indices of the distribution functions
+%                  to plot from those calculated by the model.
 %
 % Author - TADA, 2020
 % 
@@ -90,10 +92,22 @@ function [statData, h] = histdist(varargin)
     
     % plot the distribution fit
     if statData.HasDistribution
-        if statData.IsNormalized
-            [distX, distY] = execPdf(statData.PDF, statData.BinEdges);
+        % prepare pdfs for plotting
+        if iscell(statData.PDF)
+            pdfs = statData.PDF;
         else
-            [distX, distY] = normalizePdf(statData.PDF, statData.BinEdges, N);
+            pdfs = {statData.PDF};
+        end
+        if ~isempty(options.PlotPdfIndex)
+            pdfs = pdfs(options.PlotPdfIndex);
+            mus = statData.MPV(options.PlotPdfIndex);
+        end
+        
+        % get pdf data for plotting
+        if statData.IsNormalized
+            [distX, distY] = execPdf(pdfs, statData.BinEdges);
+        else
+            [distX, distY] = normalizePdf(pdfs, statData.BinEdges, N);
         end
         
         % plot the distribution
@@ -103,8 +117,8 @@ function [statData, h] = histdist(varargin)
         
         % plot the most probable value (mode)
         if options.ShowMPV
-            foo = statData.PDF{1};
-            mu = statData.MPV(1);
+            foo = pdfs{1};
+            mu = mus(1);
             mpvY = foo(mu);
             if ~statData.IsNormalized
                 mpvY = overlayPdValuesOnHistogram(mpvY, statData.BinEdges, numel(x));

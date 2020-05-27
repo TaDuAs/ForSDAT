@@ -29,6 +29,8 @@ function opt = parseHistogramInput(args, functionName)
         @(tf) assert(islogical(tf) && isscalar(tf), 'ShowMPV must be a logical scalar'));
     parser.addOptional('ShowSTD', false, ...
         @(tf) assert(islogical(tf) && isscalar(tf), 'ShowSTD must be a logical scalar'));
+    parser.addOptional('PlotPdfIndex', [], ...
+        @(idx) assert(islogical(idx) || isnumeric(idx), 'PlotPdfIndex must be a logical or numeric index'));
                 
     parser.parse(args{:});
     

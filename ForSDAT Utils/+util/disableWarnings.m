@@ -1,5 +1,5 @@
 function disableWarnings(id)
-    if nargin < 1; end
+    if nargin < 1; id = ''; end
     
     if isempty(id)
         MSGID_findpeaks_largeMinPeakHeight = 'signal:findpeaks:largeMinPeakHeight';

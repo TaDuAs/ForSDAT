@@ -7,7 +7,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         BinningMethod = [];
         FitR2Threshold = [];
         Model = 'gauss';
-        ModelFittingMode = 'data';
+        ModelFittingMode {mustBeMember(ModelFittingMode, {'data', 'frequencies'})} = 'data';
         Alpha = 0.05;
     end
     
@@ -45,9 +45,15 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         end
         
         function [mpf, sigma, err, lr, lrErr, returnedOpts] = doYourThing(this, frc, dist, slope, speed, lrVector, options)
-            if ~exist('lrVector', 'var')
-                lrVector = [];
-            end
+
+            
+%             if ~exist('lrVector', 'var')
+%                 lrVector = [];
+%             end
+
+            % yes we are ignoring the supplied loading rate vector and
+            % recalculating it from the slope and speed
+            lrVector = [];
             if ~exist('options', 'var')
                 options = [];
             end
@@ -58,7 +64,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             else
                 modelParams = {'FittingMode', this.ModelFittingMode};
             end
-            histoolParams = {'Model', this.Model, 'ModelParams', modelParams, 'BinningMethod', this.BinningMethod, 'MinimalBins', this.MinimalBins, };
+            histoolParams = {'Model', this.Model, 'ModelParams', modelParams, 'BinningMethod', this.BinningMethod, 'MinimalBins', this.MinimalBins};
             
             % Show histogram if needed
             shouldPlot = mvvm.getobj(options, 'showHistogram', false);
@@ -69,7 +75,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 plotIntoThisElement = mvvm.getobj(plotOpt, 'figure', []);
 
                 % plot histogram and perform statistical analyzis
-                [stats, guiHandle] = histool.histdist(frc, 'PlotTo', plotIntoThisElement, histoolParams{:});
+                [stats, guiHandle] = histool.histdist(frc, 'PlotTo', plotIntoThisElement, 'PlotPdfIndex', 1, histoolParams{:});
             end
             
             % get mpf +/- error
@@ -101,13 +107,14 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             ax = ancestor(h(1), 'axes');
             
             % make figure displayable
-            xlabel(ax, 'Rupture Force Range (pN)');
-            ylabel(ax, 'Frequency');
+            xlabel(ax, 'Rupture Force Range (pN)', 'FontSize', 24);
+            ylabel(ax, 'Frequency', 'FontSize', 24);
         
             detailsText = {...
-                sprintf('MPF = %d±%d pN', mpf, err),...
-                sprintf('L.R = %d±%d nN/sec', lr, lrErr),...
-                sprintf('N = %d', N)};
+                sprintf('MPF = %g±%g pN', mpf, err),...
+                sprintf('L.R = %g±%g nN/sec', lr, lrErr),...
+                sprintf('N = %d', N),...
+                sprintf('Distribution = %s', this.Model)};
 
             % add details textbox
             this.createTextElement(fig, ax, detailsText);
@@ -121,7 +128,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         
         function createTextElement(this, fig, ax, text)
             % calculate position and size for the text element
-            labelSize = [280, 140];
+            labelSize = [300, 160];
             margins = [5,5];
             absPos = sui.getAbsPos(ax);
             axSize = sui.getSize(ax, 'pixels');
@@ -131,16 +138,17 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             if util.isUiFigure(fig)
                 uilabel(fig, ...
                     'Text', text, ...
-                    'FontSize', 24, ...
+                    'FontSize', 20, ...
                     'BackgroundColor', [1 1 1], ...
                     'Position', [labelPos, labelSize],...
                     'tag', 'HistLabel');
             else
                 hh = annotation(fig, 'textbox', ...
                     'String', text, ...
-                    'FontSize', 24, ...
+                    'FontSize', 20, ...
                     'BackgroundColor', [1 1 1], ...
-                    'tag', 'HistLabel');
+                    'tag', 'HistLabel',...
+                    'FitBoxToText','on');
                 
                 sui.setPos(hh, [labelPos, labelSize], 'pixels');
             end
