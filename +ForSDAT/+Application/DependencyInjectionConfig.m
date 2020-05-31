@@ -12,6 +12,7 @@ classdef DependencyInjectionConfig < handle
                 IoC.Injectable(["mxml.XmlSerializer", "mxml.JsonSerializer"]), ...
                 '@Factory', 'MFactory');
             ioc.set('AnalysisContext', @(ses) ses.Context, 'Session');
+            ioc.set('ExperimentCollectionContext', @(context) context, 'AppContext');
             ioc.set('AppContext', @(app) app.Context, 'App');
             ioc.set('AnalyzerConfigFilePath', @(app) fullfile(app.ResourcePath, 'Settings', 'Defaults.xml'), 'App');
             

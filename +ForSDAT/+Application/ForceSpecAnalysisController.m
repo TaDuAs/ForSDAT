@@ -180,7 +180,8 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         end
         
         function output  = runPreviouslyCookedAnalysis(this, path)
-            this.Project.CookedAnalyzer.loadPreviouslyProcessedDataOutput(path);
+            experimentId = this.Project.CookedAnalyzer.loadPreviouslyProcessedDataOutput(path);
+            this.Project.RunningExperimentId = experimentId;
             output = this.wrapUpAndAnalyze();
         end
         

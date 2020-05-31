@@ -1,31 +1,83 @@
 classdef (Abstract) CookedDataAnalyzer < handle
-    % CookedDataAnalyzer saves and analyzes the processed raw data.
-    % Cooked as opposed to raw data
+    % CookedDataAnalyzer is a base class for cooked data analyzers.
+    % Cooked data analyzers saves and analyzes the processed raw data and
+    % manage experminet repository for post-processing the results of 
+    % multiple experiments, such as Bell-Evans plot etc.
+    % 
+    % * Cooked data as opposed to raw data
     
     properties (GetAccess=public, SetAccess=private)
-        Context;
-        DataAccessor;
+        AnalysisContext mvvm.AppContext;
+        DataAccessor dao.DataAccessor = dao.MXmlDataAccessor.empty();
         Settings;
+        CurrentBatchInfo ForSDAT.Application.Models.BatchInfo;
+        
+        ResultsValidators ForSDAT.Application.Workflows.CRV.ICookedResultValidator = ForSDAT.Application.Workflows.CRV.SuccessRateValidator.empty();
+        
+        % experiments repository
+        RepositoryContext mvvm.AppContext;
+        ExperimentRepositoryDAO ForSDAT.Application.IO.ExperimentRepositoryDAO = ForSDAT.Application.IO.ExperimentRepositoryDAO.empty();
+        ExperimentRepositoryListener;
+        RunningExperimentId;
     end
     
     properties (Dependent, GetAccess=public, SetAccess=private)
-        ExpetimentResultsRepository;
+        ExpetimentRepository ForSDAT.Application.Models.ExperimentRepository;
     end
     
     methods % property accessors
-        function repo = get.ExpetimentResultsRepository(this)
-            repo = this.Context.get('CookedData_ExperimentResultsRepository');
+        function repo = get.ExpetimentRepository(this)
+            key = 'CookedData_ExperimentResultsRepository';
+            if this.RepositoryContext.isKey(key)
+                repo = this.RepositoryContext.get(key);
+            else
+                repo = [];
+            end
+        end
+        
+        function set.ExpetimentRepository(this, repo)
+            key = 'CookedData_ExperimentResultsRepository';
+            if ~isempty(this.ExperimentRepositoryListener)
+                delete(this.ExperimentRepositoryListener)
+            end
+            
+            this.RepositoryContext.set(key, repo);
+            this.ExperimentRepositoryListener = addlistener(repo, 'collectionChanged', @this.onRepositoryUpdated);
         end
     end
     
     methods
-        function this = CookedDataAnalyzer(context)
-            this.Context = context;
+        function this = CookedDataAnalyzer(analysisContext, repositoryContext, exRepoDAO)
+            this.AnalysisContext = analysisContext;
+            this.RepositoryContext = repositoryContext;
+            this.ExperimentRepositoryDAO = exRepoDAO;
         end
         
-        function this = init(this, dataAccessor, settings)
+        function this = init(this, dataAccessor, settings, experimentId, experimentRepoName)
             this.DataAccessor = dataAccessor;
             this.Settings = settings;
+            this.RunningExperimentId = experimentId;
+            
+            % switch experiments results repository
+            if nargin >= 5 && ~isempty(experimentRepoName) && ...
+                    (isempty(this.ExpetimentRepository) || ~strcmp(experimentRepoName, this.ExpetimentRepository.Name))
+                try
+                    repo = this.ExperimentRepositoryDAO.load(experimentRepoName);    
+                catch ex
+                    disp(getReport(ex));
+                    repo = [];
+                end
+                
+                % if the file is missing or is empty or is corrupted
+                if builtin('isempty', repo) || ~isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')
+                    this.ExpetimentRepository = ForSDAT.Application.Models.ExperimentRepository(experimentRepoName);
+                    this.ExperimentRepositoryDAO.save(this.ExpetimentRepository);
+                end
+            end
+        end
+        
+        function onRepositoryUpdated(this, repo, ~)
+            this.ExperimentRepositoryDAO.save(repo);
         end
         
         function [results, keys] = getAcceptedResults(this)
@@ -58,26 +110,67 @@ classdef (Abstract) CookedDataAnalyzer < handle
             this.rejectData(curveKey);
         end
         
-        function loadPreviouslyProcessedDataOutput(this, importDetails)
+        function experimentId = loadPreviouslyProcessedDataOutput(this, importDetails)
         % Loads previously processed data
             this.clearDataList();
-            data = this.DataAccessor.importResults(importDetails);
+            [data, results] = this.DataAccessor.importResults(importDetails);
+            this.CurrentBatchInfo = results.BatchInfo;
+            this.RunningExperimentId = results.Id;
+            
+            experimentId = results.Id;
+            
             for i = 1:length(data)
                 this.addToDataList(data(i), data(i).(importDetails.keyField));
             end
         end
         
-        function startFresh(this)
+        function startFresh(this, batchInfo)
+            this.CurrentBatchInfo = batchInfo;
             this.clearDataList();
         end
         
-        function [chi, koff, p, R2] = bellEvansPlot(this, data, fig, plotOpt)
+        function results = wrapUpAndAnalyze(this)
+            valuesCellArray = this.getDataList().values;
+            dataList = [valuesCellArray{:}];
+            
+            % perform cooked analysis
+            results = this.doAnalysis(dataList);
+            
+            % add experiment meta data to results
+            results.Id = this.RunningExperimentId;
+            results.BatchInfo = this.CurrentBatchInfo;
+            
+            % save the results of the experiment
+            this.DataAccessor.saveResults(dataList, results);
+            
+            % validate experiment results before adding to repository
+            isvalid = true;
+            for i = 1:numel(this.ResultsValidators)
+                validator = this.ResultsValidators(i);
+                [isvalid, rejectionMsg] = validator.validate(this, dataList, results);
+                if ~isvalid
+                    break;
+                end
+            end
+            
+            % if the results are valid add them to the experiments
+            % repository
+            if isvalid
+                this.addExperimentToRepository(results);
+            else
+                % otherwise, raise a warning with the rejection message
+                warningMessage = ['Experiment (', results.Id, ') results rejected due to: ', strrep(rejectionMsg, '%', '%%')];
+                warning('ForSDAT:CookedDataAnalyzer:ResultsRejected', warningMessage);
+            end
+        end
+        
+        function [chi, koff, p, R2] = bellEvansPlot(this, fig, varargin)
             % Plots the Bell-Evans curve for a set of MPFs and LRs
             % Returns:
-            %   chi - energy barrier distance [?]
+            %   chi - Energy barrier distance [?]
             %   koff - Dissosiation rate [Hz]
             %   p - Bell-Evans regression curve coefficients
-            %   R2 - R^2
+            %   R2 - coefficient of determination - R squared
             % Bell-Evans model:
             %   F = (kB*T/X)*ln(Xr/kB*T*koff)
             %   where F is the MPF
@@ -88,18 +181,19 @@ classdef (Abstract) CookedDataAnalyzer < handle
             %                  direction of applied force
             %         r is the apparent loading rate
             %         koff is the rate of dissosiation at equilibrium
+            %
             
-            lr = vertcat(data.lr);
-            lrErr = vertcat(data.lrErr);
-            mpf = vertcat(data.mpf);
-            mpfErr = vertcat(data.mpfErr);
+            data = [this.ExpetimentRepository.values{:}];
+            lr = vertcat(data.LoadingRate);
+            lrErr = vertcat(data.LoadingRateErr);
+            mpf = vertcat(data.MostProbableForce);
+            mpfErr = vertcat(data.ForceErr);
             
-            if ~exist('plotOpt', 'var')
-                plotOpt = struct(...
-                    'Marker', 'o',...
+            if nargin < 3
+                varagin = {'Marker', 'o',...
                     'MarkerFaceColor', 'b',...
                     'MarkerEdgeColor', 'b',...
-                    'LineStyle', 'none');
+                    'LineStyle', 'none'};
             end
             
             % Calculate reggression
@@ -109,13 +203,12 @@ classdef (Abstract) CookedDataAnalyzer < handle
             [p, S] = polyfit(x, mpf, 1);
             R2 = 1 - (S.normr/norm(mpf - mean(mpf)))^2;
             
-            fig = mvvm.getobj(plotOpt, 'Fig');
-            if isempty(fig)
+            if nargin < 2 || isempty(fig)
                 fig = gcf();
             else
                 fig = figure(fig);
             end
-            xyerrorbar(x, mpf, xErr, mpfErr, plotOpt);
+            errorbar(x, mpf, mpfErr, mpfErr, xErr, xErr, varagin{:});
             
             hold on;
             regY = polyval(p, x);
@@ -148,15 +241,21 @@ classdef (Abstract) CookedDataAnalyzer < handle
     
     methods (Access=protected)
         
+        function addExperimentToRepository(this, experiment)
+            repo = this.ExpetimentRepository;
+            
+            repo.setv(experiment.Id, experiment);
+        end
+        
         function list = getDataList(this)
             % Gets the data list from the context
             % If it is not initialized yet, create a new one
             listRepKey = [class(this) '_DataList'];
-            if ~this.Context.hasEntry(listRepKey)
+            if ~this.AnalysisContext.hasEntry(listRepKey)
                 list = this.createDataListInstance();
-                this.Context.set(listRepKey, list);
+                this.AnalysisContext.set(listRepKey, list);
             else
-                list = this.Context.get(listRepKey);
+                list = this.AnalysisContext.get(listRepKey);
             end
         end
         
@@ -190,6 +289,8 @@ classdef (Abstract) CookedDataAnalyzer < handle
             map = this.getDataList();
             map.remove(map.keys);
         end
+        
+        
     end
     
     methods (Abstract, Access=protected)
@@ -200,7 +301,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
     
     methods (Abstract)
         % Analyze the batch results
-        output = wrapUpAndAnalyze(this)
+        results = doAnalysis(this, dataList)
         
         % Examine the analysis results of a single curve and determine
         % whether should accept or reject it.

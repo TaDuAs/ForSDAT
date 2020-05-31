@@ -7,6 +7,22 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
         Settings;
         RawAnalyzer ForSDAT.Core.RawDataAnalyzer;
         CookedAnalyzer ForSDAT.Application.Workflows.CookedDataAnalyzer = ForSDAT.Application.Workflows.SMICookedDataAnalyzer.empty();
+        
+        % The name of current experiment collection
+        % I.E certain molecule/treatment/parameters etc.
+        % All speeds/cantilevers/loading rates of a given
+        % molecule/treatment/parameters will be part of the same experiment
+        % collection to be analyzed together in the end
+        % Used to identify an experiments repository and to save/load it
+        ExperimentCollectionName;
+        
+        % The identifier of the current experiment, i.e:
+        % retract speed = 0.2
+        % spring constant = 0.5
+        % and so on...
+        % used to identify the results of a specific measurement in the
+        % experiments repository
+        RunningExperimentId;
     end
     
     methods (Hidden) % meta data
@@ -42,6 +58,8 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
             this.onChangeListeners_(2) = addlistener(this, 'CookedAnalyzer', 'PostSet', @this.notifyCookedAnalyzer);
             this.onChangeListeners_(3) = addlistener(this, 'RawAnalyzer', 'PostSet', @this.notifyRawAnalyzer);
             this.onChangeListeners_(4) = addlistener(this, 'Settings', 'PostSet', @this.notifyAllAnalzers);
+            this.onChangeListeners_(5) = addlistener(this, 'ExperimentCollectionName', 'PostSet', @this.notifyCookedAnalyzer);
+            this.onChangeListeners_(6) = addlistener(this, 'RunningExperimentId', 'PostSet', @this.notifyCookedAnalyzer);
         end
     end
     
@@ -54,7 +72,7 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
         function notifyCookedAnalyzer(this, ~, ~)
             obj = this.CookedAnalyzer;
             if ~isempty(obj)
-            	obj.init(this.DataAccessor, this.Settings);
+            	obj.init(this.DataAccessor, this.Settings, this.RunningExperimentId, this.ExperimentCollectionName);
             end
         end
         

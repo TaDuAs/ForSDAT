@@ -24,7 +24,7 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', 'dataAnalyzer'};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO', 'dataAnalyzer'};
             defaultValues = {'dataAnalyzer', []};
         end
     end
@@ -49,39 +49,34 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
     end
     
     methods
-        function this = AdhesionCookedDataAnalyzer(context, dataAnalyzer)
-            this@ForSDAT.Application.Workflows.CookedDataAnalyzer(context);
+        function this = AdhesionCookedDataAnalyzer(analysisContext, repositoryContext, exRepoDAO, dataAnalyzer)
+            this@ForSDAT.Application.Workflows.CookedDataAnalyzer(analysisContext, repositoryContext, exRepoDAO);
             
             if nargin >= 2 && ~iempty(dataAnalyzer)
                 this.dataAnalyzer = dataAnalyzer;
             end
         end
         
-        function output = wrapUpAndAnalyze(this)
-            valuesCellArray = this.getDataList().values;
-            values = [valuesCellArray{:}];
+        function results = doAnalysis(this, dataList)
             options = [];
             options.showHistogram = true;
             [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([values.f], [values.z], [values.slope], this.settings.measurement.speed, [values.lr], options);
             
-            output = [];
+            results = ForSDAT.Application.Models.ForsSpecExperimentResults();
             
             % results
-            output.mpf = mpf;
-            output.mpfStd = mpfStd;
-            output.mpfErr = mpfErr;
-            output.lr = lr;
-            output.lrErr = lrErr;
+            results.MostProbableForce = mpf;
+            results.ForceStd = mpfStd;
+            results.ForceErr = mpfErr;
+            results.LoadingRate = lr;
+            results.LoadingRateErr = lrErr;
             
             % setup
-            output.batch = this.dataAccessor.batchPath;
-            output.binningMethod = this.dataAnalyzer.binningMethod;
-            output.minimalBins = this.dataAnalyzer.minimalBins;
-            output.fittingModel = this.dataAnalyzer.model;
-            output.speed = this.settings.measurement.speed;
-            output.gausFitR2Threshold = this.dataAnalyzer.fitR2Threshold;
-
-            this.dataAccessor.saveResults(values, output);
+            results.BinningMethod = this.DataAnalyzer.BinningMethod;
+            results.MinimalBins = this.DataAnalyzer.MinimalBins;
+            results.FittingModel = this.DataAnalyzer.Model;
+            results.Speed = this.settings.measurement.speed;
+            results.FitR2Threshold = this.DataAnalyzer.FitR2Threshold;
         end
 
         function bool = examineCurveAnalysisResults(this, data)
@@ -90,11 +85,11 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
             bool = Simple.getobj(data, 'AdhesionForce.AboveThreshold', false);
         end
         
-        function loadPreviouslyProcessedDataOutput(this, path)
+        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
         % Loads previously processed data
             importDetails.path = path;
             importDetails.keyField = 'file';
-            loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
+            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
         end
     end
 end

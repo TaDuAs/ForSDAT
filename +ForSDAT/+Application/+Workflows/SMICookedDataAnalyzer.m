@@ -24,8 +24,8 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', 'DataAnalyzer'};
-            defaultValues = {'DataAnalyzer', []};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO', 'DataAnalyzer'};
+            defaultValues = {'ExperimentRepositoryDAO', ForSDAT.Application.IO.ExperimentRepositoryDAO.empty(), 'DataAnalyzer', []};
         end
     end
     
@@ -49,46 +49,40 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
     end
     
     methods
-        function this = SMICookedDataAnalyzer(context, dataAnalyzer)
-            this@ForSDAT.Application.Workflows.CookedDataAnalyzer(context);
+        function this = SMICookedDataAnalyzer(analysisContext, repositoryContext, expRepoDAO, dataAnalyzer)
+            this@ForSDAT.Application.Workflows.CookedDataAnalyzer(analysisContext, repositoryContext, expRepoDAO);
             
             this.DataAnalyzer = dataAnalyzer;
         end
         
-        function output = wrapUpAndAnalyze(this)
-            valuesCellArray = this.getDataList().values;
-            values = [valuesCellArray{:}];
-            
+        function results = doAnalysis(this, dataList)
             % setup
-            output = struct();
-            output.batch = this.DataAccessor.BatchPath;
-            output.binningMethod = this.DataAnalyzer.BinningMethod;
-            output.minimalBins = this.DataAnalyzer.MinimalBins;
-            output.fittingModel = this.DataAnalyzer.Model;
-            output.speed = this.Settings.measurement.speed;
-            output.gausFitR2Threshold = this.DataAnalyzer.FitR2Threshold;
+            results = ForSDAT.Application.Models.ForsSpecExperimentResults();
+            results.BinningMethod = this.DataAnalyzer.BinningMethod;
+            results.MinimalBins = this.DataAnalyzer.MinimalBins;
+            results.FittingModel = this.DataAnalyzer.Model;
+            results.Speed = this.Settings.measurement.speed;
+            results.FitR2Threshold = this.DataAnalyzer.FitR2Threshold;
 
-            if isempty(values)
-                output.mpf = [];
-                output.mpfStd = [];
-                output.mpfErr = [];
-                output.lr = [];
-                output.lrErr = [];
+            if isempty(dataList)
+                results.MostProbableForce = [];
+                results.ForceStd = [];
+                results.ForceErr = [];
+                results.LoadingRate = [];
+                results.LoadingRateErr = [];
                 return;
             end
             
             options = [];
             options.showHistogram = true;
-            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.DataAnalyzer.doYourThing([values.f], [values.z], [values.slope], this.Settings.measurement.speed, [values.lr], options);
+            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.DataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.Settings.measurement.speed, [dataList.lr], options);
             
             % results
-            output.mpf = mpf;
-            output.mpfStd = mpfStd;
-            output.mpfErr = mpfErr;
-            output.lr = lr;
-            output.lrErr = lrErr;
-            
-            this.DataAccessor.saveResults(values, output);
+            results.MostProbableForce = mpf;
+            results.ForceStd = mpfStd;
+            results.ForceErr = mpfErr;
+            results.LoadingRate = lr;
+            results.LoadingRateErr = lrErr;
         end
 
         function bool = examineCurveAnalysisResults(this, data)
@@ -97,11 +91,11 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             bool = Simple.getobj(data, 'SingleInteraction.didDetect', false);
         end
         
-        function loadPreviouslyProcessedDataOutput(this, path)
+        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
         % Loads previously processed data
             importDetails.path = path;
             importDetails.keyField = 'file';
-            loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
+            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
         end
     end
 end

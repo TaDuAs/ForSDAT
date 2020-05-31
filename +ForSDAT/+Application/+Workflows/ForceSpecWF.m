@@ -39,7 +39,13 @@ classdef ForceSpecWF < handle
 
         function start(this)
             this.clearDataQueue();
-            this.cookedAnalyzer.startFresh();
+            
+            % prepare batch info
+            batchInfo = ForSDAT.Application.Models.BatchInfo();
+            batchInfo.N = this.getQueueSize();
+            batchInfo.Path = this.dataAccessor.BatchPath;
+            
+            this.cookedAnalyzer.startFresh(batchInfo);
         end
         
         function n = getQueueSize(this)
