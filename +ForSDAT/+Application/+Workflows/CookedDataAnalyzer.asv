@@ -6,31 +6,21 @@ classdef (Abstract) CookedDataAnalyzer < handle
     % 
     % * Cooked data as opposed to raw data
     
-        
-    % 
-    % Current running analysis properties
-    %
     properties (GetAccess=public, SetAccess=private)
-        % The context for saving persistence of current running analysis
         AnalysisContext mvvm.AppContext;
-        
-        % The data access object for managing of current running analysis
         DataAccessor dao.DataAccessor = dao.MXmlDataAccessor.empty();
-        
-        % The setup settings of the current running analysis
         Settings;
-        
-        % The Id of the currently analyzed experiment/force-curve-batch
-        RunningExperimentId;
-        
-        % The batch info of current analyzed experiment
         CurrentBatchInfo ForSDAT.Application.Models.BatchInfo;
-    end
-    
-    %
-    % Experiments Repository properties
-    %
-    properties (GetAccess=public, SetAccess=private)
+        
+        % List of post processing validators
+        % A processed batch is validated using these validators before
+        % being added to the experiments repository
+        ResultsValidators ForSDAT.Application.Workflows.CRV.ICookedResultValidator = ForSDAT.Application.Workflows.CRV.SuccessRateValidator.empty();
+        
+        %
+        % experiments repository
+        %
+        
         % The context for saving Experiment Repository persistence
         RepositoryContext mvvm.AppContext;
         
@@ -38,26 +28,13 @@ classdef (Abstract) CookedDataAnalyzer < handle
         % fetching the experiments repository to/from file system
         ExperimentRepositoryDAO ForSDAT.Application.IO.ExperimentRepositoryDAO = ForSDAT.Application.IO.ExperimentRepositoryDAO.empty();
         
-        % Listener to experiments repository change events, initiates
-        % backup operation
+        % Initiates backup 
         ExperimentRepositoryListener;
+        RunningExperimentId;
     end
+    
     properties (Dependent, GetAccess=public, SetAccess=private)
-        % Gets the experiments repository
-        % Experiments repository is continously backed up to file to ensure
-        % data consistency
         ExpetimentRepository ForSDAT.Application.Models.ExperimentRepository;
-    end
-        
-    % 
-    % Post Analysis proeprties
-    %
-    properties (GetAccess=public, SetAccess=private)
-        % List of post processing validators
-        % A processed batch is validated using these validators before
-        % being added to the experiments repository
-        ResultsValidators ForSDAT.Application.Workflows.CRV.ICookedResultValidator ...
-            = ForSDAT.Application.Workflows.CRV.SuccessRateValidator.empty();
     end
     
     methods % property accessors
