@@ -75,8 +75,8 @@ classdef AdjustmentTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             data.(this.outputXChannel) = z;
             
             if this.shouldAffectOriginalData
-                data = Simple.setobj(data, [this.getSegment() '.' this.xChannel], z);
-                data = Simple.setobj(data, [this.getSegment() '.' this.yChannel], f);
+                data = mvvm.setobj(data, [this.getSegment() '.' this.xChannel], z);
+                data = mvvm.setobj(data, [this.getSegment() '.' this.yChannel], f);
             end
         end
         

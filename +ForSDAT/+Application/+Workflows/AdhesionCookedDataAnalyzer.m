@@ -34,8 +34,8 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
             if isa(data, 'ForSDAT.Core.AnalyzedFDCData')
                 item = data;
             else
-                f = Simple.getobj(data, 'AdhesionForce.Value');
-                z = Simple.getobj(data, 'AdhesionForce.Position');
+                f = mvvm.getobj(data, 'AdhesionForce.Value', [], 'nowarn');
+                z = mvvm.getobj(data, 'AdhesionForce.Position', [], 'nowarn');
                 slope = [];
                 item = ForSDAT.Core.AnalyzedFDCData(f, z, slope, key);
                 
@@ -43,7 +43,7 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
                 item.posx = data.BatchPosition.x;
                 item.posy = data.BatchPosition.y;
                 item.posi = data.BatchPosition.i;
-                item.energy = Simple.getobj(data, 'AdhesionEnergy.Value');
+                item.energy = mvvm.getobj(data, 'AdhesionEnergy.Value', [], 'nowarn');
             end
         end
     end
@@ -82,7 +82,7 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         function bool = examineCurveAnalysisResults(this, data)
         % Examine the analysis results of a single curve and determine
         % whether adhesion event was detected
-            bool = Simple.getobj(data, 'AdhesionForce.AboveThreshold', false);
+            bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
         end
         
         function experimentId = loadPreviouslyProcessedDataOutput(this, path)

@@ -41,7 +41,7 @@ classdef DependencyInjectionConfig < handle
     methods (Access=private)
         function anomally = getNoiseAnomally(this, app)
             ctrl = app.getController('ForceSpecAnalysisController');
-            anomally = ctrl.project.Settings.measurement.noiseAnomally;
+            anomally = ctrl.Project.Settings.measurement.noiseAnomally;
         end
     end
 end

@@ -276,7 +276,7 @@ classdef ForceSpecWF < handle
             if nargin < 2; curveName = []; end;
             
             % Get current curve
-            [fdc, curveName] = this.getCurveFromQueue(curveName);
+            [~, curveName] = this.getCurveFromQueue(curveName);
             
             % Get current curve analysis from cache
             [data, lastAnalyzedItemKey] = this.getLastAnalyzedItem();
@@ -284,8 +284,10 @@ classdef ForceSpecWF < handle
             % Check if the current curve mathces the current analysis from
             % cache
             if isempty(data) || ~strcmp(lastAnalyzedItemKey, curveName)
-                % If not, analyze the curve
-                data = this.analyzeCurve(fdc, curveName);
+                % If not, analyze the curve (the new curve is now the
+                % current curve since we moved the queue to the position of
+                % the curve matching curveName
+                data = this.analyzeCurve();
             end
         end
         
@@ -303,7 +305,7 @@ classdef ForceSpecWF < handle
                 this.context.set(repKey, queue);
             else
                 queue = this.context.get(repKey);
-                if ~queue.dataLoader.equals(this.dataAccessor)
+                if ~queue.DataLoader.equals(this.dataAccessor)
                     queue = this.dataAccessor.loadQueue();
                     this.context.set(repKey, queue);
                 end

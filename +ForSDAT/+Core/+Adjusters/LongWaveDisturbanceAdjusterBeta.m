@@ -37,11 +37,10 @@ classdef LongWaveDisturbanceAdjusterBeta < handle
         
         function [fFixed, fourierFit, waveFVector, shift] = adjust(this, fToFix, zToFix, fFit, zFit, k)
         % Adjusts long-wavelength disturbances to the baseline
-            import Simple.croparr;
         
             % Fit wave function
-            fFitSegment = croparr(fFit, this.fittingRangeParams.a, this.fittingRangeParams.b);
-            zFitSegment = croparr(zFit, this.fittingRangeParams.a, this.fittingRangeParams.b);
+            fFitSegment = util.croparr(fFit, this.fittingRangeParams.a, this.fittingRangeParams.b);
+            zFitSegment = util.croparr(zFit, this.fittingRangeParams.a, this.fittingRangeParams.b);
             fourierFit = fit(zFitSegment(:), fFitSegment(:), ['fourier' num2str(this.fourierSeriesOrder)]);
 
             % Generate wave vector for the analyzed segment
@@ -49,12 +48,12 @@ classdef LongWaveDisturbanceAdjusterBeta < handle
             shift = fourierFit.a0;
             
             % debug plot
-            if false && Simple.isdebug()
-                figure();
-                plot(zFitSegment,fFitSegment,zToFix,fToFix,zToFix,waveFVector+fourierFit.a0,zToFix,fToFix-waveFVector);
-                legend('Fit To...', 'Retract', 'Fit Wave', 'Retract Signal');
-                title('Fourier Fit Baseline');
-            end
+%             if false && Simple.isdebug()
+%                 figure();
+%                 plot(zFitSegment,fFitSegment,zToFix,fToFix,zToFix,waveFVector+fourierFit.a0,zToFix,fToFix-waveFVector);
+%                 legend('Fit To...', 'Retract', 'Fit Wave', 'Retract Signal');
+%                 title('Fourier Fit Baseline');
+%             end
 
             fFixed = fToFix - waveFVector;
         end

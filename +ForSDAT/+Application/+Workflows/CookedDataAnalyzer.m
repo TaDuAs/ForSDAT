@@ -105,9 +105,11 @@ classdef (Abstract) CookedDataAnalyzer < handle
                 
                 % if the file is missing or is empty or is corrupted
                 if builtin('isempty', repo) || ~isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')
-                    this.ExpetimentRepository = ForSDAT.Application.Models.ExperimentRepository(experimentRepoName);
-                    this.ExperimentRepositoryDAO.save(this.ExpetimentRepository);
+                    repo = ForSDAT.Application.Models.ExperimentRepository(experimentRepoName);
+                    this.ExperimentRepositoryDAO.save(repo);
                 end
+                
+                this.ExpetimentRepository = repo;
             end
         end
         
@@ -236,7 +238,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
             xErr = lrErr./lr;
             
             [p, S] = polyfit(x, mpf, 1);
-            R2 = 1 - (S.normr/norm(mpf - mean(mpf)))^2;
+            R2 = util.getFitR2(mpf, S);
             
             if nargin < 2 || isempty(fig)
                 fig = gcf();

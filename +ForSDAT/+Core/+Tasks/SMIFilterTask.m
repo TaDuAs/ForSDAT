@@ -72,9 +72,9 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             end
             
             modeledItems = struct();
-            modeledItems.func = Simple.Math.Ex.MathematicalExpression.empty(1,0);
+            modeledItems.func = util.matex.Zero.empty(1,0);
             for i = 1:size(rupt.i, 2)
-                modeledItems.func(i) = Simple.Math.Ex.Zero();
+                modeledItems.func(i) = util.matex.Zero();
             end
             for i = 1:length(data.ChainFit.originalRuptureIndex)
                 j = data.ChainFit.originalRuptureIndex(i);
@@ -123,7 +123,7 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 extras = [];
             end
             plotData@ForSDAT.Core.Tasks.PipelineDATask(this, fig, data, extras);
-            plotFlags = Simple.getobj(extras, 'plotFlags', [false, true, true, false, false, true]);
+            plotFlags = mvvm.getobj(extras, 'plotFlags', [false, true, true, false, false, true], 'nowarn');
             if length(plotFlags) == 5
                 plotFlags = [plotFlags true];
             end
@@ -168,7 +168,7 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                     data.BaselineOffsetFactor,...
                     data.ChainFit.func,...
                     data.Contact.coeff(1),...
-                    Simple.getobj(extras, 'plotAreas', []));
+                    mvvm.getobj(extras, 'plotAreas', [], 'nowarn'));
             end 
             
             % Plot interaction window

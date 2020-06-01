@@ -48,7 +48,7 @@ classdef PipelineDATask < lists.PipelineTask
             if nargin < 4
                 extras = [];
             end
-            if Simple.getobj(extras, 'showOriginalData', false)
+            if mvvm.getobj(extras, 'showOriginalData', false, 'nowarn')
                 x = this.getChannelData(data, [this.getSegment '.' this.getXChannel()]);
                 y = this.getChannelData(data, [this.getSegment '.' this.getYChannel()]);
             else
@@ -93,14 +93,14 @@ classdef PipelineDATask < lists.PipelineTask
         end
         
         function tf = validateChannelExists(this, data, channel)
-            chnlData = Simple.getobj(data, channel, nan());
+            chnlData = mvvm.getobj(data, channel, nan(), 'nowarn');
             tf = ~isequaln(chnlData, nan());
         end
         
         function chnlData = getChannelData(this, data, channel)
             channel = this.checkForXYChannels(channel);
             
-            chnlData = Simple.getobj(data, channel);
+            chnlData = mvvm.getobj(data, channel, [], 'nowarn');
             if isempty(chnlData)
                 error(['Channel ' channel ' doesn''t exist']);
             end
@@ -121,7 +121,7 @@ classdef PipelineDATask < lists.PipelineTask
         end
         
         function plotFlags = getPlotFlags(this, extras, nplots)
-            plotFlags = Simple.getobj(extras, 'plotFlags', true(1, nplots));
+            plotFlags = mvvm.getobj(extras, 'plotFlags', true(1, nplots), 'nowarn');
             if ~islogical(plotFlags)
                 error('plotFlags parameter must be an array of booleans');
             end

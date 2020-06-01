@@ -56,9 +56,6 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function data = process(this, data)
-            import Simple.*;
-            import Simple.Math.*;
-            import Simple.Math.Ex.*;
             x = this.getChannelData(data, 'x');
             y = this.getChannelData(data, 'y');
             if ~isempty(this.smoothingAdjuster)
@@ -69,7 +66,7 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             nRuptures = size(rupt.i, 2);
             chainFitStruct = [];
             chainFitStruct.i = rupt.i([1,2], :);
-            chainFitStruct.func = Simple.Math.Ex.MathematicalExpression.empty(1, 0);
+            chainFitStruct.func = util.matex.Zero.empty(1, 0);
             chainFitStruct.ruptureForce = zeros(1, nRuptures);
             chainFitStruct.slope = zeros(1, nRuptures);
             chainFitStruct.apparentLoadingRate = zeros(1, nRuptures);
@@ -97,8 +94,8 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 % fit ruptures one by one
                 for i = 1:nRuptures
                     % prepare loading domain
-                    xi = croparr(x, chainFitStruct.i(:, i)'); 
-                    yi = croparr(y, chainFitStruct.i(:, i)'); 
+                    xi = util.croparr(x, chainFitStruct.i(:, i)'); 
+                    yi = util.croparr(y, chainFitStruct.i(:, i)'); 
                     rupturePoint = chainFitStruct.i(2, i);
 
                     if length(xi) > 2
@@ -107,7 +104,7 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                         derivative = func.derive();
                         slope = derivative.invoke(x(rupturePoint));
                     else
-                        func = Zero();
+                        func = util.matex.Zero();
                         slope = 0;
                     end
 
@@ -123,7 +120,6 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function plotData(this, fig, data, extras)
-            import Simple.*;
             if nargin < 4
                 extras = [];
             end
@@ -143,9 +139,9 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 
 %                 xi = croparr(dist, data.ChainFit.i(:, i)'); 
                 if this.plotChainfitFromContactPoint
-                    xi = croparr(dist, [data.Contact.i, data.ChainFit.i(2, i)]); 
+                    xi = util.croparr(dist, [data.Contact.i, data.ChainFit.i(2, i)]); 
                 else
-                    xi = croparr(dist, data.ChainFit.i(:, i)); 
+                    xi = util.croparr(dist, data.ChainFit.i(:, i)); 
                 end
                 plot(xi, func.invoke(xi), 'g', 'LineWidth', 2);
             end

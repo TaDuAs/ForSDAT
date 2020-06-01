@@ -53,10 +53,82 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         %   coefficients - the coefficients of the baseline polynomial fit
         %   s - standard error values
         %   mu - [avg, std]
-            import Simple.Math.*;
-            [bins] = Histool.calcBins(y, this.binningMethod, this.minimalBins);
-            freq = Histool.calcFrequencies(y, bins);
-            [baseline, stdev, amplitude] = Histool.calcGaussian(bins, freq, this.gaussFitOpts);
+            
+            histModel = this.prepModel();
+            statData = histool.stats(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
+            
+            % get distribution data from object
+            baseline = statData.MPV;
+            stdev = statData.StandardDeviation;
+            amplitude = this.calcNormAmp(statData);
+            
+            % if the gaussian order is greater than 1 decide which gaussian
+            % provides the best estimate for the baseline
+            [baseline, amplitude, stdev] = this.getMostLikelyBaselineEstimation(y, baseline, amplitude, stdev);
+            
+            s = [];
+            mu = {baseline, stdev};
+            coefficients = baseline;
+            noiseAmp = this.stdScore * stdev;
+        end
+        
+        function [h1, bins, freq, fitOutput] = plotHistogram(this, x, y)
+            
+            histModel = this.prepModel();
+            [statData, h] = histool.histdist(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
+            
+            h1 = h(1);
+            bins = statData.BinEdges;
+            freq = statData.Frequencies;
+            
+            % get distribution data from object
+            baseline = statData.MPV;
+            stdev = statData.StandardDeviation;
+            amplitude = this.calcNormAmp(statData);
+            goodness = statData.GoodnessOfFit;
+            
+            % if the gaussian order is greater than 1 decide which gaussian
+            % provides the best estimate for the baseline
+            [baseline, amplitude, stdev] = this.getMostLikelyBaselineEstimation(y, baseline, amplitude, stdev);
+            
+            hold on;
+            
+            % plot the baseline estimation
+            plot(baseline, amplitudeForDisplay, 'rv', 'MarkerFaceColor', 'r');
+            
+            % prepare legends
+            legendText = cell(1, this.gaussFitOpts.order + 2);
+            legendText{1} = 'Force Histogram';
+            for i = 1:this.gaussFitOpts.order
+                legendText{i + 1} = ['Gaussian Fit #' num2str(i)];
+            end
+            legendText{end} = 'Most Prevalent Value - Baseline Evaluation';
+            legend(legendText);
+            hold off;
+            
+            if nargout >= 4
+                fitOutput =[];
+                fitOutput.baseline = baseline;
+                fitOutput.stdev = stdev;
+                fitOutput.amplitude = amplitude;
+                fitOutput.goodness = goodness;
+            end
+        end
+        
+        function histModel = prepModel(this)
+            gaussOrder = mvvm.getobj(this.gaussFitOpts, 'order', 1, 'nowarn');
+            fitThreshold = mvvm.getobj(this.gaussFitOpts, 'fitR2Threshold', 0.5, 'nowarn');
+            histModel = histool.fit.MultiModalGaussFitter('Order', gaussOrder, 'PlanBGoodnessThreshold', fitThreshold);
+        end
+        
+        function amplitude = calcNormAmp(~, statData)
+            % calculate normalized amplitudes
+            pdfoo = statData.PDF{1};
+            amplitude = pdfoo(statData.MPV);
+            amplitude = amplitude / max(statData.Frequencies);
+        end
+        
+        function [baseline, amplitude, stdev] = getMostLikelyBaselineEstimation(this, y, baseline, amplitude, stdev)
             
             if this.gaussFitOpts.order > 1
                 % Solve the weird bug where the gaussians go berserk with
@@ -71,48 +143,6 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
                 stdev = stdev(baselineGaussianIndex);
             end
             
-            s = [];
-            mu = {baseline, stdev};
-            coefficients = baseline;
-            noiseAmp = this.stdScore * stdev;
-        end
-        
-        function [h1, bins, freq, fitOutput] = plotHistogram(this, x, y)
-            import Simple.Math.*;
-            [bins, binterval] = Histool.calcBins(y, this.binningMethod, this.minimalBins);
-            freq = Histool.calcFrequencies(y, bins);
-            [baseline, stdev, amplitude, goodness] = Histool.calcGaussian(bins, freq, this.gaussFitOpts);
-            
-            h1 = histogram(y, bins-binterval);
-            h1.Normalization = 'probability';
-            legendText = {'Force Probability Histogram'};
-
-            hold on;
-            
-            amplitudeForDisplay = amplitude / max(amplitude) * max(freq)/sum(freq);
-
-            % generate gauss plot
-            pdfX = linspace(min(bins),max(bins),500)-binterval;
-            for i = 1:this.gaussFitOpts.order
-                pdfY = exp(-((pdfX-baseline(i)).^2)/(2*stdev(i)^2)) * amplitudeForDisplay(i);
-                
-                plot(pdfX, pdfY, 'LineWidth', 2);
-                legendText{length(legendText) + 1} = ['Gaussian Fit #' num2str(i)];
-            end
-            
-            plot(baseline, amplitudeForDisplay, 'rv', 'MarkerFaceColor', 'r');
-            legendText{length(legendText) + 1} = 'Most Prevalent Value - Baseline Evaluation';
-            
-            legend(legendText);
-            hold off;
-            
-            if nargout >= 4
-                fitOutput =[];
-                fitOutput.baseline = baseline;
-                fitOutput.stdev = stdev;
-                fitOutput.amplitude = amplitude;
-                fitOutput.goodness = goodness;
-            end
         end
     end
     

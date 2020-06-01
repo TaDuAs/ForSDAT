@@ -88,7 +88,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         function bool = examineCurveAnalysisResults(this, data)
         % Examine the analysis results of a single curve and determine
         % whether a single molecule interaction (SMI) was detected
-            bool = Simple.getobj(data, 'SingleInteraction.didDetect', false);
+            bool = mvvm.getobj(data, 'SingleInteraction.didDetect', false, 'nowarn');
         end
         
         function experimentId = loadPreviouslyProcessedDataOutput(this, path)

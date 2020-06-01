@@ -49,13 +49,12 @@ classdef ContactPointDetector < handle
         
         
         function [x1, y1] = getXYSegment(this, x, y)
-            import Simple.croparr;
             if length(this.fragment) == 2
-                x1 = croparr(x, this.fragment);
-                y1 = croparr(y, this.fragment);
+                x1 = util.croparr(x, this.fragment);
+                y1 = util.croparr(y, this.fragment);
             else
-                x1 = croparr(x, this.fragment, 'start');
-                y1 = croparr(y, this.fragment, 'start');
+                x1 = util.croparr(x, this.fragment, 'start');
+                y1 = util.croparr(y, this.fragment, 'start');
             end
         end
     end
@@ -65,9 +64,10 @@ classdef ContactPointDetector < handle
         function [contact, coefficients, s, mu] = findHardSurfaceContactPoint(this, x, y, baseline)
             % Fit 1st order polynom to the beginning of the curve
             [xSeg, ySeg] = this.getXYSegment(x, y);
-            [coefficients, s, mu] = Simple.Math.epolyfit(xSeg, ySeg, 1);
+            [coefficients, s, mu] = polyfit(xSeg, ySeg, 1);
+            R2 = util.getFitR2(ySeg, s);
             
-            if (s > this.iterativeApproachR2Threshold)
+            if (R2 > this.iterativeApproachR2Threshold)
                 % pad shorter coefficients array with zeros
                 coeffLength = length(coefficients);
                 bslLength = length(baseline);

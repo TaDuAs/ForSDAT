@@ -111,10 +111,10 @@ classdef RuptureDetector < handle & mfc.IDescriptor
             % find step boundaries
             for i = 1 : indicesNumber
                 % find step start
-                stepStart = this.findStepBoundary(df, stepIndices(i), Simple.Direction.Backward);
+                stepStart = this.findStepBoundary(df, stepIndices(i), util.Direction.Backward);
                 
                 % find step end
-                stepEnd = this.findStepBoundary(df, stepIndices(i), Simple.Direction.Forward);
+                stepEnd = this.findStepBoundary(df, stepIndices(i), util.Direction.Forward);
                 
                 steps(:,i) = [stepStart;stepEnd;frc(stepEnd)-frc(stepStart)];
             end
@@ -126,15 +126,13 @@ classdef RuptureDetector < handle & mfc.IDescriptor
         function index = findStepBoundary(this, df, startAt, dir)
             % Step slope angle should be 90 degrees, but will always deviate.
             % this is the maximum deviation of step angle from 90 deg, in radians
-            import Simple.*;
-            import Simple.Math.*;
             index = startAt;
             nextIndex = startAt;
             endAt = dir.lastPosition(df);
             rightAngle = pi()/2;
             
             while nextIndex ~= endAt &&...
-                  rightAngle - Simple.Math.slope2angle(df(nextIndex)) <= this.stepSlopeDeviation
+                  rightAngle - util.slope2angle(df(nextIndex)) <= this.stepSlopeDeviation
                 index = nextIndex;
                 nextIndex = nextIndex + dir;
             end
@@ -142,7 +140,7 @@ classdef RuptureDetector < handle & mfc.IDescriptor
             % Fixes the iteration bug caused by the fact that the
             % slope is calculated between two fields and not in a specific
             % position
-            if dir == Direction.Forward
+            if dir == util.Direction.Forward
                 index = nextIndex;
             end
         end

@@ -1,4 +1,4 @@
-classdef ExperimentRepository < lists.IDictionary & lists.IObservable
+classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDescriptor
     %EXPERIMENTREPOSITORY Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -7,20 +7,51 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable
     end
     
     properties (Access=private)
-        Repository_ lists.Map;
+        Repository_ lists.Dictionary;
     end
     
     methods (Access=private)
-        function onCollectionChanged(this, ~, args)
-            this.notify('collectionChanged', args);
+        function raiseCollectionChangedEvent(this, action, key)
+            if ischar(key)
+                idx = {key};
+            else
+                idx = key;
+            end
+            args = lists.CollectionChangedEventData(action, idx);
+
+            % raise event
+            notify(this, 'collectionChanged', args);
+        end
+    end
+    
+    methods (Hidden)
+        % provides initialization description for mfc.MFactory
+        % ctorParams is a cell array which contains the parameters passed to
+        % the ctor and which properties are to be set during construction
+        % 
+        % ctor dependency rules:
+        %   Extract from fields:
+        %       Parameter name is the name of the property, with or without
+        %       '&' prefix
+        %   Hardcoded string: 
+        %       Parameter starts with a '$' sign. For instance, parameter
+        %       value '$Pikachu' is translated into a parameter value of
+        %       'Pikachu', wheras parameter value '$$Pikachu' will be
+        %       translated into '$Pikachu' when it is sent to the ctor
+        %   Optional ctor parameter (key-value pairs):
+        %       Parameter name starts with '@'
+        %   Get parameter value from dependency injection:
+        %       Parameter name starts with '%'
+        function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
+            ctorParams = {'Name'};
+            defaultValues = {'Name', ''};
         end
     end
     
     methods
-        function this = ExperimentRepository(name, varargin)
+        function this = ExperimentRepository(name)
             this.Name = name;
-            this.Repository_ = lists.Map(varargin{:});
-            this.Repository_.addlistener('collectionChanged', @this.onCollectionChanged);
+            this.Repository_ = lists.Dictionary();
         end
         
         function n = length(this)
@@ -42,25 +73,62 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable
         end
         
         function setv(this, key, value)
+            if this.isKey(key)
+                action = 'change';
+            else
+                action = 'add';
+            end
             this.Repository_.setv(key, value);
+            this.raiseCollectionChangedEvent(action, key);
         end
         
         function add(this, key, value)
+            if this.isKey(key)
+                action = 'change';
+            else
+                action = 'add';
+            end
             this.Repository_.add(key, value);
+            this.raiseCollectionChangedEvent(action, key);
         end
         
         function removeAt(this, key)
+            if this.isKey(key)
+                didRemove = true;
+            else
+                didRemove = false;
+            end
+            
             this.Repository_.removeAt(key);
+            
+            if didRemove
+                this.raiseCollectionChangedEvent('remove', key);
+            end
         end
         
         % replaces all items in the dictionary with a new key-value set
         function setVector(this, keys, values)
+            prevKeys = this.keys();
+            
             this.Repository_.setVector(keys, values);
+            
+            if ~isempty(prevKeys)
+                this.raiseCollectionChangedEvent('remove', prevKeys);
+            end
+            if ~isempty(keys)
+                this.raiseCollectionChangedEvent('add', keys);
+            end
         end
         
         % clears the dictionary
         function clear(this)
+            prevKeys = this.keys();
+            
             this.Repository_.clear();
+            
+            if ~isempty(prevKeys)
+                this.raiseCollectionChangedEvent('remove', prevKeys);
+            end
         end
         
         % Gets all stored keys

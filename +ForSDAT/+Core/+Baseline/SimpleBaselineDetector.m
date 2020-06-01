@@ -31,17 +31,16 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         %   coefficients - the coefficients of the baseline polynomial fit
         %   s - standard error values
         %   mu - [avg, std]
-            import Simple.*;
 
             if length(this.fragment) == 1
-                xSect = croparr(x, this.fragment, 'end');
-                ySect = croparr(y, this.fragment, 'end');
+                xSect = util.croparr(x, this.fragment, 'end');
+                ySect = util.croparr(y, this.fragment, 'end');
             else
-                xSect = croparr(x, this.fragment);
-                ySect = croparr(y, this.fragment);
+                xSect = util.croparr(x, this.fragment);
+                ySect = util.croparr(y, this.fragment);
             end
-            polyOrder = cond(this.isBaselineTilted, 1, 0);
-            [coefficients, s, mu] = Simple.Math.epolyfit(xSect, ySect, polyOrder);
+            polyOrder = util.cond(this.isBaselineTilted, 1, 0);
+            [coefficients, s, mu] = polyfit(xSect, ySect, polyOrder);
             baseline = coefficients(1);
             noiseAmp = this.stdScore * mu(2);
             mu = {baseline, mu(2)};

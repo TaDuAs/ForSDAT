@@ -67,12 +67,12 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             histoolParams = {'Model', this.Model, 'ModelParams', modelParams, 'BinningMethod', this.BinningMethod, 'MinimalBins', this.MinimalBins};
             
             % Show histogram if needed
-            shouldPlot = mvvm.getobj(options, 'showHistogram', false);
-            plotOpt = mvvm.getobj(options, 'plotOptions', []);
+            shouldPlot = mvvm.getobj(options, 'showHistogram', false, 'nowarn');
+            plotOpt = mvvm.getobj(options, 'plotOptions', [], 'nowarn');
             if ~shouldPlot
                 stats = histool.stats(frc, histoolParams);
             else
-                plotIntoThisElement = mvvm.getobj(plotOpt, 'figure', []);
+                plotIntoThisElement = mvvm.getobj(plotOpt, 'figure', [], 'nowarn');
 
                 % plot histogram and perform statistical analyzis
                 [stats, guiHandle] = histool.histdist(frc, 'PlotTo', plotIntoThisElement, 'PlotPdfIndex', 1, histoolParams{:});
@@ -120,7 +120,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             this.createTextElement(fig, ax, detailsText);
             
             % add title to axes
-            plotTitle = mvvm.getobj(plotOpt, 'title', '');
+            plotTitle = mvvm.getobj(plotOpt, 'title', '', 'nowarn');
             if ~isempty(plotTitle)
                 title(ax, plotTitle);
             end
