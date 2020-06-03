@@ -60,7 +60,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                         
             % fit multiple gauss peaks
             if startsWith(lower(this.Model), 'gauss')
-                modelParams = {'PlanBGoodnessThreshold', this.FitR2Threshold};
+                modelParams = {'PlanBGoodnessThreshold', this.FitR2Threshold, 'GetOnlyMaxMode', true};
             else
                 modelParams = {'FittingMode', this.ModelFittingMode};
             end
@@ -75,7 +75,14 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 plotIntoThisElement = mvvm.getobj(plotOpt, 'figure', [], 'nowarn');
 
                 % plot histogram and perform statistical analyzis
-                [stats, guiHandle] = histool.histdist(frc, 'PlotTo', plotIntoThisElement, 'PlotPdfIndex', 1, histoolParams{:});
+                modelingOrder = this.getModelingMultiModalOrder();
+                if modelingOrder > 1
+                    pdfPlotIndex = 2:modelingOrder+1;
+                else
+                    pdfPlotIndex = 1;
+                end
+                
+                [stats, guiHandle] = histool.histdist(frc, 'PlotTo', plotIntoThisElement, 'PlotPdfIndex', pdfPlotIndex, histoolParams{:});
             end
             
             % get mpf +/- error
@@ -100,7 +107,9 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 this.makePlotPresentable(mpf, err, lr, lrErr, numel(frc), plotOpt, guiHandle);
             end
         end
-        
+    end
+    
+    methods (Access=private)
         function makePlotPresentable(this, mpf, err, lr, lrErr, N, plotOpt, h)
 
             fig = ancestor(h(1), 'figure');
@@ -151,6 +160,16 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                     'FitBoxToText','on');
                 
                 sui.setPos(hh, [labelPos, labelSize], 'pixels');
+            end
+        end
+        
+        function order = getModelingMultiModalOrder(this)
+            order = 1;
+            if startsWith(lower(this.Model), 'gauss')
+                orderString = regexp(this.Model, '\d+$', 'match');
+                if ~isempty(orderString)
+                    order = str2double(orderString);
+                end
             end
         end
     end

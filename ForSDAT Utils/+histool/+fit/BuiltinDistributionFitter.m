@@ -22,7 +22,7 @@ classdef BuiltinDistributionFitter < histool.fit.IHistogramFitter & matlab.mixin
         function [mpv, sigma, normalizedPDF, goodness] = fit(this, y, bins, freq)
             % fit builtin distributions
             if strcmp(this.FittingMode, 'frequencies')
-                xbins = bins(1:numel(freq));
+                xbins = bins(1:numel(freq)) + (diff(bins) / 2);
                 pd = fitdist(xbins(:), this.DistributionName, 'Censoring', zeros(numel(freq), 1), 'Frequency', freq(:));
             else
                 pd = fitdist(y(:), this.DistributionName);

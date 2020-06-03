@@ -1,6 +1,10 @@
 classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
-    %EXPERIMENTREPOSITORYDAO Summary of this class goes here
-    %   Detailed explanation goes here
+    % ExperimentRepositoryDAO is a data access object dedicated to
+    % accessing backed up experiment repositories
+    % 
+    % see also:
+    %   ForSDAT.Application.Models.ExperimentRepository
+    %   ForSDAT.Application.Workflows.CookedDataAnalyzer
     
     properties
         RepositoryPath;
@@ -44,11 +48,45 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
         end
         
         function repo = load(this, name)
-            repo = this.DAO.load(this.generateRepositoryFilePath(name));
+            filePath = this.generateRepositoryFilePath(name);
+            repo = this.DAO.load(filePath);
+            
+            % validate repository
+            this.validateLoadedRepository(repo, filePath);
         end
         
+        function repo = import(this, filePath)
+            if ~exist(filePath, 'file') || ~any(regexp(filePath, filesep))
+                filePath = this.generateRepositoryFilePath(filePath);
+                if ~exist(filePath, 'file')
+                    throw(MException('ForSDAT:ExperimentRepository:Import:FileMissing', 'The specified repository file path (%s) does not exist', filePath));
+                end
+            end
+            
+            % fetch from file
+            repo = this.DAO.load(filePath);
+            
+            % validate repository
+            this.validateLoadedRepository(repo, filePath);
+        end
+    end
+    
+    methods (Access=private)
+        
         function path = generateRepositoryFilePath(this, name)
-            path = fullfile(this.RepositoryPath, [name, '.', this.DAO.outputFilePostfix()]);
+            path = fullfile(this.RepositoryPath, this.appendPostfixToPath(name));
+        end
+        
+        function path = appendPostfixToPath(this, path)          
+            if ~any(regexp(path, '\.[a-zA-Z]{1,4}$'))
+                path = [path, '.', this.DAO.outputFilePostfix()];
+            end
+        end
+        
+        function validateLoadedRepository(~, repo, path)
+            if ~isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')
+                throw(MException('ForSDAT:ExperimentRepository:Load:InvalidType', 'Can''t load experiment repository from file. Wrong data type. file path: %s', path));
+            end
         end
     end
 end

@@ -58,7 +58,7 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
             n = this.Repository_.length();
         end
         function tf = isempty(this)
-            tf = this.Repository_.isempty();
+            tf = this.isemptyHandle() || this.Repository_.isempty();
         end
         function s = size(this, dim)
             if nargin < 2

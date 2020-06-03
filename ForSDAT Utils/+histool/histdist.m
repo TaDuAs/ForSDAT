@@ -100,7 +100,11 @@ function [statData, h] = histdist(varargin)
         end
         if ~isempty(options.PlotPdfIndex)
             pdfs = pdfs(options.PlotPdfIndex);
-            mus = statData.MPV(options.PlotPdfIndex);
+            if any(numel(statData.MPV) < options.PlotPdfIndex)
+                mus = statData.MPV(1);
+            else
+                mus = statData.MPV(options.PlotPdfIndex);
+            end
         end
         
         % get pdf data for plotting

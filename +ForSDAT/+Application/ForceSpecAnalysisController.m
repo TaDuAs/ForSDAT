@@ -185,6 +185,10 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             output = this.wrapUpAndAnalyze();
         end
         
+        function loadExperimentRepository(this, path)
+            this.Project.CookedAnalyzer.importExperimentsRepository(path);
+        end
+        
         function settings = loadSettings(this, settingsFile)
             if nargin > 1 && ~isempty(settingsFile)
                 settings = this.serializer.load(settingsFile);

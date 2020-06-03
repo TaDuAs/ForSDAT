@@ -3,6 +3,7 @@ classdef MultiModalGaussFitter < histool.fit.IHistogramFitter & matlab.mixin.Set
     properties
         Order (1, 1) uint8 {mustBeFinite(Order), mustBePositive(Order), mustBeLessThan(Order, 9), mustBeNonNan(Order), mustBeReal(Order)} = 1;
         PlanBGoodnessThreshold = 0.7;
+        GetOnlyMaxMode = false;
     end
     
     methods
@@ -43,6 +44,15 @@ classdef MultiModalGaussFitter < histool.fit.IHistogramFitter & matlab.mixin.Set
             % element of the gaussian series
             for i = 1:order
                 pdfunc{i+1} = this.generateDistPdf(fittype('gauss1'), gaussFit.(['a' num2str(i)]), gaussFit.(['b' num2str(i)]), gaussFit.(['c' num2str(i)]));
+            end
+            
+            % if necessary choose the absolute mode (one with highest amplitude)
+            if this.GetOnlyMaxMode
+                foo = pdfunc{1};
+                amps = foo(mpv(:));
+                [~, idxMaxMode] = max(amps);
+                mpv = mpv(idxMaxMode);
+                sigma = sigma(idxMaxMode);
             end
         end
     end

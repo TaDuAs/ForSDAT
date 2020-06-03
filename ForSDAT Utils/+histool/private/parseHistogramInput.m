@@ -21,6 +21,9 @@ function opt = parseHistogramInput(args, functionName)
                     'Model must be a name of a fittable probability distribution or an instance of histool.fit.IHistogramFitter'));
     parser.addOptional('ModelParams', {});
     
+%    - A logical scalar which determines whether the returned MPV is a list of all modes in 
+%                    a multimodal distribution fitting or only the maximal mode
+    
     % Plotting options
     parser.addOptional('PlotTo', [], ...
         @(h) assert(isnumeric(h) || isa(h, 'matlab.ui.Figure') || isa(h, 'matlab.graphics.axis.Axes') || isa(options.PlotTo, 'matlab.ui.control.UIAxes'),...

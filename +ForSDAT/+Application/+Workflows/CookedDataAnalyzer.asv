@@ -219,10 +219,12 @@ classdef (Abstract) CookedDataAnalyzer < handle
             end
         end
         
-        function [params, p, R2] = bellEvansPlot(this, fig, varargin)
+        function [chi, koff, G, p, R2] = bellEvansPlot(this, fig, varargin)
             % Plots the Bell-Evans curve for a set of MPFs and LRs
             % Returns:
-            %   params - Bell-Evans parameters object (ForSDAT.Application.Models.BellEvansParams)
+            %   chi - Energy barrier distance [Angstroms]
+            %   koff - Dissosiation rate [Hz]
+            %   G - Energy barrier [J/(mol*K)]
             %   p - Bell-Evans regression curve coefficients
             %   R2 - coefficient of determination - R squared
             %
@@ -239,7 +241,11 @@ classdef (Abstract) CookedDataAnalyzer < handle
             %
             
             if isempty(this.ExperimentRepository)
-                params = ForSDAT.Application.Models.BellEvansParams();
+                chi = []; 
+                koff = [];
+                G = [];
+                p = [];
+                R2 = [];
                 return;
             end
             
@@ -274,9 +280,9 @@ classdef (Abstract) CookedDataAnalyzer < handle
             textbox = annotation(fig,'textbox',...
                 [0.15 0.72 0.20 0.19],...
                 'String',{['R^2 = ', num2str(round(R2, 4))],...
-                          [sprintf('\\chi_\\beta = %g ', params.Chi), char(197)],...
-                          sprintf('k_o_f_f = %g ª10^-^3Hz', params.Koff*1000),...
-                          sprintf('\\DeltaG = %g kJªmol^-^1', params.DeltaG/1000)},...
+                          [sprintf('\chi_\beta = %g ', params.Chi, params.ChiErr), char(197)],...
+                          sprintf('k_o_f_f = %g ª10^-^3Hz', params.Koff*1000, params.KoffErr*1000),...
+                          sprintf('\DeltaG = %g kJªmol^-^1', params.DeltaG/1000, params.DeltaGErr/1000)},...
                 'FitBoxToText','on',...
                 'FontSize', 18);
 %             textbox = annotation(fig,'textbox',...
@@ -292,7 +298,9 @@ classdef (Abstract) CookedDataAnalyzer < handle
         function [params, p, R2] = bellEvansFit(this)
         % Fits the Bell-Evans trendline to a set of MPFs and LRs
         % Returns:
-        %   params - Bell-Evans parameters object (ForSDAT.Application.Models.BellEvansParams)
+        %   chi - Energy barrier distance [Angstroms]
+        %   koff - Dissosiation rate [Hz]
+        %   G - The energy barrier [J/(mol*K)]
         %   p - Bell-Evans regression curve coefficients
         %   R2 - coefficient of determination - R squared
         %
@@ -314,9 +322,13 @@ classdef (Abstract) CookedDataAnalyzer < handle
         %         T is the temperature
         %         koff is the dissociation rate
         %
-        
-            params = ForSDAT.Application.Models.BellEvansParams();
+
             if isempty(this.ExperimentRepository)
+                chi = []; 
+                koff = [];
+                G = [];
+                p = [];
+                R2 = [];
                 return;
             end
             
@@ -343,6 +355,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
             R = chemo.PhysicalConstants.R;
             G = R * T * log(koff/Af) / 1000; % kJ/mol
             
+            params = ForSDAT.Application.Models.BellEvansParams();
             params.Chi = chi;
             params.Koff = koff;
             params.DeltaG = G;
@@ -353,23 +366,16 @@ classdef (Abstract) CookedDataAnalyzer < handle
             params.ChiErr = 0; 
         end
         
-        function [chi, koff, refForce, deltaG] = reverseBellEvansPlot(this, repositoryNames, refLR)
+        function reverseBellEvansPlot(this, repositoryNames, refLR)
             if nargin < 3 || isempty(refLR); refLR = 5; end
             
             chi = zeros(numel(repositoryNames), 1);
             koff = zeros(numel(repositoryNames), 1);
-            deltaG = zeros(numel(repositoryNames), 1);
-            refForce = zeros(numel(repositoryNames), 1);
-            kBT = chemo.PhysicalConstants.kB * chemo.PhysicalConstants.RT;
             
             for i = 1:numel(repositoryNames)
                 this.importExperimentsRepository(repositoryNames{i});
                 
-                params = this.bellEvansFit();
-                chi(i) = params.Chi;
-                koff(i) = params.Koff;
-                deltaG(i) = params.DeltaG;
-                refForce(i) = (kBT/chi(i))*log(chi(i)*refLR/(kBT*koff(i)));
+                this.bellEvansPlot
             end
         end
     end
