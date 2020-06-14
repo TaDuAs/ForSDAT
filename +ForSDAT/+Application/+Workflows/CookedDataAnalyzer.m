@@ -7,10 +7,8 @@ classdef (Abstract) CookedDataAnalyzer < handle
     % * Cooked data as opposed to raw data
     
     properties (Hidden)
-        ArrheniusPrefactor = 10^-6; % [Hz]
+        ArrheniusPrefactor = 10^6; % [Hz]
                                     % Li et al. Langmuir 2014, https://doi.org/10.1021/la501189n
-                                    % in this article they report using
-                                    % A=10^6, but that is a misprint, its in fact 10^-6Hz 
         BellEvansAlpha = 0.95;
     end
         
@@ -368,7 +366,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
             % calculate the energy barrier
             Af = this.ArrheniusPrefactor;
             R = chemo.PhysicalConstants.R;
-            G = R * T * log(koff/Af) / 1000; % kJ/mol
+            G = -R * T * log(koff/Af) / 1000; % kJ/mol
             GErr = koffErr/koff;
             
             % return parameters and standard errors
