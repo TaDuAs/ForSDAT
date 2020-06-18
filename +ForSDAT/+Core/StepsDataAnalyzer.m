@@ -9,6 +9,14 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         Model = 'gauss';
         ModelFittingMode {mustBeMember(ModelFittingMode, {'data', 'frequencies'})} = 'data';
         Alpha = 0.05;
+        
+        % The method for evaluating errors
+        % Accepts values:
+        %   'std' - standard deviation
+        %   'sem' - standard error
+        %   'confi' - confidence interval for value of alpha specified by
+        %             the Alpha property
+        ErrorType {mustBeMember(ErrorType, {'std', 'sem', 'confi'})} = 'sem';
     end
     
     methods (Hidden) % factory meta data
@@ -87,7 +95,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             
             % get mpf +/- error
             sigma = stats.StandardDeviation;
-            err = util.econfi(stats.MPV, this.Alpha, sigma, numel(frc));
+            err = this.calculateError(stats.MPV, sigma, numel(frc));
             [mpf, err] = util.roundError(stats.MPV, err);
             
             % Calculate the average loading rate & confidence interval
@@ -96,7 +104,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
                 lrVector = -1*slope(slope<0)*speed;
             end
             lr = mean(lrVector);
-            lrErr = util.econfi(lrVector, this.Alpha);
+            lrErr = this.calculateError(lrVector);
             if isnumeric(lr) && ~isnan(lr) && ~isempty(lr)
                 [lr, lrErr] = util.roundError(lr, lrErr);
             end
@@ -110,6 +118,20 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
     end
     
     methods (Access=private)
+        function err = calculateError(this, x, sigma, n)
+            if nargin < 4; n = numel(x); end
+            if nargin < 3; sigma = std(x); end
+            
+            switch this.ErrorType
+                case 'std'
+                    err = sigma;
+                case 'sem'
+                    err = sigma / sqrt(n);
+                case 'confi'
+                    err = util.econfi(x, this.Alpha, sigma, n);
+            end
+        end
+        
         function makePlotPresentable(this, mpf, err, lr, lrErr, N, plotOpt, h)
 
             fig = ancestor(h(1), 'figure');
