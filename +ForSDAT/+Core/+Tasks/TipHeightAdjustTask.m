@@ -72,7 +72,7 @@ classdef TipHeightAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescript
         
         function plotData(this, fig, data, extras)
             % If derived class doesn't implement this
-            figure(fig);
+            this.focusPlot(fig);
             plot(data.FixedDistance, data.Force);
             this.setPlotAxes(data.FixedDistance, data.Force);
         end

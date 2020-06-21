@@ -156,7 +156,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         
         function analyzeAutomatically(this)
             wf = this.buildWF();
-            this.progressbar = util.ConsoleProggressBar(['Analyzing Data Batch ' this.Project.DataAccessor.batchPath ':'], wf.getQueueSize(), 10, true);
+            this.progressbar = util.ConsoleProggressBar(['Analyzing Data Batch ' this.Project.DataAccessor.BatchPath ':'], wf.getQueueSize(), 10, true);
             this.processingProgressListener = addlistener(wf, 'ReportProgress',@(obj, args) this.reportProgress(args));
             wf.completeAnalysisAutomatically();
         end

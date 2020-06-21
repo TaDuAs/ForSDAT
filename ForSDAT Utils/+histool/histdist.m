@@ -67,7 +67,7 @@ function [statData, h] = histdist(varargin)
 % histool.supportedBinningMethods
 %
 
-    if isa(varargin{1}, 'matlab.ui.container.CanvasContainer')
+    if isa(varargin{1}, 'handle') && isgraphics(varargin{1})
         % first element is a ui element to plot into, so the second element
         % is the data vector
         x = varargin{2};
