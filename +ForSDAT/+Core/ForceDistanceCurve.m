@@ -39,11 +39,10 @@ classdef ForceDistanceCurve < handle
             end
         end
         
-        function plotCurve(this, fig)
+        function plotCurve(this, fig, type)
             if nargin < 2 || isempty(fig)
                 fig = figure();
             end
-            
             if isa(fig, 'matlab.graphics.axis.Axes')
                 subplot(fig);
                 plotAxes = fig;
@@ -52,18 +51,27 @@ classdef ForceDistanceCurve < handle
                 plotAxes = axes('Parent',fig);
             end
             hold(plotAxes,'on');
+            if nargin < 3 || isempty(type)
+                type = 'd';
+            end
             
             % plot all segments
             for i = 1:length(this.segments)
                 seg = this.segments(i);
                 frc = seg.force;%this.filterForce(seg);
-                dst = seg.distance;%this.filterDistance(seg);
-                plot(dst, frc, 'DisplayName', seg.name);
+                if strcmpi(type, 'time')
+                    x = seg.time;
+                    xAxesTitle = 'Time (s)';
+                else
+                    x = seg.distance;%this.filterDistance(seg);
+                    xAxesTitle = 'Tip Height (nm)';
+                end
+                plot(x, frc, 'DisplayName', seg.name);
             end
             
             set(gca(), 'FontSize', 18);
-            xlabel('Tip Height [nm]', 'FontSize', 24);
-            ylabel('Force [pN]', 'FontSize', 24);
+            xlabel(xAxesTitle, 'FontSize', 24);
+            ylabel('Force (N)', 'FontSize', 24);
             
             % hold off
             hold(plotAxes,'off');

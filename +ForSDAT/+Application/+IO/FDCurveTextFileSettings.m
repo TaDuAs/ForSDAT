@@ -57,25 +57,25 @@ classdef FDCurveTextFileSettings < handle
         function findForceColIndex(this, columnNames)
             this.forceColumnIndex = findColIndex(this, columnNames, ForSDAT.Application.IO.FDCurveTextFileSettings.forceColumnName);
             
-            if isempty(this.forceColumnIndex)
-                error('Force column doesn''t appear in data file');
-            end
+%             if isempty(this.forceColumnIndex)
+%                 error('Force column doesn''t appear in data file');
+%             end
         end
         
         function findDistanceColIndex(this, columnNames)
             this.distanceColumnIndex = findColIndex(this, columnNames, ForSDAT.Application.IO.FDCurveTextFileSettings.distanceColumnName);
             
-            if isempty(this.distanceColumnIndex)
-                error('Distance column doesn''t appear in data file');
-            end
+%             if isempty(this.distanceColumnIndex)
+%                 error('Distance column doesn''t appear in data file');
+%             end
         end
         
         function findTimeColIndex(this, columnNames)
             this.timeColumnIndex = findColIndex(this, columnNames, ForSDAT.Application.IO.FDCurveTextFileSettings.timeColumnName);
             
-            if isempty(this.timeColumnIndex)
-                error('Time column doesn''t appear in data file');
-            end
+%             if isempty(this.timeColumnIndex)
+%                 error('Time column doesn''t appear in data file');
+%             end
         end
     end
 end

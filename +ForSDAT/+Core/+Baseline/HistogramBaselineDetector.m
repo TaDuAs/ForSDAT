@@ -139,8 +139,17 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
                 
                 baselineGaussAmplitudeThreshold = baseline(amplitude >= 0.2 * max(amplitude));
                 baselineGaussianIndex = find(baseline == max(baselineGaussAmplitudeThreshold));
-                baseline = baseline(baselineGaussianIndex);
-                stdev = stdev(baselineGaussianIndex);
+                
+                % for some reason, it could happen that all estimations are
+                % identical. In that case, they will all pass the previous
+                % step, resulting in multiple baselines which all have the
+                % same value, this breaks the next steps though, so just
+                % pick the first one, there should be only one either way
+                %
+                % like highlanders, there can be only one baseline
+                %
+                baseline = baseline(baselineGaussianIndex(1));
+                stdev = stdev(baselineGaussianIndex(1));
             end
             
         end

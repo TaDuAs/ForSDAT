@@ -110,13 +110,39 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
                 
                 % set relevant data to segment
                 if this.ShouldFlipExtendSegments && strcmp(segment.name, dataFileSettings.defaultExtendSegmentName)
-                    segment.force = fliplr(data(:,dataFileSettings.forceColumnIndex)');
-                    segment.distance = fliplr(data(:,dataFileSettings.distanceColumnIndex)');
-                    segment.time = fliplr(data(:,dataFileSettings.timeColumnIndex)');
+                    if ~isempty(dataFileSettings.forceColumnIndex)
+                        segment.force = fliplr(data(:,dataFileSettings.forceColumnIndex)');
+                    end
+                    if ~isempty(dataFileSettings.distanceColumnIndex)
+                        segment.distance = fliplr(data(:,dataFileSettings.distanceColumnIndex)');
+                    end
+                    if ~isempty(dataFileSettings.timeColumnIndex)
+                        segment.time = fliplr(data(:,dataFileSettings.timeColumnIndex)');
+                    end
                 else
-                    segment.force = data(:,dataFileSettings.forceColumnIndex)';
-                    segment.distance = data(:,dataFileSettings.distanceColumnIndex)';
-                    segment.time = data(:,dataFileSettings.timeColumnIndex)';
+                    if ~isempty(dataFileSettings.forceColumnIndex)
+                        segment.force = data(:,dataFileSettings.forceColumnIndex)';
+                    end
+                    if ~isempty(dataFileSettings.distanceColumnIndex)
+                        segment.distance = data(:,dataFileSettings.distanceColumnIndex)';
+                    end
+                    if ~isempty(dataFileSettings.timeColumnIndex)
+                        segment.time = data(:,dataFileSettings.timeColumnIndex)';
+                    end
+                end
+                
+                nf = numel(segment.force);
+                nt = numel(segment.time);
+                nd = numel(segment.distance);
+                nDataPoints = max([nf, nd, nt]);
+                if nf < nDataPoints
+                    segment.force = horzcat(segment.force, nan(nDataPoints - nf));
+                end
+                if nd < nDataPoints
+                    segment.distance = horzcat(segment.distance, nan(1, nDataPoints - nd));
+                end
+                if nt < nDataPoints
+                    segment.time = horzcat(segment.time, nan(nDataPoints - nt));
                 end
             end
         end
