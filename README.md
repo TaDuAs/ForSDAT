@@ -14,6 +14,6 @@ ForSDAT requires several Matlab frameworks, toolboxes and fileexchanges to opera
 * [structofarrays2arrayofstructs](https://www.mathworks.com/matlabcentral/fileexchange/40712-convert-from-a-structure-of-arrays-into-an-array-of-structures)
 
 ## References
-*ForSDAT uses code from [Fodis](https://github.com/galvanetto/Fodis) for loading binary force VS. distance curves.
+* ForSDAT uses code from [Fodis](https://github.com/galvanetto/Fodis) for loading binary force VS. distance curves.
 These files (see "ForSDAT root directory/ForSDAT Utils/+Fodis/+IO/") are available under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
-N. Galvanetto, et al. Fodis: Software for Protein Unfolding Analysis, Biophysical Journal. 114 (2018) 1264–1266. doi:10.1016/j.bpj.2018.02.004.
+N. Galvanetto, et al. Fodis: Software for Protein Unfolding Analysis, Biophysical Journal. 114 (2018) 1264â€“1266. doi:10.1016/j.bpj.2018.02.004.
