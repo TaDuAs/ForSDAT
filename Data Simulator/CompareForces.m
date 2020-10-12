@@ -42,7 +42,7 @@ for i = 1:n
     proggressBar.reportProggress(1);
 end
 
-cprintf('_Comments', 'All Done!\n');
+util.cprintf('_Comments', 'All Done!\n');
 
 
 forces = [];

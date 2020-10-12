@@ -20,7 +20,7 @@ classdef ForSDATApp < mvvm.GuiApp
         
         function start(this)
             start@mvvm.GuiApp(this);
-            cprintf('Comment', 'ForSDAT data analysis engine started successfully.\n');
+            util.cprintf('Comment', 'ForSDAT data analysis engine started successfully.\n');
         end
     end
     

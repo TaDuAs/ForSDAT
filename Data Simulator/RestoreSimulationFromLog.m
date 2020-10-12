@@ -43,7 +43,7 @@ while currentRestoreFileIndex <= length(restoration_files) && (runRestorationOnc
         if currentRestoreFileIndex <= length(restoration_files)
             fileName = restoration_files{currentRestoreFileIndex};
         else
-            cprintf('UnterminatedStrings', 'Ran through all simulations in this folder already...\n');
+            util.cprintf('UnterminatedStrings', 'Ran through all simulations in this folder already...\n');
             return;
         end
     end
