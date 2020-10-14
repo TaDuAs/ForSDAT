@@ -95,8 +95,13 @@ classdef RuptureDetector < handle & mfc.IDescriptor
         %   rupture event indices
         %   wavelet transform data
         
-            deltaF = [diff(frc) 0];
-            deltaF(end) = deltaF(end - 1);
+            if numel(frc) < 3
+                derivative = [diff(frc), 0];
+                steps = zeros(3, 0);
+                return;
+            end
+        
+            deltaF = [diff(frc) diff(frc(end-1:end))];
             deltaD = [diff(dist), 0];
             deltaD(end) = deltaD(end - 1);
             df = deltaF./deltaD;
@@ -105,6 +110,7 @@ classdef RuptureDetector < handle & mfc.IDescriptor
             % find steps
             [~, ~, dfNoiseAmp, ~, ~, ~] = this.baselineDetector.detect(dist, df);
             [~, stepIndices] = findpeaks(df, 'MinPeakHeight', dfNoiseAmp);
+                            
             indicesNumber = length(stepIndices);
             steps = zeros(3, indicesNumber);
             

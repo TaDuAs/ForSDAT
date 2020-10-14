@@ -21,12 +21,7 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
     [~, fileNoPath] = fileparts(file);
 
     %Unzip jpk-force
-    try
-        filenames = unzip(file, fullfile(tmpName, fileNoPath));
-    catch e
-        disp('Problem during extraction of file');
-        return;
-    end
+    filenames = unzip(file, fullfile(tmpName, fileNoPath));
 
     % disp(['File Written to' tmpName])
 
@@ -166,7 +161,7 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
         else
             indexXValue = IndexColumnAvailable(3, 1+validIndex(1));
             indexXValueFormat = IndexColumnAvailable(2, 1+validIndex(1));
-            disp(['Loaded Channel: ' columnsPossibleName{1+validIndex(1)}]);
+%             disp(['Loaded Channel: ' columnsPossibleName{1+validIndex(1)}]);
 
 %                 if validIndex(1)~= 2; disp(['Tip Sample Separation not found in File: ' file]);end
         end

@@ -62,7 +62,7 @@ classdef ConsoleProggressBar < handle
             else
                 str = char(zeros(1, spaceInCurrentRow + 1));
                 str(:) = this.iterationChar;
-                str(length(str)) = sprintf('\n');
+                str(length(str)) = newline;
                 
                 leftToReport = this.lastProggresion - spaceInCurrentRow;
                 strRows = '';
@@ -70,7 +70,7 @@ classdef ConsoleProggressBar < handle
                     numRows = floor(leftToReport / this.returnInterval);
                     strRows = char(zeros(this.returnInterval + 1,numRows));
                     strRows(:,:) = this.iterationChar;
-                    strRows(end,:) = sprintf('\n');
+                    strRows(end,:) = newline;
                 end
                 
                 howManyInLastRow = mod(leftToReport, this.returnInterval);
@@ -99,12 +99,12 @@ classdef ConsoleProggressBar < handle
             workDoneFraction = workDone/100;
             [~, timespan] = this.stopper.lap();
             timeEstimate = ((1-workDoneFraction) / workDoneFraction) * timespan;
-            display([sprintf('\n'), this.actionName ' ', ...
+            disp([newline, this.actionName ' ', ...
                 num2str(workDone), '% complete',...
                 ' Estimated time left: ', this.stopper.time2str(timeEstimate)]);
             this.lastReturn = this.proggress;
             
-            args = Simple.ProcessProgressED(reportedProgress, this.proggress, this.endAt - this.proggress);
+            args = util.ProcessProgressED(reportedProgress, this.proggress, this.endAt - this.proggress);
             notify(this, 'AlertProggress', args);
         end
         

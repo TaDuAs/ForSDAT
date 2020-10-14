@@ -22,7 +22,11 @@ classdef AdhesionEnergyDetector < ForSDAT.Core.Adhesion.ISectionDetector
                 case ForSDAT.Core.BoundingLimitTypes.Fixed
                     mask = this.getLogicalIndex(z);
                 case ForSDAT.Core.BoundingLimitTypes.LastRupture
-                    mask = z <= max(ruptureDistance);
+                    if isempty(ruptureDistance)
+                        mask = z <= 0;
+                    else
+                        mask = z <= max(ruptureDistance);
+                    end
                 case ForSDAT.Core.BoundingLimitTypes.LinkerBounds
                     %TODO implement linker size window
                     throw(MException('ForSDAT:Core:Adhesion:AdhesionEnergyDetector:LinkerNotImplemented', 'ForSDAT.Core.BoundingLimitTypes.LinkerBounds functionality not implemented yet'));

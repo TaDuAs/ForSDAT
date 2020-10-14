@@ -22,8 +22,8 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO', 'dataAnalyzer'};
-            defaultValues = {'dataAnalyzer', []};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO'};
+            defaultValues = {};
         end
     end
     
@@ -63,26 +63,20 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
         function results = doAnalysis(this, dataList)
             options = [];
             options.showHistogram = true;
-            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.settings.measurement.speed, [dataList.lr], options);
+%             [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.settings.measurement.speed, [dataList.lr], options);
             
-            results = ForSDAT.Application.Models.ForsSpecExperimentResults();
-            
-            f = [dataList.f];
-            
+            results = ForSDAT.Application.Models.SCFSExperimentResults();
             
             % results
-            results.MostProbableForce = mpf;
-            results.ForceStd = mpfStd;
-            results.ForceErr = mpfErr;
-            results.LoadingRate = lr;
-            results.LoadingRateErr = lrErr;
+            results.MaxAdhesionForce = ForSDAT.Application.Models.MeanValue([dataList.f]);
+            results.MaxAdhesionDistance = ForSDAT.Application.Models.MeanValue([dataList.z]);
+            results.DetachmentWork = ForSDAT.Application.Models.MeanValue([dataList.energy]);
+            results.NRuptures = ForSDAT.Application.Models.MeanValue([dataList.nRuptures]);
+            results.RuptureForce = ForSDAT.Application.Models.MeanValue([dataList.ruptureForce]);
+            results.MaxRuptureDistance = ForSDAT.Application.Models.MeanValue([dataList.maxAdhesionDistance]);
             
-            % setup
-            results.BinningMethod = this.DataAnalyzer.BinningMethod;
-            results.MinimalBins = this.DataAnalyzer.MinimalBins;
-            results.FittingModel = this.DataAnalyzer.Model;
-            results.Speed = this.settings.measurement.speed;
-            results.FitR2Threshold = this.DataAnalyzer.FitR2Threshold;
+            avgInterRuptDistance = arrayfun(@(x) mean(diff(x.ruptureDistance)), dataList);
+            results.InterRuptureDistance = ForSDAT.Application.Models.MeanValue(avgInterRuptDistance);
         end
 
         function bool = examineCurveAnalysisResults(this, data)
