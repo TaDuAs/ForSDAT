@@ -56,8 +56,18 @@ classdef RawDataAnalyzer < handle & mfc.IDescriptor
             
             data.Setup.retractSpeed = this.settings.measurement.speed;
             data.Setup.samplingRate = this.settings.measurement.samplingRate;
-            data.Setup.linker = this.settings.measurement.linker;
-            data.Setup.molecule = this.settings.measurement.molecule;
+            linker = mvvm.getobj(this.settings, 'measurement.linker', [], 'nowarn');
+            if ~isempty(linker) 
+                data.Setup.linker = linker;
+            else
+                data.Setup.linker = chemo.PEG(0);
+            end
+            mol = mvvm.getobj(this.settings, 'measurement.molecule', [], 'nowarn');
+            if ~isempty(mol) 
+                data.Setup.molecule = mol;
+            else
+                data.Setup.molecule = chemo.PEG(0);
+            end
             data.Setup.noiseAnomally = this.settings.measurement.noiseAnomally;
             
             data.BatchPosition.x = segment.xPosition;

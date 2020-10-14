@@ -182,7 +182,14 @@ classdef (Abstract) CookedDataAnalyzer < handle
         
         function results = wrapUpAndAnalyze(this)
             valuesCellArray = this.getDataList().values;
+            
+            % prep accepted curve data object list
             dataList = [valuesCellArray{:}];
+            
+            if isempty(dataList)
+                results = ForSDAT.Application.Models.ForsSpecExperimentResults.empty();
+                return;
+            end
             
             % perform cooked analysis
             results = this.doAnalysis(dataList);

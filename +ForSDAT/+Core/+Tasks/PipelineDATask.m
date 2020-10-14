@@ -97,11 +97,12 @@ classdef PipelineDATask < lists.PipelineTask
             tf = ~isequaln(chnlData, nan());
         end
         
-        function chnlData = getChannelData(this, data, channel)
+        function chnlData = getChannelData(this, data, channel, isStrict)
+            if nargin < 4; isStrict = true; end
             channel = this.checkForXYChannels(channel);
             
             chnlData = mvvm.getobj(data, channel, [], 'nowarn');
-            if isempty(chnlData)
+            if isStrict && isempty(chnlData)
                 error(['Channel ' channel ' doesn''t exist']);
             end
         end

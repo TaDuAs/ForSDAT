@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document _type="ForSDAT.Application.IO.JpkFDCDataAccessor" _version="3">
+    <WantedSegments _type="double">1 2 3</WantedSegments>
+    <Parser _type="ForSDAT.Application.IO.ForceDistanceCurveParser">
+        <ShouldFlipExtendSegments _type="logical">1</ShouldFlipExtendSegments>
+    </Parser>
+    <Exporter _type="dao.MXmlDataExporter"></Exporter>
+</document>

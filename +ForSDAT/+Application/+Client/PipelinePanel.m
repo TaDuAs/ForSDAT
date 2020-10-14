@@ -3,32 +3,35 @@ classdef PipelinePanel < mvvm.view.ComponentView & sui.IRedrawSuppressable
     %   Detailed explanation goes here
     
     properties
-        FlowContainer;
-        ScrollableContentContainer;
-        FlowResizeListener;
-        PipelineBinder;
+        FlowContainer sui.FlowBox;
+        ScrollableContentContainer uix.ScrollingPanel;
+        FlowResizeListener event.listener;
+        PipelineBinder mvvm.Repeater;
         ResourcePath string;
         
         pipelineBinderEventListeners event.listener;
     end
     
     methods
-        function this = PipelinePanel(parent, ownerView, app, varargin)
+        function this = PipelinePanel(parent, ownerView, app, modelProvider, varargin)
             this@mvvm.view.ComponentView(parent,...
                     'OwnerView', ownerView,...
                     'App', app,...
-                    'ModelProvider', mvvm.providers.ControllerProvider('ProcessSetupController', app),...
+                    'ModelProvider', modelProvider,...
                     varargin{:});
                 
             this.ResourcePath = app.ResourcePath;
         end
         
         function delete(this)
-            this.FlowResizeListener = [];
+            delete(this.FlowResizeListener);
+            this.FlowResizeListener = event.listener.empty();
             delete(this.FlowContainer);
-            this.FlowContainer = [];
+            this.FlowContainer = sui.FlowBox.empty();
             delete(this.ScrollableContentContainer);
-            this.ScrollableContentContainer = [];
+            this.ScrollableContentContainer = uix.ScrollingPanel.empty();
+            delete(this.pipelineBinderEventListeners);
+            this.pipelineBinderEventListeners = event.listener.empty();
         end
     end
     
@@ -79,17 +82,27 @@ classdef PipelinePanel < mvvm.view.ComponentView & sui.IRedrawSuppressable
     % sui.IRedrawSuppressable
     methods (Access=protected)
         function setDirty(this)
+            this.redraw();
         end
     end
-    methods
-        function suppressDraw(this, ~, ~)
-            this.FlowContainer.startDrawing();
-        end
-        
-        function startDrawing(this, ~, ~)
+    % sui.IRedrawable
+    methods (Access=protected)
+        function redraw(this)
             pipelineSize = sui.getSize(this.ScrollableContentContainer, 'pixels') - [20, 0];
             this.FlowContainer.BasePosition = [0 0 pipelineSize];
             this.FlowContainer.startDrawing();
+        end
+    end
+    
+    methods
+        function suppressDraw(this, ~, ~)
+            suppressDraw@sui.IRedrawSuppressable(this);
+            
+            this.FlowContainer.suppressDraw();
+        end
+        
+        function startDrawing(this, ~, ~)
+            startDrawing@sui.IRedrawSuppressable(this);
         end
     end
 end

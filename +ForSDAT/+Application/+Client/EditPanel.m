@@ -10,10 +10,11 @@ classdef EditPanel < mvvm.view.ComponentView
     end
     
     methods
-        function this = EditPanel(parent, parentView, messenger, bindingManager, viewManager, serialzier)
+        function this = EditPanel(parent, parentView, messenger, bindingManager, modelProvider, viewManager, serialzier)
             this@mvvm.view.ComponentView(parent, 'OwnerView', parentView, ...
                 'Messenger', messenger, 'BindingManager', bindingManager,...
                 'BoxType', @uix.ScrollingPanel,...
+                'ModelProvider', modelProvider,...
                 'ViewManager', viewManager);
             
             this.Serialzier = serialzier;
@@ -23,7 +24,9 @@ classdef EditPanel < mvvm.view.ComponentView
         
         function delete(this)
             delete(this.CurrentFrameBinder);
+            this.CurrentFrameBinder = mvvm.Binder.empty();
             delete(this.Frame);
+            this.Frame = sui.ViewSwitch.empty();
             this.Serialzier = mxml.XmlSerializer.empty();
         end
     end
@@ -38,6 +41,8 @@ classdef EditPanel < mvvm.view.ComponentView
             this.CurrentFrameBinder = mvvm.Binder('Project.CurrentEditedTask.name', this.Frame, 'ActiveViewId',...
                 'BindingManager', this.BindingManager);
             
+            % One day this should be passed over to some app-map of sorts,
+            % or at least a proper factory
             this.Frame.add("OOM Adjuster", @ForSDAT.Application.Client.TaskViews.OOMAdjusterView);
             this.Frame.add("Baseline", @this.mxmlTaskEditor);
             this.Frame.add("Chain Fit", @this.mxmlTaskEditor);

@@ -12,9 +12,9 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
     end
     
     %Preallocate cell for put the traces
-    tracesExtend = cell(1, 2);
-    tracesRetract = cell(1, 2);
     sharedHeaderPresence = 0;
+    outSegments = cell(0, 3);
+    headers = generateHeadersStruct(0);
 
     f = filesep;                              %Filseparatore (differ from system)
     tmpName = tempname;                     %Assign a temporary name to the extracted folder.
@@ -22,9 +22,9 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
 
     %Unzip jpk-force
     try
-        filenames = unzip(file, [tmpName f fileNoPath]);
+        filenames = unzip(file, fullfile(tmpName, fileNoPath));
     catch e
-        disp('Problem during extraction of file')
+        disp('Problem during extraction of file');
         return;
     end
 
@@ -47,13 +47,13 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
 
     %% Extract general headerInformation
     generalHeaderLocation = ~cellfun('isempty', strfind(filenamesCutted, fullfile(fileNoPath, 'header.properties')));
-    [extendLength, retractLength, extendPauseLength, retractPauseLength] = extractGeneralHeaderInformation(filenames(generalHeaderLocation));
+    [extendLength, retractLength, extendPauseLength, retractPauseLength] = Fodis.IO.extractGeneralHeaderInformation(filenames(generalHeaderLocation));
 
     %% Extract sharedData headerInformation
     sharedHeaderLocation = ~cellfun('isempty', strfind(filenamesCutted, fullfile('shared-data', 'header.properties')));
 
     if ~isempty(find(sharedHeaderLocation, 1))
-        structChannel = extractSharedHeaderInformation(filenames(sharedHeaderLocation));
+        structChannel = Fodis.IO.extractSharedHeaderInformation(filenames(sharedHeaderLocation));
         sharedHeaderPresence = 1;
     end
 
@@ -87,132 +87,165 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
         end
     end
 
-
-    for kk = 0:max(segmentNumber)
+    numSegments = max(segmentNumber) + 1;
+    outSegments = cell(numSegments, 3);
+    headers = generateHeadersStruct(numSegments);
+    
+    parsedSegments = false(1, numSegments);
+    
+    for j = 1:numSegments
+        kk = j - 1;
+        
         % only keep wanted segments - in case segment index was specified
-        if isnumeric(wantedSegments) && ~ismember(kk, wantedSegments)
+        if isnumeric(wantedSegments) && ~ismember(kk, wantedSegments-1)
             continue;
         end
         allFilenameInActualSegment = filenames(segmentFilenameLocation(segmentNumber == kk));
 
-        segmentHeader = ~cellfun('isempty', strfind(allFilenameInActualSegment, 'header'));
+        segmentHeader = contains(allFilenameInActualSegment, 'header');
 
         % read the headers from file
         openSegmentHeaderFile = fopen(char(allFilenameInActualSegment(segmentHeader)), 'r');
         dataSegmentHeader = textscan(openSegmentHeaderFile, '%s', 'delimiter', '\n');
+        dataSegmentHeader = dataSegmentHeader{1};
         fclose(openSegmentHeaderFile);
 
-        segmentType = extractParameterValue(dataSegmentHeader{1}, 'force-segment-header.settings.style');
+        segmentType = Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.settings.style');
 
         % only keep wanted segments - in case segment type was specified
         if isstring(wantedSegments) && ~ismember(lower(segmentType), wantedSegments)
             continue;
         end
-        
-        switch segmentType
-            case 'retract'   %Keep research only if the segment is retract. The other are leaved
 
-                % search for available Channel            
-                columnsPossibleName = {'vDeflection', 'tipSampleSeparation', 'verticalTipPosition', 'smoothedCapacitiveSensorHeight', ...
-                    'capacitiveSensorHeight', 'measuredHeight', 'height'};
+        % search for available Channel            
+        columnsPossibleName = {'vDeflection', 'tipSampleSeparation', 'verticalTipPosition', 'smoothedCapacitiveSensorHeight', ...
+            'capacitiveSensorHeight', 'measuredHeight', 'height'};
 
-                segmentColumns = extractParameterValue(dataSegmentHeader{1}, 'channels.list');
-                columnsName = strsplit(segmentColumns, ' ');
+        segmentColumns = Fodis.IO.extractParameterValue(dataSegmentHeader, 'channels.list');
+        columnsName = strsplit(segmentColumns, ' ');
 
-                %Extract information on recorded channel
-                IndexColumnAvailable = zeros(3, length(columnsPossibleName));
+        %Extract information on recorded channel
+        IndexColumnAvailable = zeros(3, length(columnsPossibleName));
 
-                for jj = 1:length(columnsName)
+        for jj = 1:length(columnsName)
 
-                    valueInList = find(cellfun('isempty', strfind(columnsPossibleName, columnsName{jj})) == 0);         %Search which column are present
-                    indexInFilename = find(cellfun('isempty', strfind(allFilenameInActualSegment, [f columnsName{jj}])) == 0);%And where is the filename with that info
+            valueInList = find(cellfun('isempty', strfind(columnsPossibleName, columnsName{jj})) == 0);         %Search which column are present
+            indexInFilename = find(cellfun('isempty', strfind(allFilenameInActualSegment, [f columnsName{jj}])) == 0);%And where is the filename with that info
 
-                    if (find(valueInList, 1))
-                        IndexColumnAvailable(1, valueInList) = 1;                   % 1 if the possible name is present is equal to 1, 0 otherwise
-                        IndexColumnAvailable(2, valueInList) = jj;                  % if there is put a position on the second value
-                        IndexColumnAvailable(3, valueInList) = indexInFilename;     % Put the filename position of the value
-                    end
-                end
-
-                %% Search for yaxis (VDeflection)
-                indexYValue = 0;
-                indexYValueFormat = 0;
-
-                if (IndexColumnAvailable(1, 1) == 0)
-                    disp(['Cannot Find VDeflection in File: ' file]);
-                    fclose(fileId);
-                    return;
-                else
-                    indexYValue = IndexColumnAvailable(3, 1);
-                    indexYValueFormat = IndexColumnAvailable(2, 1);
-                end
-
-                %% Search for good xaxis (tip-sample separation)
-                indexXValue = 0;
-                indexXValueFormat = 0;
-
-                validIndex = find(IndexColumnAvailable(1, 2:end));
-
-                if isempty(validIndex)
-                    disp(['Not Found Any valid format in File: ' file]);
-                    return;
-                else
-                    indexXValue = IndexColumnAvailable(3, 1+validIndex(1));
-                    indexXValueFormat = IndexColumnAvailable(2, 1+validIndex(1));
-                    disp(['Loaded Channel: ' columnsPossibleName{1+validIndex(1)}]);
-
-    %                 if validIndex(1)~= 2; disp(['Tip Sample Separation not found in File: ' file]);end
-                end
-
-                %Extract Format
-                yChannelName = columnsName{indexYValueFormat};
-                xChannelName = columnsName{indexXValueFormat};
-
-                if (sharedHeaderPresence)
-
-                    yChannel = extractParameterValue(dataSegmentHeader{1}, ['channel.' yChannelName '.lcd-info']);
-                    yFormat = structChannel.(['Channel' yChannel]).format;
-                    yMultiplier = structChannel.(['Channel' yChannel]).multiplier.Total;
-
-                    xChannel = extractParameterValue(dataSegmentHeader{1}, ['channel.' xChannelName '.lcd-info']);
-                    xFormat = structChannel.(['Channel' xChannel]).format;
-                    xMultiplier = structChannel.(['Channel' xChannel]).multiplier.Total;
-
-                else  %%Versione old pre 2011
-
-                    yStructChannel = extractSegmentHeaderInformation(allFilenameInActualSegment(segmentHeader), yChannelName);
-                    yFormat = yStructChannel.(yChannelName).format;
-                    yMultiplier = yStructChannel.(yChannelName).multiplier.Total;
-
-                    xStructChannel = extractSegmentHeaderInformation(allFilenameInActualSegment(segmentHeader), xChannelName);
-                    xFormat = xStructChannel.(xChannelName).format;
-                    xMultiplier = xStructChannel.(xChannelName).multiplier.Total;
-                end
-
-
-                % Read the good x channel from file
-                xChannelFileName = char(allFilenameInActualSegment{indexXValue});
-                fidtss = fopen(xChannelFileName, 'r', 'b', 'UTF-8');
-                xAxisValue = fread(fidtss, xFormat);
-                fclose(fidtss);
-
-                retractTipSampleSeparation = xMultiplier*xAxisValue-min(xMultiplier*xAxisValue);
-
-                % read vertical deflection data from file
-                fidF = fopen(char(allFilenameInActualSegment(indexYValue)), 'r', 'b', 'UTF-8');
-                Fdata = fread(fidF, yFormat);
-                fclose(fidF);
-
-                retractVDeflaction = yMultiplier*Fdata;
-
+            if (find(valueInList, 1))
+                IndexColumnAvailable(1, valueInList) = 1;                   % 1 if the possible name is present is equal to 1, 0 otherwise
+                IndexColumnAvailable(2, valueInList) = jj;                  % if there is put a position on the second value
+                IndexColumnAvailable(3, valueInList) = indexInFilename;     % Put the filename position of the value
+            end
         end
+        
+        %% search for time axis
+        
+
+        %% Search for yaxis (VDeflection)
+        indexYValue = 0;
+        indexYValueFormat = 0;
+
+        if (IndexColumnAvailable(1, 1) == 0)
+            disp(['Cannot Find VDeflection in File: ' file]);
+            return;
+        else
+            indexYValue = IndexColumnAvailable(3, 1);
+            indexYValueFormat = IndexColumnAvailable(2, 1);
+        end
+        
+        %% Search for good xaxis (tip-sample separation)
+        indexXValue = 0;
+        indexXValueFormat = 0;
+
+        validIndex = find(IndexColumnAvailable(1, 2:end));
+
+        if isempty(validIndex)
+            disp(['Not Found Any valid format in File: ' file]);
+            return;
+        else
+            indexXValue = IndexColumnAvailable(3, 1+validIndex(1));
+            indexXValueFormat = IndexColumnAvailable(2, 1+validIndex(1));
+            disp(['Loaded Channel: ' columnsPossibleName{1+validIndex(1)}]);
+
+%                 if validIndex(1)~= 2; disp(['Tip Sample Separation not found in File: ' file]);end
+        end
+
+        %Extract Format
+        yChannelName = columnsName{indexYValueFormat};
+        xChannelName = columnsName{indexXValueFormat};
+
+        if (sharedHeaderPresence)
+
+            yChannel = Fodis.IO.extractParameterValue(dataSegmentHeader, ['channel.' yChannelName '.lcd-info']);
+            yFormat = structChannel.(['Channel' yChannel]).format;
+            yMultiplier = structChannel.(['Channel' yChannel]).multiplier.Total;
+
+            xChannel = Fodis.IO.extractParameterValue(dataSegmentHeader, ['channel.' xChannelName '.lcd-info']);
+            xFormat = structChannel.(['Channel' xChannel]).format;
+            xMultiplier = structChannel.(['Channel' xChannel]).multiplier.Total;
+
+        else  %%Versione old pre 2011
+
+            yStructChannel = Fodis.IO.extractSegmentHeaderInformation(allFilenameInActualSegment(segmentHeader), yChannelName);
+            yFormat = yStructChannel.(yChannelName).format;
+            yMultiplier = yStructChannel.(yChannelName).multiplier.Total;
+
+            xStructChannel = Fodis.IO.extractSegmentHeaderInformation(allFilenameInActualSegment(segmentHeader), xChannelName);
+            xFormat = xStructChannel.(xChannelName).format;
+            xMultiplier = xStructChannel.(xChannelName).multiplier.Total;
+        end
+
+        % Read the good x channel from file
+        xChannelFileName = char(allFilenameInActualSegment{indexXValue});
+        fidtss = fopen(xChannelFileName, 'r', 'b', 'UTF-8');
+        xAxisValue = fread(fidtss, xFormat);
+        fclose(fidtss);
+
+        % adjust tip sample separation value
+        tipSampleSeparation = xMultiplier*xAxisValue-min(xMultiplier*xAxisValue);
+
+        % read vertical deflection data from file
+        fidF = fopen(char(allFilenameInActualSegment(indexYValue)), 'r', 'b', 'UTF-8');
+        Fdata = fread(fidF, yFormat);
+        fclose(fidF);
+
+        % adjust vertical deflection value
+        vDeflaction = yMultiplier*Fdata;
+
+        segDuration = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.settings.segment-settings.duration'));
+        outSegments{j, 1} = linspace(0, segDuration, numel(tipSampleSeparation));
+        outSegments{j, 2} = tipSampleSeparation';
+        outSegments{j, 3} = vDeflaction';
+        
+        % send headers as output
+        headers(j).index = kk + 1;
+        headers(j).name = segmentType;
+        headers(j).springConstant = yMultiplier;
+        headers(j).sensitivity = xMultiplier;
+        headers(j).xPosition = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.environment.xy-scanner-position-map.xy-scanner.tip-scanner.start-position.x'));
+        headers(j).yPosition = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.environment.xy-scanner-position-map.xy-scanner.tip-scanner.start-position.y'));
+        headers(j).curveIndex = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.environment.xy-scanner-position-map.xy-scanners.position-index'));
+        
+        parsedSegments(j) = true;
     end
+    
+    outSegments = outSegments(parsedSegments, :);
+    headers = headers(parsedSegments);
+    
+    
+    try
+        rmdir(tmpName, 's');
+    catch ex
+        warning(ex.identifier, ex.message);
+        % can't delete temp curve for some reason
+    end
+end
 
-    tracesRetract{1, 1} = retractTipSampleSeparation';
-    tracesRetract {1, 2} = retractVDeflaction';
-    tracesExtend{1, 1} = zeros(size(retractTipSampleSeparation'));
-    tracesExtend{1, 2} = zeros(size(retractVDeflaction'));
+function headers = generateHeadersStruct(n)
 
-    rmdir(tmpName, 's');
-
+    headersPreallocation = cell(n);
+    headers = struct('index', headersPreallocation, 'name', headersPreallocation,...
+        'springConstant', headersPreallocation, 'sensitivity', headersPreallocation,...
+        'xPosition', headersPreallocation, 'yPosition', headersPreallocation, 'curveIndex', headersPreallocation);
 end

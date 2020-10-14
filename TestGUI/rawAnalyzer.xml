@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document _type="ForSDAT.Core.RawDataAnalyzer" _version="3">
+  <pipeline _type="lists.Pipeline" _isList="true">
+        <shouldPrintTaskTimespan _type="logical">0</shouldPrintTaskTimespan>
+        <_entry _type="ForSDAT.Core.Tasks.AdjustmentTask">
+            <adjuster _type="ForSDAT.Core.Adjusters.FDCurveOOMAdjuster">
+                <FOOM _type="util.OOM">Pico</FOOM>
+                <ZOOM _type="util.OOM">Nano</ZOOM>
+            </adjuster>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">Distance</xChannel>
+            <segment _type="char">retract</segment>
+            <shouldAdjustOriginalData _type="logical">0</shouldAdjustOriginalData>
+            <shouldAffectOriginalData _type="logical">1</shouldAffectOriginalData>
+        </_entry>
+        <!--_entry _type="ForSDAT.Core.Tasks.AdjustmentTask">
+            <adjuster _type="ForSDAT.Core.Adjusters.DataSmoothingAdjuster">
+                <algorithm _type="char">sgolay</algorithm>
+                <span _type="double">7</span>
+                <degree _type="double">4</degree>
+                <edgeNonSmoothRange _type="double" />
+            </adjuster>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">Distance</xChannel>
+            <segment _type="char">retract</segment>
+            <shouldAdjustOriginalData _type="logical">1</shouldAdjustOriginalData>
+        </_entry-->
+        <_entry _type="ForSDAT.Core.Tasks.BaselineDetectorTask">
+            <detector _type="ForSDAT.Core.Baseline.CompositeBaselineDetector">
+                <primary _type="ForSDAT.Core.Baseline.SimpleBaselineDetector">
+                    <fragment _type="double">0.1</fragment>
+                    <stdScore _type="double">2.5</stdScore>
+                    <isBaselineTilted_value _type="logical">0</isBaselineTilted_value>
+                </primary>
+                <secondary _type="ForSDAT.Core.Baseline.HistogramBaselineDetector">
+                    <binningMethod _type="double">10</binningMethod>
+                    <minimalBins _type="double">15</minimalBins>
+                    <gaussFitOpts _type="struct">
+                        <fitR2Threshold _type="double">0.5</fitR2Threshold>
+                        <useMatlabFit _type="logical">1</useMatlabFit>
+                        <order _type="double">3</order>
+                    </gaussFitOpts>
+                    <stdScore _type="double">1.25</stdScore>
+                </secondary>
+                <stdThreshold _type="double">0.1</stdThreshold>
+            </detector>
+            <baselineOffsetFactorMultiplier _type="double">2</baselineOffsetFactorMultiplier>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">Distance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+        <_entry _type="ForSDAT.Core.Tasks.ContactPointDetectorTask">
+            <detector _type="ForSDAT.Core.Contact.ContactPointDetector">
+                <fragment _type="double">0.007</fragment>
+                <iterativeApproachR2Threshold _type="double">0.97</iterativeApproachR2Threshold>
+                <isSorftSurface _type="logical">0</isSorftSurface>
+            </detector>
+            <shouldEstimateCantileverSpringConstant _type="logical">0</shouldEstimateCantileverSpringConstant>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">Distance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+        <_entry _type="ForSDAT.Core.Tasks.TipHeightAdjustTask">
+            <adjuster _type="ForSDAT.Core.Adjusters.TipHeightAdjuster">
+                <springConstant _type="double"/>
+                <foom _type="util.OOM">Pico</foom>
+                <doom _type="util.OOM">Nano</doom>
+            </adjuster>
+            <shouldEstimateCantileverSpringConstant _type="logical">0</shouldEstimateCantileverSpringConstant>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">Distance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+        <_entry _type="ForSDAT.Core.Tasks.RuptureEventDetectorTask">
+            <ruptureDetector _type="ForSDAT.Core.Ruptures.RuptureDetector">
+                <baselineDetector _type="ForSDAT.Core.Baseline.CompositeBaselineDetector">
+                    <primary _type="ForSDAT.Core.Baseline.SimpleBaselineDetector">
+                        <fragment _type="double">0.1</fragment>
+                        <stdScore _type="double">2</stdScore>
+                        <isBaselineTilted_value _type="logical">0</isBaselineTilted_value>
+                    </primary>
+                    <secondary _type="ForSDAT.Core.Baseline.HistogramBaselineDetector">
+                        <binningMethod _type="double">10</binningMethod>
+                        <minimalBins _type="double">15</minimalBins>
+                        <gaussFitOpts _type="struct">
+                            <fitR2Threshold _type="double">0.5</fitR2Threshold>
+                            <useMatlabFit _type="logical">1</useMatlabFit>
+                            <order _type="double">3</order>
+                        </gaussFitOpts>
+                        <stdScore _type="double">1</stdScore>
+                    </secondary>
+                    <stdThreshold _type="double">0.1</stdThreshold>
+                </baselineDetector>
+                <stepSlopeDeviation _type="double">0.1745</stepSlopeDeviation>
+                <thresholdingMethods _type="ForSDAT.Core.Ruptures.Thresholding.IThresholdMethod" _isList="true">
+                    <_entry _type="ForSDAT.Core.Ruptures.Thresholding.SizeVsNoiseMethod"></_entry>
+                    <_entry _type="ForSDAT.Core.Ruptures.Thresholding.StartBelowNoiseDomainMethod"></_entry>
+                    <_entry _type="ForSDAT.Core.Ruptures.Thresholding.RemoveContactMethod"></_entry>
+                    <_entry _type="ForSDAT.Core.Ruptures.Thresholding.IgnoreNoiseAnomallyMethod"></_entry>
+                </thresholdingMethods>
+            </ruptureDetector>
+            <loadingDomainDetector _type="ForSDAT.Core.Ruptures.NoiseOffsetLoadingDomainDetector"></loadingDomainDetector>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">Distance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+        <_entry _type="ForSDAT.Core.Tasks.InteractionWindowTask">
+            <filter _type="ForSDAT.Core.Ruptures.InteractionWindowSMIFilter">
+                <acceptedRange _type="double">20</acceptedRange> <!-- in nm -->
+            </filter>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">FixedDistance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+        <_entry _type="ForSDAT.Core.Tasks.ChainFitTask">
+            <chainFitter _type="ForSDAT.Core.Ruptures.WLCLoadFitter">
+                <T _type="double">298</T>
+                <loadingRateFitRange _type="double">0.1</loadingRateFitRange>
+                <polynomialOrder _type="double">1</polynomialOrder>
+            </chainFitter>
+            <fitAllAtOnce _type="logical">0</fitAllAtOnce>
+            <plotChainfitFromContactPoint _type="logical">1</plotChainfitFromContactPoint>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">FixedDistance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+        <_entry _type="ForSDAT.Core.Tasks.SMIFilterTask" contactChannel="FixedContact">
+            <filter _type="ForSDAT.Core.Ruptures.SmoothingSMIFilter">
+                <smoothingAdjuster _type="ForSDAT.Core.Adjusters.DataSmoothingAdjuster">
+                    <algorithm _type="char">moving</algorithm>
+                    <span _type="double">50</span>
+                </smoothingAdjuster>
+                <baselineDetector _type="ForSDAT.Core.Baseline.SimpleBaselineDetector">
+                    <fragment _type="double">0.1</fragment>
+                    <stdScore _type="double">4</stdScore>
+                    <isBaselineTilted_value _type="logical">0</isBaselineTilted_value>
+                </baselineDetector>
+                <angleDefiningSeparationFromContactDomain _type="double">45</angleDefiningSeparationFromContactDomain>
+            </filter>
+            <prefilteredRuptureChannel _type="char">RuptureWindow</prefilteredRuptureChannel>
+            <yChannel _type="char">Force</yChannel>
+            <xChannel _type="char">FixedDistance</xChannel>
+            <segment _type="char">retract</segment>
+        </_entry>
+    </pipeline>
+</document>

@@ -1,11 +1,13 @@
-classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
+classdef ForceDistanceCurveParser < ForSDAT.Application.IO.IForceCurveParser & mfc.IDescriptor
     properties (Access=private)
         MetaPattern;
         DataPattern;
     end
     
     properties
-        ShouldFlipExtendSegments = false;
+        % Determines whether to flip extend segment data so that it starts
+        % at the contact domain
+        ShouldFlipExtendSegments logical = false;
     end
     
     methods (Hidden) % factory meta data
@@ -46,6 +48,13 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
         end
         
         function fdc = parseJpkTextFile(this, fileName, wantedSegments)
+            if nargin < 3
+                wantedSegments = [];
+            end
+            fdc = this.parse(fileName, wantedSegments);
+        end
+        
+        function fdc = parse(this, fileName, wantedSegments)
             if nargin < 3
                 wantedSegments = [];
             end
@@ -145,6 +154,10 @@ classdef ForceDistanceCurveParser < handle & mfc.IDescriptor
                     segment.time = horzcat(segment.time, nan(nDataPoints - nt));
                 end
             end
+        end
+        
+        function fileType = supportedFileTypes(this)
+            fileType = 'txt';
         end
     end
     methods (Access=private)

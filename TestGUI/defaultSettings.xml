@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document _type="struct" _version="3">
+    <measurement _type="struct">
+        <samplingRate _type="double">2048</samplingRate>
+        <speed _type="double">800</speed>
+        <linker _type="chemo.PEG">
+            <Mw _type="double">5000</Mw>
+        </linker>
+        <molecule _type="chemo.Peptide" sequence="SVSVGMKPSPRP"></molecule>
+        <noiseAnomally _type="ForSDAT.Core.NoiseAnomally">
+            <length _type="double">2</length>
+            <speed _type="double">800</speed>
+            <samplingRate _type="double">2048</samplingRate>
+        </noiseAnomally>
+        <FOOM _type="util.OOM">Pico</FOOM>
+        <ZOOM _type="util.OOM">Nano</ZOOM>
+    </measurement>
+</document>

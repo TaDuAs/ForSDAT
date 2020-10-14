@@ -28,11 +28,11 @@ classdef JpkFDCDataAccessor < dao.FileSystemDataAccessor & mfc.IDescriptor
         end
         
         function item = load(this, path)
-            item = this.Parser.parseJpkTextFile(fullfile(this.BatchPath, path), this.WantedSegments);
+            item = this.Parser.parse(fullfile(this.BatchPath, path), this.WantedSegments);
         end
         
         function filter = fileTypeFilter(this)
-            filter = '*.txt';
+            filter = ['*.' this.Parser.supportedFileTypes];
         end
     end
 end

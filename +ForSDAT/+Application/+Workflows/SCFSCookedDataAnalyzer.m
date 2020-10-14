@@ -1,8 +1,6 @@
-classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyzer & mfc.IDescriptor
-    % SMICookedDataAnalyzer implements the interface for analysing 
-    properties
-        dataAnalyzer;
-    end
+classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyzer & mfc.IDescriptor
+    % SCFSCookedDataAnalyzer implements the interface for analysing
+    % "cooked" single cell force spectroscopy curves
     
     methods (Hidden) % meta data
         
@@ -44,17 +42,22 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
                 item.posy = data.BatchPosition.y;
                 item.posi = data.BatchPosition.i;
                 item.energy = mvvm.getobj(data, 'AdhesionEnergy.Value', [], 'nowarn');
+ 
+                % extract single detachment events info
+                ruptures = mvvm.getobj(data, 'Rupture', [], 'nowarn');
+                if ~isempty(ruptures)
+                    item.ruptureForce = ruptures.force;
+                    item.ruptureDistance = ruptures.distance;
+                    item.nRuptures = numel(ruptures.distance);
+                    item.maxAdhesionDistance = max(ruptures.distance);
+                end
             end
         end
     end
     
     methods
-        function this = AdhesionCookedDataAnalyzer(analysisContext, repositoryContext, exRepoDAO, dataAnalyzer)
+        function this = SCFSCookedDataAnalyzer(analysisContext, repositoryContext, exRepoDAO)
             this@ForSDAT.Application.Workflows.CookedDataAnalyzer(analysisContext, repositoryContext, exRepoDAO);
-            
-            if nargin >= 2 && ~isempty(dataAnalyzer)
-                this.dataAnalyzer = dataAnalyzer;
-            end
         end
         
         function results = doAnalysis(this, dataList)
@@ -63,6 +66,9 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
             [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.settings.measurement.speed, [dataList.lr], options);
             
             results = ForSDAT.Application.Models.ForsSpecExperimentResults();
+            
+            f = [dataList.f];
+            
             
             % results
             results.MostProbableForce = mpf;
@@ -82,7 +88,8 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         function bool = examineCurveAnalysisResults(this, data)
         % Examine the analysis results of a single curve and determine
         % whether adhesion event was detected
-            bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
+%             bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
+            bool = true;
         end
         
         function experimentId = loadPreviouslyProcessedDataOutput(this, path)

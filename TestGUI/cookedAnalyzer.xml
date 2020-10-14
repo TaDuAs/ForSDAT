@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document _type="ForSDAT.Application.Workflows.SMICookedDataAnalyzer" _version="3">
+    <DataAnalyzer _type="ForSDAT.Core.StepsDataAnalyzer" BinningMethod="fd" Model="gamma" ErrorType="confi">
+        <MinimalBins _type="double">15</MinimalBins>
+    </DataAnalyzer>
+    <ResultsValidators _type="ForSDAT.Application.Workflows.CRV.SuccessRateValidator" _isList="true">
+        <_entry _type="ForSDAT.Application.Workflows.CRV.SuccessRateValidator">
+            <AcceptedPercentage _type="double">3.5</AcceptedPercentage>
+        </_entry>
+    </ResultsValidators>
+    <ExperimentRepositoryDAO _type="ForSDAT.Application.IO.ExperimentRepositoryDAO" RepositoryPath=""></ExperimentRepositoryDAO>
+</document>

@@ -1,6 +1,7 @@
 classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
     properties
         detector;
+        rupturesChannel = 'Rupture';
     end
     
     methods % meta data
@@ -33,8 +34,9 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
         function data = process(this, data)
             z = this.getChannelData(data, 'x');
             f = this.getChannelData(data, 'y');
+            ruptureDist = this.getRuptureDistances(data);
             
-            [adhEnergy, units] = this.detector.detect(z, f);
+            [adhEnergy, units] = this.detector.detect(z, f, ruptureDist);
             
             data.AdhesionEnergy.Value = adhEnergy;
             data.AdhesionEnergy.Units = units;
@@ -51,7 +53,8 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             
             x = this.getChannelData(data, 'x');
             y = this.getChannelData(data, 'y');
-            areaMask = y < 0;
+            ruptureDist = this.getRuptureDistances(data);
+            areaMask = y < 0 & this.detector.getBoundsMask(x, y, ruptureDist);
             
             % plot curve picking analysis
             if plotFlags(2)
@@ -59,6 +62,15 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             end 
             
             hold off;
+        end
+        
+        function ruptureDist = getRuptureDistances(this, data)
+            ruptures = this.getChannelData(data, this.rupturesChannel, false);
+            if ~isempty(ruptures)
+                ruptureDist = ruptures.distance;
+            else
+                ruptureDist = 0;
+            end
         end
         
         function init(this, settings)

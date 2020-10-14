@@ -11,6 +11,12 @@ classdef AnalyzedFDCData < mfc.IDescriptorStruct
         posy = -1;      % AFM head lateral position Y
         posi = -1;      % AFM head lateral position index in batch
         file = '';      % fd-curve file name
+        
+        % scfs stuff
+        ruptureForce = [];          % magnitude of each detected rupture event 
+        ruptureDistance = [];       % distance of each detected rupture event
+        nRuptures = 0;              % number of detected single rupture events
+        maxAdhesionDistance = [];   % distance of final detachment event
     end
     
     properties (Access=private)

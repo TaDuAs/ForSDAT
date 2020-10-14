@@ -4,6 +4,7 @@ function structChannel=extractSharedHeaderInformation(filename)
 readHeader = fopen(char(filename), 'r');
 %Read File
 dataSharedHeader = textscan(readHeader, '%s', 'delimiter', '\n');
+fclose(readHeader);
 
 %Find all lcd-info line end extract it
 extendLengthIndex = ~cellfun('isempty', strfind(dataSharedHeader{1},'lcd-info.'));
@@ -28,11 +29,11 @@ for jj=1:length(allDifferentChannelNumber)
     allEntryThisChannel=dataValidSharedHeader(allEntryThisChannelIndex);
     
     % Channel Type
-    dataType=extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.type']);
+    dataType = Fodis.IO.extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.type']);
     structChannel.(['Channel' num2str(actualChannel)]).dataType=dataType;
      
     % Channel Name
-    dataName=extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.channel.name']);
+    dataName = Fodis.IO.extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.channel.name']);
     structChannel.(['Channel' num2str(actualChannel)]).dataName=dataName;
     
     % Various multiplier
@@ -67,15 +68,15 @@ for jj=1:length(allDifferentChannelNumber)
     if ~isempty(find(dataEncoderIndex,1))
         
         %Encoder Type
-        dataEncoder=extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.encoder.type']);
+        dataEncoder = Fodis.IO.extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.encoder.type']);
         structChannel.(['Channel' num2str(actualChannel)]).dataEncoder=dataEncoder;
        
         %Encoder Offset
-        dataEncoderOffset=extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.encoder.scaling.offset']);
+        dataEncoderOffset = Fodis.IO.extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.encoder.scaling.offset']);
         structChannel.(['Channel' num2str(actualChannel)]).dataEncoderOffset=dataEncoderOffset;
 
         %Encoder Multiplier
-        dataEncoderMultiplier=extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.encoder.scaling.multiplier']);
+        dataEncoderMultiplier = Fodis.IO.extractParameterValue(allEntryThisChannel,['lcd-info.' num2str(actualChannel) '.encoder.scaling.multiplier']);
         structChannel.(['Channel' num2str(actualChannel)]).dataEncoderMultiplier=dataEncoderMultiplier;
         
         %Encoder TotalMultiplier
@@ -86,7 +87,7 @@ for jj=1:length(allDifferentChannelNumber)
     end
     
     %Extract Format
-    format=extractFormat(dataType,dataEncoder);
+    format = Fodis.IO.extractFormat(dataType,dataEncoder);
     structChannel.(['Channel' num2str(actualChannel)]).format=format;
     
 end

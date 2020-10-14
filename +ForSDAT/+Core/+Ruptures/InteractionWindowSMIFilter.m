@@ -32,8 +32,18 @@ classdef InteractionWindowSMIFilter < handle
         end
         
         function init(this, settins)
-            this.molecule = settins.measurement.molecule;
-            this.linker = settins.measurement.linker;
+            mol = mvvm.getobj(settins, 'measurement.molecule', [], 'nowarn');
+            if ~isempty(mol)
+                this.molecule = mol;
+            else
+                this.molecule = chemo.PEG(0);
+            end
+            link = mvvm.getobj(settins, 'measurement.linker', [], 'nowarn');
+            if ~isempty(link)
+                this.linker = settins.measurement.linker;
+            else
+                this.linker = chemo.PEG(0);
+            end
             this.noiseAnomally = settins.measurement.noiseAnomally;
         end 
             

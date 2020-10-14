@@ -3,6 +3,7 @@ function [extendLength,retractLength,extendPauseLength,retractPauseLength]=extra
 
 readHeader = fopen(char(filename), 'r');
 dataGeneralHeader = textscan(readHeader, '%s', 'delimiter', '\n');
+fclose(readHeader);
 
 extendLengthIndex = ~cellfun('isempty', strfind(dataGeneralHeader{1},'extend-k-length')); %Number Points extend
 extendLengthLine=strsplit(dataGeneralHeader{1}{extendLengthIndex},'=');
