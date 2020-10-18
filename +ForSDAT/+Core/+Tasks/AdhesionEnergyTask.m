@@ -47,7 +47,7 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
                 extras = [];
             end
             plotData@ForSDAT.Core.Tasks.PipelineDATask(this, fig, data, extras);
-            plotFlags = Simple.getobj(extras, 'plotFlags', [true, true]);
+            plotFlags = mvvm.getobj(extras, 'plotFlags', [true, true]);
             
             hold on;
             

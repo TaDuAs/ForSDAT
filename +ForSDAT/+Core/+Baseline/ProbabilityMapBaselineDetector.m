@@ -55,7 +55,7 @@ classdef ProbabilityMapBaselineDetector < BaselineDetector
         %   s - standard error values
         %   mu - [avg, std]
         %   extras - extra data regarding the calculation
-            import Simple.Math.*;
+            import util.Math.*;
             
             % generate probability map
             [xBins, ~, ~] = Histool.calcBins(x, this.xBinningMethod, this.minimalBins);

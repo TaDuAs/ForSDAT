@@ -60,7 +60,7 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         function results = doAnalysis(this, dataList)
             options = [];
             options.showHistogram = true;
-            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.settings.measurement.speed, [dataList.lr], options);
+            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.Settings.Measurement.Speed, [dataList.lr], options);
             
             results = ForSDAT.Application.Models.ForsSpecExperimentResults();
             
@@ -75,7 +75,7 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
             results.BinningMethod = this.DataAnalyzer.BinningMethod;
             results.MinimalBins = this.DataAnalyzer.MinimalBins;
             results.FittingModel = this.DataAnalyzer.Model;
-            results.Speed = this.settings.measurement.speed;
+            results.Speed = this.Settings.Measurement.Speed;
             results.FitR2Threshold = this.DataAnalyzer.FitR2Threshold;
         end
 

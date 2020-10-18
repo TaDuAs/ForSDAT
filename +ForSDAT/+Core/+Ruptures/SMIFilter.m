@@ -20,7 +20,6 @@ classdef (Abstract) SMIFilter < handle
     methods (Access=protected)
         
         function flaggedRuptureEvents = setBasicFilters(this, frc, dist, ruptureEvents, prefilteredRuptures, noiseAmplitude, chainFitFunctions, modeledRuptureForce, contactDomainSlope)
-            import Simple.Math.*;
             % add validity flag
             flaggedRuptureEvents = [ruptureEvents; ones(1, size(ruptureEvents, 2))];
  

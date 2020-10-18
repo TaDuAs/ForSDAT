@@ -32,19 +32,11 @@ classdef InteractionWindowSMIFilter < handle
         end
         
         function init(this, settins)
-            mol = mvvm.getobj(settins, 'measurement.molecule', [], 'nowarn');
-            if ~isempty(mol)
-                this.molecule = mol;
-            else
-                this.molecule = chemo.PEG(0);
-            end
-            link = mvvm.getobj(settins, 'measurement.linker', [], 'nowarn');
-            if ~isempty(link)
-                this.linker = settins.measurement.linker;
-            else
-                this.linker = chemo.PEG(0);
-            end
-            this.noiseAnomally = settins.measurement.noiseAnomally;
+            this.molecule = mvvm.getobj(settins, 'Measurement.Probe.Molecule', chemo.PEG(0), 'nowarn');
+
+            this.linker = mvvm.getobj(settins, 'Measurement.Probe.Linker', chemo.PEG(0), 'nowarn');
+            
+            this.noiseAnomally = settins.NoiseAnomally;
         end 
             
         function [lsRsRe, indexOfSpecificInteractionInRuptureEventsMatrix] = ...
@@ -68,7 +60,7 @@ classdef InteractionWindowSMIFilter < handle
             
             % Filter noise anomallies
             flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & ...
-                flaggedRuptureEvents(2, :) - flaggedRuptureEvents(1, :) + 1 >= this.noiseAnomally.dataPoints;
+                flaggedRuptureEvents(2, :) - flaggedRuptureEvents(1, :) + 1 >= this.noiseAnomally.DataPoints;
             
             % Linker window
             flaggedRuptureEvents(end, :) = flaggedRuptureEvents(end, :) & ...

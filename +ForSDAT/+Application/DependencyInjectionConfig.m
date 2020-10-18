@@ -16,7 +16,7 @@ classdef DependencyInjectionConfig < handle
             ioc.set('AppContext', @(app) app.Context, 'App');
             ioc.set('AnalyzerConfigFilePath', @(app) fullfile(app.ResourcePath, 'Settings', 'Defaults.xml'), 'App');
             
-            % Simple framework
+            % Flow framework
             ioc.setSingleton('BindingManager', @mvvm.BindingManager);
             
             % controllers
@@ -41,7 +41,7 @@ classdef DependencyInjectionConfig < handle
     methods (Access=private)
         function anomally = getNoiseAnomally(this, app)
             ctrl = app.getController('ForceSpecAnalysisController');
-            anomally = ctrl.Project.Settings.measurement.noiseAnomally;
+            anomally = ctrl.Project.Settings.NoiseAnomally;
         end
     end
 end

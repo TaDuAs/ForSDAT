@@ -1,7 +1,9 @@
 classdef JpkFDCDataAccessor < dao.FileSystemDataAccessor & mfc.IDescriptor
     properties
-        Parser;
+        BinaryParser ForSDAT.Application.IO.IForceCurveParser = ForSDAT.Application.IO.JpkBinaryFDCParser.empty();
+        TextParser ForSDAT.Application.IO.IForceCurveParser = ForSDAT.Application.IO.ForceDistanceCurveParser.empty();
         WantedSegments;
+        ShouldFlipExtendSegments (1,1) logical = false;
     end
     
     methods (Hidden) % factory meta data
@@ -9,30 +11,39 @@ classdef JpkFDCDataAccessor < dao.FileSystemDataAccessor & mfc.IDescriptor
         % ctorParams is a cell array which contains the parameters passed to
         % the ctor and which properties are to be set during construction
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'WantedSegments', 'Parser', '%ErrorHandler', 'Exporter'};
+            ctorParams = {'WantedSegments', '%ErrorHandler', 'Exporter'};
             defaultValues = {...
                 'WantedSegments', [],...
-                'Parser', ForSDAT.Application.IO.ForceDistanceCurveParser.empty(),...
                 'Exporter', dao.DelimiterValuesDataExporter.empty()};
         end
     end
     
     methods
-        function this = JpkFDCDataAccessor(wantedSegments, parser, errHandler, exporter, queueFactory)
+        function this = JpkFDCDataAccessor(wantedSegments, errHandler, exporter, queueFactory)
             if nargin < 5; queueFactory = dao.SimpleDataQueueFactory.empty(); end
 
             this@dao.FileSystemDataAccessor(errHandler, exporter, queueFactory);
 
-            this.Parser = parser;
+            this.BinaryParser = ForSDAT.Application.IO.JpkBinaryFDCParser();
+            this.TextParser = ForSDAT.Application.IO.ForceDistanceCurveParser();
             this.WantedSegments = wantedSegments;
         end
         
         function item = load(this, path)
-            item = this.Parser.parse(fullfile(this.BatchPath, path), this.WantedSegments);
+            [~, ~, fileType] = fileparts(path);
+            
+            if ismember(fileType(2:end), this.BinaryParser.supportedFileTypes)
+                item = this.BinaryParser.parse(fullfile(this.BatchPath, path), this.WantedSegments, this.ShouldFlipExtendSegments);
+            else
+                item = this.TextParser.parse(fullfile(this.BatchPath, path), this.WantedSegments, this.ShouldFlipExtendSegments);
+            end
         end
         
         function filter = fileTypeFilter(this)
-            filter = ['*.' this.Parser.supportedFileTypes];
+            supportedFileTypes = [...
+                cellstr(this.TextParser.supportedFileTypes()),...
+                cellstr(this.BinaryParser.supportedFileTypes())];
+            filter = strcat('*.', supportedFileTypes);
         end
     end
 end

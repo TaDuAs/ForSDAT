@@ -27,7 +27,7 @@ classdef ChainFit < handle
             [func, isGoodFit, s, mu] = this.dofit(x, y);
             
             if this.shouldShiftX
-                func = Simple.Math.Ex.Shift(func, this.xshiftValue);
+                func = util.matex.Shift(func, this.xshiftValue);
             end
         end
         

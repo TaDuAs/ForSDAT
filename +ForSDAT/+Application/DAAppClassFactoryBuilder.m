@@ -102,7 +102,7 @@ classdef DAAppClassFactoryBuilder < Simple.App.ClassFactoryBuilder
                     data.loadingDomainDetector));
 %             classFactory.addConstructor('ForSDAT.Core.Ruptures.WLCSolutionFitter', @(data) ForSDAT.Core.Ruptures.WLCSolutionFitter(data.T, data.loadingRateFitRange, data.polynomialOrder));
             classFactory.addConstructor('ForSDAT.Core.Ruptures.WLCLoadFitter', @(data) ForSDAT.Core.Ruptures.WLCLoadFitter(data.T));
-            classFactory.addConstructor('ForSDAT.Core.NoiseAnomally', @(data) ForSDAT.Core.NoiseAnomally(data.length, data.speed, data.samplingRate));
+            classFactory.addConstructor('ForSDAT.Core.NoiseAnomally', @(data) ForSDAT.Core.NoiseAnomally(data.Length, data.Speed, data.SamplingRate));
             classFactory.addConstructor('ForSDAT.Core.Ruptures.NoiseOffsetLoadingDomainDetector', @(data) ForSDAT.Core.Ruptures.NoiseOffsetLoadingDomainDetector());
             classFactory.addConstructor('ForSDAT.Core.Ruptures.PreviousRuptureEndLoadingDomain', @(data) ForSDAT.Core.Ruptures.PreviousRuptureEndLoadingDomain());
             classFactory.addConstructor('ForSDAT.Core.Tasks.ChainFitTask', @(data) ForSDAT.Core.Tasks.ChainFitTask(...

@@ -8,7 +8,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
     
     properties (Hidden)
         ArrheniusPrefactor = 10^6; % [Hz]
-                                    % Li et al. Langmuir 2014, https://doi.org/10.1021/la501189n
+                                   % Li et al. Langmuir 2014, https://doi.org/10.1021/la501189n
         BellEvansAlpha = 0.95;
     end
         
@@ -23,7 +23,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
         DataAccessor dao.DataAccessor = dao.MXmlDataAccessor.empty();
         
         % The setup settings of the current running analysis
-        Settings;
+        Settings ForSDAT.Core.Setup.AnalysisSettings;
         
         % The Id of the currently analyzed experiment/force-curve-batch
         RunningExperimentId;
@@ -325,7 +325,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
                 return;
             end
             
-            [mpf, mpfErr, x, xErr] = prepareBellEvansData(this);
+            [mpf, mpfErr, x, xErr] = this.prepareBellEvansData();
             
 %             [p, S] = polyfit(x, mpf, 1);
 %             R2 = util.getFitR2(mpf, S);

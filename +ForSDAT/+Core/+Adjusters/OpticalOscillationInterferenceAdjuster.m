@@ -47,7 +47,7 @@ classdef OpticalOscillationInterferenceAdjuster < ForSDAT.Core.Adjusters.LongWav
         
         function [fFixed, fitArgs, waveFVector, shift] = adjust(this, fToFix, zToFix, fFit, zFit, k)
         % Adjusts long-wavelength disturbances to the baseline
-            import Simple.croparr;
+            import util.croparr;
         
             % Fit wave function
             fFitSegment = croparr(fFit, this.fittingRangeParams.a, this.fittingRangeParams.b);

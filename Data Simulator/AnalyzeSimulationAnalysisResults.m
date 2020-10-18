@@ -116,7 +116,7 @@ breakLoopFlag = false;
 %     apparentLoadingStartIndex = previousRuptureIndex;%max(currInteraction.i(1), previousRuptureIndex);
 % 
 %     % Get rid of noise anomallies
-%     if (currInteraction.i(2) - apparentLoadingStartIndex) <= results.noiseAnomaly.dataPoints
+%     if (currInteraction.i(2) - apparentLoadingStartIndex) <= results.noiseAnomaly.DataPoints
 %         continue;
 %     end
 % 

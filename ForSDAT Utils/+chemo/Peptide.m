@@ -33,6 +33,10 @@ classdef Peptide < chemo.Polymer
             n = reshape(cellfun(@strlength, {this.sequence}), size(this));
         end
          
+        function x = getSize(this)
+            x = this.backboneLength(this);
+        end
+        
         function l = backboneLength(this)
             if numel(this) == 1
                 l = backboneLength@chemo.Polymer(this, []);

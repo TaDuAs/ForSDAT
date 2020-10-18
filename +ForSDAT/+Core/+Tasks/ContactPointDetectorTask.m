@@ -70,7 +70,7 @@ classdef ContactPointDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             end
             plotData@ForSDAT.Core.Tasks.PipelineDATask(this, fig, data, extras);
             
-            if Simple.getobj(extras, 'showOriginalData', false)
+            if mvvm.getobj(extras, 'showOriginalData', false)
                 dst = this.getOriginalChannelData(data, 'x');
                 frc = this.getOriginalChannelData(data, 'y');
                 baseline = zeros(1, length(dst)) + data.Baseline.value;

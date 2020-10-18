@@ -17,8 +17,8 @@ classdef PolynomialLoadFitter < ChainFit
         end
         
         function [func, isGoodFit, s, mu] = dofit(this, x, y)
-            [p, s, mu] = Simple.Math.epolyfit(x, y, this.order);
-            func = Polynomial(p);
+            [p, s, mu] = polyfit(x, y, this.order);
+            func = util.matex.Polynomial(p);
             
             % Determine if the fit was good
             isGoodFit = true;

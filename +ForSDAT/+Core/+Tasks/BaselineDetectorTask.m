@@ -94,7 +94,7 @@ classdef BaselineDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescrip
             
             hold on;
             
-            if Simple.getobj(extras, 'showOriginalData', false)
+            if mvvm.getobj(extras, 'showOriginalData', false)
                 x = this.getOriginalChannelData(data, 'x');
                 baseline = zeros(1, length(x)) + data.Baseline.value;
             else

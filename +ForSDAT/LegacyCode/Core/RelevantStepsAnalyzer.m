@@ -96,10 +96,9 @@ classdef RelevantStepsAnalyzer < handle
         end
         
         function index = findStepBoundary(this, df, startAt, dir)
-            import Simple.Math.*;
             % Step slope angle should be 90 degrees, but will always deviate.
             % this is the maximum deviation of step angle from 90 deg, in radians
-            stepSlopeRange = degtorad(getobj(this.stepDetectionSettings, 'stepSlopeDeviation', 10));
+            stepSlopeRange = deg2rad(mvvm.getobj(this.stepDetectionSettings, 'stepSlopeDeviation', 10));
             
             index = startAt;
             nextIndex = startAt;
@@ -107,7 +106,7 @@ classdef RelevantStepsAnalyzer < handle
             rightAngle = pi()/2;
             
             while nextIndex ~= endAt &&...
-                  rightAngle - slope2angle(df(nextIndex)) <= stepSlopeRange
+                  rightAngle - util.slope2angle(df(nextIndex)) <= stepSlopeRange
                 index = nextIndex;
                 nextIndex = nextIndex + dir;
             end

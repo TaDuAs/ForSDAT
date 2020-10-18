@@ -63,7 +63,6 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
         function results = doAnalysis(this, dataList)
             options = [];
             options.showHistogram = true;
-%             [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.dataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.settings.measurement.speed, [dataList.lr], options);
             
             results = ForSDAT.Application.Models.SCFSExperimentResults();
             

@@ -3,10 +3,10 @@ classdef NoiseAnomally < handle & mfc.IDescriptor
     %   Detailed explanation goes here
     
     properties
-        dataPoints;
-        length;
-        speed;
-        samplingRate;
+        DataPoints;
+        Length;
+        Speed;
+        SamplingRate;
     end
     
     methods % factory meta data
@@ -14,17 +14,17 @@ classdef NoiseAnomally < handle & mfc.IDescriptor
         % ctorParams is a cell array which contains the parameters passed to
         % the ctor and which properties are to be set during construction
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'length', 'speed', 'samplingRate'};
-            defaultValues = {'length', [], 'speed', [], 'samplingRate', []};
+            ctorParams = {'Length', 'Speed', 'SamplingRate'};
+            defaultValues = {'Length', [], 'Speed', [], 'SamplingRate', []};
         end
     end
     
     methods
         function this = NoiseAnomally(length, speed, samplingRate)
-            this.length = length;
-            this.speed = speed;
-            this.samplingRate = samplingRate;
-            this.dataPoints = ForSDAT.Core.lvsr2nDataPoints(length, speed, samplingRate);
+            this.Length = length;
+            this.Speed = speed;
+            this.SamplingRate = samplingRate;
+            this.DataPoints = ForSDAT.Core.lvsr2nDataPoints(length, speed, samplingRate);
         end
     end
     

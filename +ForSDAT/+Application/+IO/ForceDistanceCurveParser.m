@@ -1,34 +1,12 @@
-classdef ForceDistanceCurveParser < ForSDAT.Application.IO.IForceCurveParser & mfc.IDescriptor
+classdef ForceDistanceCurveParser < ForSDAT.Application.IO.IForceCurveParser
     properties (Access=private)
         MetaPattern;
         DataPattern;
     end
     
-    properties
-        % Determines whether to flip extend segment data so that it starts
-        % at the contact domain
-        ShouldFlipExtendSegments logical = false;
-    end
-    
-    methods (Hidden) % factory meta data
-        % provides initialization description for mfc.MFactory
-        % ctorParams is a cell array which contains the parameters passed to
-        % the ctor and which properties are to be set during construction
-        function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'ShouldFlipExtendSegments'};
-            defaultValues = {'ShouldFlipExtendSegments', false};
-        end
-    end
-    
     methods
-        function this = ForceDistanceCurveParser(shouldFlipExtendSegments)
-            import ForSDAT.Application.IO.FDCurveTextFileSettings;
-            
-            % ctor
-            if nargin >= 1 && ~isempty(shouldFlipExtendSegments)
-                this.ShouldFlipExtendSegments = shouldFlipExtendSegments;
-            end
-            dataFileSettings = FDCurveTextFileSettings();
+        function this = ForceDistanceCurveParser()
+            dataFileSettings = ForSDAT.Application.IO.FDCurveTextFileSettings();
             
             metaPrefix = dataFileSettings.settingsPrefix;
             this.DataPattern = ['\n[^' metaPrefix ']+(' metaPrefix '|$)'];
@@ -47,29 +25,29 @@ classdef ForceDistanceCurveParser < ForSDAT.Application.IO.IForceCurveParser & m
             this.MetaPattern = ['#\s*(?<key>(', strjoin(metaProperties, ')|('), ')):\s*(?<val>[^\r\n]+)'];
         end
         
-        function fdc = parseJpkTextFile(this, fileName, wantedSegments)
-            if nargin < 3
-                wantedSegments = [];
-            end
-            fdc = this.parse(fileName, wantedSegments);
+        function fdc = parseJpkTextFile(this, fileName, wantedSegments, flipExtendSegments)
+            if nargin < 3; wantedSegments = []; end
+            if nargin < 4; flipExtendSegments = false; end
+            
+            fdc = this.parse(fileName, wantedSegments, flipExtendSegments);
         end
         
-        function fdc = parse(this, fileName, wantedSegments)
-            if nargin < 3
-                wantedSegments = [];
-            end
+        function fdc = parse(this, fileName, wantedSegments, flipExtendSegments)
+            if nargin < 3; wantedSegments = []; end
+            if nargin < 4; flipExtendSegments = false; end
             
             % Read curve data
             rawData = fileread(fileName);
             
             % parse data
-            fdc = this.parseJpkText(rawData, wantedSegments);
+            fdc = this.parseJpkText(rawData, wantedSegments, flipExtendSegments);
         end
 
-        function fdc = parseJpkText(this, rawData, wantedSegments)
-            import ForSDAT.Core.ForceDistanceCurve;
-            import ForSDAT.Core.ForceDistanceSegment;
-            fdc = ForceDistanceCurve();
+        function fdc = parseJpkText(this, rawData, wantedSegments, flipExtendSegments)
+            if nargin < 3; wantedSegments = []; end
+            if nargin < 4; flipExtendSegments = false; end
+            
+            fdc = ForSDAT.Core.ForceDistanceCurve();
             
             % Ensure any data was read from the file
             if nargin < 2 || isempty(rawData) || ~ischar(rawData)
@@ -97,7 +75,7 @@ classdef ForceDistanceCurveParser < ForSDAT.Application.IO.IForceCurveParser & m
             for i = wantedSegments
                 dataFileSettings = ForSDAT.Application.IO.FDCurveTextFileSettings();
             
-                segment = ForceDistanceSegment();
+                segment = ForSDAT.Core.ForceDistanceSegment();
                 fdc.segments(length(fdc.segments) + 1) = segment;
                 
                 % find the settings of the current segment
@@ -118,7 +96,7 @@ classdef ForceDistanceCurveParser < ForSDAT.Application.IO.IForceCurveParser & m
                 end
                 
                 % set relevant data to segment
-                if this.ShouldFlipExtendSegments && strcmp(segment.name, dataFileSettings.defaultExtendSegmentName)
+                if flipExtendSegments && strcmp(segment.name, dataFileSettings.defaultExtendSegmentName)
                     if ~isempty(dataFileSettings.forceColumnIndex)
                         segment.force = fliplr(data(:,dataFileSettings.forceColumnIndex)');
                     end

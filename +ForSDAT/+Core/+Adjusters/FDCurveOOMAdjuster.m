@@ -26,8 +26,8 @@ classdef FDCurveOOMAdjuster < handle
         end
         
         function init(this, settings)
-            this.FOOM = mvvm.getobj(settings, 'measurement.FOOM', this.FOOM);
-            this.ZOOM = mvvm.getobj(settings, 'measurement.ZOOM', this.ZOOM);
+            this.FOOM = mvvm.getobj(settings, 'FOOM', this.FOOM);
+            this.ZOOM = mvvm.getobj(settings, 'ZOOM', this.ZOOM);
         end
     end
     

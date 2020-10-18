@@ -4,7 +4,7 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
     end
     
     properties (SetObservable)
-        Settings;
+        Settings ForSDAT.Core.Setup.AnalysisSettings;
         RawAnalyzer ForSDAT.Core.RawDataAnalyzer;
         CookedAnalyzer ForSDAT.Application.Workflows.CookedDataAnalyzer = ForSDAT.Application.Workflows.SMICookedDataAnalyzer.empty();
         
@@ -64,19 +64,19 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
     end
     
     methods (Access=private)
-        function notifyAllAnalzers(this, ~, ~)
-            this.notifyCookedAnalyzer();
-            this.notifyRawAnalyzer();
+        function notifyAllAnalzers(this, src, e)
+            this.notifyCookedAnalyzer(src, e);
+            this.notifyRawAnalyzer(src, e);
         end
         
-        function notifyCookedAnalyzer(this, ~, ~)
+        function notifyCookedAnalyzer(this, src, e)
             obj = this.CookedAnalyzer;
             if ~isempty(obj)
             	obj.init(this.DataAccessor, this.Settings, this.RunningExperimentId, this.ExperimentCollectionName);
             end
         end
         
-        function notifyRawAnalyzer(this, ~, ~)
+        function notifyRawAnalyzer(this, src, e)
             obj = this.RawAnalyzer;
             if ~isempty(obj) && ~isempty(this.Settings)
             	obj.init(this.Settings);

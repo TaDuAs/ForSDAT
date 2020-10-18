@@ -12,7 +12,7 @@ classdef NoiseOffsetLoadingDomainDetector < handle
         end
         
         function init(this, settings)
-            this.noiseAnomallySpecs = settings.measurement.noiseAnomally;
+            this.noiseAnomallySpecs = settings.NoiseAnomally;
         end
         
         function startAt = detect(this, x, y, ruptures, contactPoint, offsetFactor, noiseAmp)
@@ -63,7 +63,7 @@ classdef NoiseOffsetLoadingDomainDetector < handle
                         % noise anomally, or if the measured force is lower
                         % or equal to the previously found point
                         if ~isempty(j) && firstBslContact > j && y(j) >= -offsetFactor && ...
-                           (y(j) <= y(firstBslContact) || (currEventStart - firstBslContact) < this.noiseAnomallySpecs.dataPoints)
+                           (y(j) <= y(firstBslContact) || (currEventStart - firstBslContact) < this.noiseAnomallySpecs.DataPoints)
                             firstBslContact = j;
                         end
                     
@@ -82,7 +82,7 @@ classdef NoiseOffsetLoadingDomainDetector < handle
                     % the detected "peak" and the rupture
                     firstBslContact = j;
                     
-                    if (j - k) > this.noiseAnomallySpecs.dataPoints
+                    if (j - k) > this.noiseAnomallySpecs.DataPoints
                         % If this "peak" is not a noise anomally, stop
                         % iterating and continue to fine tuning
                         break;
@@ -125,7 +125,7 @@ classdef NoiseOffsetLoadingDomainDetector < handle
                 % find separaions between these domains, and only take the
                 % last one
                 dFineTune = diff(fineTune);
-                lastSegmentBelowNoiseAmp = fineTune(find(dFineTune > this.noiseAnomallySpecs.dataPoints, 1, 'last') + 1);
+                lastSegmentBelowNoiseAmp = fineTune(find(dFineTune > this.noiseAnomallySpecs.DataPoints, 1, 'last') + 1);
                 if ~isempty(lastSegmentBelowNoiseAmp)
                     firstBslContact = lastSegmentBelowNoiseAmp;
                 elseif ~isempty(fineTune)

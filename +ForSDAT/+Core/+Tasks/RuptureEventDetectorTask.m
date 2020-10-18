@@ -83,7 +83,7 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             dist = this.getChannelData(data, 'x');
             frc = this.getChannelData(data, 'y');
             
-            plotFlags = Simple.getobj(extras, 'plotFlags', [false true true true true]);
+            plotFlags = mvvm.getobj(extras, 'plotFlags', [false true true true true]);
             if ~islogical(plotFlags) || length(plotFlags) ~= 5
                 error('Rupture plotting is determined by the flags vector, which determines what to plot as follows [FDC, loadingStartPoint, ruptureStartPoint, ruptureEndPoint, force-derivative]');
             end

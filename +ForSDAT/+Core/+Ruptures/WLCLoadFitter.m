@@ -65,7 +65,7 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         end
         
         function init(this, settings)
-            this.initFromLinker(settings.measurement.linker);
+            this.initFromLinker(mvvm.getobj(settings, 'Measurement.Probe.Linker', chemo.PEG(0)));
         end
         
         function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)

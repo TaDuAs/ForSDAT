@@ -65,7 +65,7 @@ classdef InteractionWindowTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescri
             dist = this.getChannelData(data, 'x');
             frc = this.getChannelData(data, 'y');
             
-            plotFlags = Simple.getobj(extras, 'plotFlags', [false true true true]);
+            plotFlags = mvvm.getobj(extras, 'plotFlags', [false true true true]);
             if ~islogical(plotFlags) || length(plotFlags) ~= 4
                 error('Rupture plotting is determined by the flags vector, which determines what to plot as follows [FDC, ruptureStartPoint, ruptureEndPoint, interactionWindow]');
             end

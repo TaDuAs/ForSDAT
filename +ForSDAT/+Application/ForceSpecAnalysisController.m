@@ -66,6 +66,14 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         function setAnalyzedSegment(this, seg)
             this.AnalyzedSegment = seg;
         end
+        
+        function setProject(this, project)
+            if isa(project, 'ForSDAT.Application.Models.ForSpecProj')
+                this.Project = project;
+            else
+                this.Project = this.serializer.load(project);
+            end
+        end
     end
     
     methods % ctor
@@ -195,17 +203,17 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             else
                 % default settings
                 
-                settings = [];
+                settings = ForSDAT.Core.Setup.AnalysisSettings();
                 % Measurement setup
-                settings.measurement.samplingRate = 2048;
-                settings.measurement.speed = 0.8;
-                settings.measurement.linker = chemo.PEG(5000);
-%                 PEG(5000 - Chemistry.Mw([Chemistry.Groups.COONHS, Chemistry.Groups.NHFmoc])); % PEG Mw = 5000Da - sidegroups Mw
-                settings.measurement.molecule = chemo.PEG(0);
-                settings.noiseAnomally = ForSDAT.Core.NoiseAnomally(...
+                settings.Measurement.SamplingRate = 2048;
+                settings.Measurement.Speed = 0.8;
+                settings.Measurement.Probe = ForSDAT.Core.Setup.MolecularProbe();
+                settings.Measurement.Probe.Molecule = chemo.PEG(0);
+                settings.Measurement.Probe.linker = chemo.PEG(5000);
+                settings.NoiseAnomally = ForSDAT.Core.NoiseAnomally(...
                     2, ...
-                    settings.measurement.speed, ....
-                    settings.measurement.samplingRate);
+                    settings.Measurement.Speed, ....
+                    settings.Measurement.SamplingRate);
             end
         end
     end

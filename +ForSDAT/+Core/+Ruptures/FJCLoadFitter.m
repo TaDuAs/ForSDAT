@@ -11,7 +11,7 @@ classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
     % L is the contour length
     
     properties
-        T = Simple.Scientific.PhysicalConstants.RT;
+        T = chemo.PhysicalConstants.RT;
         estimatedContourLength = 1;
         estimatedKuhnLength = 1;
         constraintsFunc = [];
@@ -64,13 +64,12 @@ classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         end
         
         function init(this, settings)
-            this.initFromLinker(settings.measurement.linker);
+            this.initFromLinker(mvvm.getobj(settings, 'Measurement.Probe.Linker', chemo.PEG(0)));
         end
         
         function [func, isGoodFit, s, mu] = dofit(this, x, y)
-            import Simple.Math.*;
-            kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
-            [lk, L, s, mu] = fjc.fit(x, -y, this.estimatedKuhnLength, this.estimatedContourLength, this.T);
+            kBT = chemo.PhysicalConstants.kB * this.T;
+            [lk, L, s, mu] = util.fjc.fit(x, -y, this.estimatedKuhnLength, this.estimatedContourLength, this.T);
             
             func = fjc.createExpretion(kBT, lk, L);
                         
@@ -81,15 +80,15 @@ classdef FJCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         end
         
         function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
-            kBT = Simple.Scientific.PhysicalConstants.kB * this.T;
+            kBT = chemo.PhysicalConstants.kB * this.T;
             ruptureDist = x(ruptureIdx(:));
             LcRange = [ruptureDist(:)*0.95, ruptureDist(:)*1.1];
             klRange = repmat([0, 0.35], numel(ruptureIdx), 1);
-            [p, l, s, mu] = Simple.Math.fjc.fitAll(x, y, LcRange, klRange, this.T);
+            [p, l, s, mu] = util.fjc.fitAll(x, y, LcRange, klRange, this.T);
             
             n = numel(ruptureIdx);
             for i = n:-1:1
-                funcs(i) = Simple.Math.fjc.createExpretion(kBT, p(i), l(i));
+                funcs(i) = util.fjc.createExpretion(kBT, p(i), l(i));
             end
             
             isGoodFit = all(l(:) >= reshape(x(ruptureIdx), [], 1) & p(:) > 0);

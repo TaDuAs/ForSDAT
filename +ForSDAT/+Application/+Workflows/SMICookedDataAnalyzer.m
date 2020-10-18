@@ -61,7 +61,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             results.BinningMethod = this.DataAnalyzer.BinningMethod;
             results.MinimalBins = this.DataAnalyzer.MinimalBins;
             results.FittingModel = this.DataAnalyzer.Model;
-            results.Speed = this.Settings.measurement.speed;
+            results.Speed = this.Settings.Measurement.Speed;
             results.FitR2Threshold = this.DataAnalyzer.FitR2Threshold;
 
             if isempty(dataList)
@@ -75,7 +75,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             
             options = [];
             options.showHistogram = true;
-            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.DataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.Settings.measurement.speed, [dataList.lr], options);
+            [mpf, mpfStd, mpfErr, lr, lrErr, returnedOpts] = this.DataAnalyzer.doYourThing([dataList.f], [dataList.z], [dataList.slope], this.Settings.Measurement.Speed, [dataList.lr], options);
             
             % results
             results.MostProbableForce = mpf;

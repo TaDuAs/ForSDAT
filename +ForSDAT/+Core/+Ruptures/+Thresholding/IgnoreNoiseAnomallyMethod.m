@@ -33,7 +33,7 @@ classdef IgnoreNoiseAnomallyMethod < ForSDAT.Core.Ruptures.Thresholding.IThresho
                 currRs = rsReRf(1, i);
                 prevPointAtNoiseDomain = prevRs + find(frc(prevRs:currRs) >= -noiseAmp, 1, 'last') - 1;
                 mask(i) = isempty(prevPointAtNoiseDomain) || ...
-                          ((currRs - prevPointAtNoiseDomain) > noiseAnomally.dataPoints);
+                          ((currRs - prevPointAtNoiseDomain) > noiseAnomally.DataPoints);
                 prevRs = currRs;
             end
         end

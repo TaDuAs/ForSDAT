@@ -1,13 +1,7 @@
 classdef JpkBinaryFDCParser < ForSDAT.Application.IO.IForceCurveParser
     
-    properties
-        % Determines whether to flip extend segment data so that it starts
-        % at the contact domain
-        ShouldFlipExtendSegments logical = false;
-    end
-    
     methods
-        function fdc = parse(this, filePath, wantedSegments)
+        function fdc = parse(this, filePath, wantedSegments, flipExtendSegments)
             if nargin < 3
                 wantedSegments = [];
             end
@@ -32,7 +26,7 @@ classdef JpkBinaryFDCParser < ForSDAT.Application.IO.IForceCurveParser
                 currSegment.curveIndex = currSegmentHeaders.curveIndex;
                 
                 % get segment data
-                if this.ShouldFlipExtendSegments && strcmp(currSegment.name, dataFileSettings.defaultExtendSegmentName)
+                if flipExtendSegments && strcmp(currSegment.name, dataFileSettings.defaultExtendSegmentName)
                     currSegment.force = fliplr(segmentsCell{i, 3});
                     currSegment.distance = fliplr(segmentsCell{i, 2});
                     currSegment.time = fliplr(segmentsCell{i, 1});

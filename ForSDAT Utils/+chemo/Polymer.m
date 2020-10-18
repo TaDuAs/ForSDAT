@@ -1,6 +1,4 @@
-classdef (Abstract) Polymer < handle
-    %POLYMER Summary of this class goes here
-    %   Detailed explanation goes here
+classdef (Abstract) Polymer < chemo.Mol
     
     methods
         
@@ -20,7 +18,6 @@ classdef (Abstract) Polymer < handle
             % length of chain
             l = this.repeatingUnits(mw) .* this.persistenceLength();
         end
-        
     end
     
     methods (Abstract)

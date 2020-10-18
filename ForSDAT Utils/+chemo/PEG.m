@@ -23,6 +23,10 @@ classdef PEG < chemo.Polymer
             end
         end
         
+        function x = getSize(this)
+            x = this.backboneLength(this);
+        end
+        
         function l = backboneLength(this)
             l = backboneLength@chemo.Polymer(this, [this.Mw]);
         end
