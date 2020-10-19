@@ -1,4 +1,13 @@
+% This script shows how to build and run an analysis process programmaically
+% The recommended method to run ForSDAT is using the App-Controller API, but 
+% it is still applicable to run a standalone analysis pipeline.
+%
+% Author: TADA 2020
+% ForSDAT version 1.1
+
+%% 
 % define analysis process pipeline
+%
 analyzer = ForSDAT.Core.RawDataAnalyzer();
 
 % define axes order of magnitude - pN, nm
@@ -37,13 +46,42 @@ ruptDetector.thresholdingMethods =...
      ForSDAT.Core.Ruptures.Thresholding.RemoveContactMethod()];
 ruptTask = ForSDAT.Core.Tasks.RuptureEventDetectorTask(ruptureDetector, 'Distance', 'Force', 'retract',...
     ForSDAT.Core.Ruptures.NoiseOffsetLoadingDomainDetector());
-analyzer.addTask(tssTask);
+analyzer.addTask(ruptTask);
 
 % define the interaction window
-iwTask = ForSDAT.Core.Tasks.InteractionWindowTask()
+iwFilter = ForSDAT.Core.Ruptures.InteractionWindowSMIFilter(10);
+iwTask = ForSDAT.Core.Tasks.InteractionWindowTask(iwFilter, 'FixedDistance', 'Force', 'retract');
+analyzer.addTask(iwTask);
+
+% define WLC fitting
+wlcFitter = ForSDAT.Core.Ruptures.WLCLoadFitter(298);
+wlcTask = ForSDAT.Core.Tasks.ChainFitTask(wlcFitter, 'FixedDistance', 'Force', 'retract');
+analyzer.addTask(wlcTask);
+
+% define smoothing-based specific interaction filter
+smiFilter = ForSDAT.Core.Ruptures.SmoothingSMIFilter(...
+    ForSDAT.Core.Baseline.SimpleBaselineDetector(0.1, 4, false), ...
+    ForSDAT.Core.Adjusters.DataSmoothingAdjuster(50, 'moving'), ...
+    45, 'last');
+smiTask = ForSDAT.Core.Tasks.SMIFilterTask(smiFilter, [], 'FixedDistance', 'Force', 'retract');
+analyzer.addTask(smiTask);
+
+
+%%
+% Load data
+% 
 
 % load a single force vs distance curve (fdc)
 curveParser = ForSDAT.Application.IO.JpkBinaryFDCParser();
 fdcFilePath = 'Add curve full path here';
 fdc = curveParser.parse(fdcFilePath);
 
+%% 
+% Perform curve by curve iterative analysis
+% 
+
+% 
+data = analyzer.analyze(fdc, 'retract');
+
+% did find single molecule specific interaction?
+% data.
