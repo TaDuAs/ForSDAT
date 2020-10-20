@@ -12,4 +12,4 @@ The Software uses code from several other libraries and software:
 
 * [Fodis](https://github.com/galvanetto/Fodis) JPK binary samle loading files.
 These files (see "ForSDAT/ForSDAT Utils/+Fodis/+IO/") are available under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
-See [attached notice file](https://github.com/TaDuAs/ForSDAT/ChangeLog.md) for changes log.
+See [attached notice file](https://github.com/TaDuAs/ForSDAT/blob/master/ChangeLog.md) for changes log.
