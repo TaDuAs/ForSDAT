@@ -27,12 +27,12 @@ Each molecule, substrate or treatment you use should be managed under a separate
 ForSDAT can later use the data in the experiment repositories to further analyzed by Bell-Evans modeling.
 
 Supplemented scripts and configuration files show how to use the ForSDAT application as a whole.
-See [ForSDAT/Examples/appBasedProcess.m](https://github.com/TaDuAs/ForSDAT/Examples/appBasedProcess.m) for performing a batch analysis of force curves.
+See [ForSDAT/Examples/appBasedProcess.m](https://github.com/TaDuAs/ForSDAT/blob/master/Examples/appBasedProcess.m) for performing a batch analysis of force curves.
 At the end of the analysis, a histogram is generated.
-See [ForSDAT/Examples/bellEvansExample.m](https://github.com/TaDuAs/ForSDAT/Examples/bellEvansExample.m) for performing a "post analysis" Bell-Evans modeling on an experiment repository.
-See [ForSDAT/Examples/ExampleProject.xml](https://github.com/TaDuAs/ForSDAT/Examples/ExampleProject.xml) for example ForSDAT configuration file.
+See [ForSDAT/Examples/bellEvansExample.m](https://github.com/TaDuAs/ForSDAT/blob/master/Examples/bellEvansExample.m) for performing a "post analysis" Bell-Evans modeling on an experiment repository.
+See [ForSDAT/Examples/ExampleProject.xml](https://github.com/TaDuAs/ForSDAT/blob/master/Examples/ExampleProject.xml) for example ForSDAT configuration file.
 
 If however, the application is not required for some reason, the core functionality of ForSDAT raw data analysis (analysis of force vs. distance curves)
 is available under the package ForSDAT.Core. The analysis pipeline can be applied on force vs distance curves one at a time to receive the output data struct.
 Each analysis component can be applied to the data separately as well. This course of action is less recommended though.
-See [ForSDAT/Examples/standAloneCoreProcess.m](https://github.com/TaDuAs/ForSDAT/Examples/standAloneCoreProcess.m) for example of using ForSDAT.Core analysis as a standalone script.
+See [ForSDAT/Examples/standAloneCoreProcess.m](https://github.com/TaDuAs/ForSDAT/blob/master/Examples/standAloneCoreProcess.m) for example of using ForSDAT.Core analysis as a standalone script.
