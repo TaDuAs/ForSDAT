@@ -130,3 +130,6 @@ specificCurvesOutput = [data{isSpecificInteraction}];
 specificInteractions = [specificCurvesOutput.SingleInteraction];
 f = [specificInteractions.modeledForce];
 lr = [specificInteractions.apparentLoadingRate];
+
+%%
+fprintf('\nforce: %d, loading rate: %d \n', f, lr);

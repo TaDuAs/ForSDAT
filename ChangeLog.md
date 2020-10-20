@@ -6,4 +6,5 @@ is available under the [Apache 2.0 license](http://www.apache.org/licenses/LICEN
   * ForSDAT/ForSDAT Utils/+Fodis/+IO/extractGeneralHeaderInformation.m
   * ForSDAT/ForSDAT Utils/+Fodis/+IO/extractSharedHeaderInformation.m
 
-* [structofarrays2arrayofstructs](https://www.mathworks.com/matlabcentral/fileexchange/40712-convert-from-a-structure-of-arrays-into-an-array-of-structures)
+* The file [structofarrays2arrayofstructs](https://www.mathworks.com/matlabcentral/fileexchange/40712-convert-from-a-structure-of-arrays-into-an-array-of-structures).
+
