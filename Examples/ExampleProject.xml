@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document _type="ForSDAT.Application.Models.ForSpecProj" _version="3"
+          ExperimentCollectionName="Example01">
+    <CookedAnalyzer _type="ForSDAT.Application.Workflows.SMICookedDataAnalyzer">
+        <DataAnalyzer _type="ForSDAT.Core.StepsDataAnalyzer" BinningMethod="fd" Model="gauss" ErrorType="confi">
+            <MinimalBins _type="double">15</MinimalBins>
+        </DataAnalyzer>
+        <ResultsValidators _type="ForSDAT.Application.Workflows.CRV.SuccessRateValidator" _isList="true">
+            <_entry _type="ForSDAT.Application.Workflows.CRV.SuccessRateValidator">
+                <AcceptedPercentage _type="double">3.5</AcceptedPercentage>
+            </_entry>
+        </ResultsValidators>
+        <ExperimentRepositoryDAO _type="ForSDAT.Application.IO.ExperimentRepositoryDAO" RepositoryPath=""></ExperimentRepositoryDAO>
+    </CookedAnalyzer>
+    <DataAccessor _type="ForSDAT.Application.IO.JpkFDCDataAccessor">
+        <WantedSegments _type="string" _isList="true">
+            <_entry _type="string">extend</_entry>
+            <_entry _type="string">retract</_entry>
+        </WantedSegments>
+        <ShouldFlipExtendSegments _type="logical">1</ShouldFlipExtendSegments>
+        <Exporter _type="dao.MXmlDataExporter"></Exporter>
+        <SaveAcceptedItems _type="logical">0</SaveAcceptedItems>
+    </DataAccessor>
+    <Settings _type="ForSDAT.Core.Setup.AnalysisSettings">
+        <Measurement _type="ForSDAT.Core.Setup.MeasurementSetup">
+            <SamplingRate _type="double">2048</SamplingRate>
+            <Speed _type="double">1000</Speed>
+            <Probe _type="ForSDAT.Core.Setup.MolecularProbe">
+                <Linker _type="chemo.PEG">
+                    <Mw _type="double">5000</Mw>
+                </Linker>
+                <Molecule _type="chemo.GenericMolecule">
+                    <Size _type="double">15</Size>
+                </Molecule>
+            </Probe>
+        </Measurement>
+        <NoiseAnomally _type="ForSDAT.Core.NoiseAnomally">
+            <Length _type="double">2</Length>
+            <Speed _type="double">1000</Speed>
+            <SamplingRate _type="double">2048</SamplingRate>
+        </NoiseAnomally>
+        <FOOM _type="util.OOM">Pico</FOOM>
+        <ZOOM _type="util.OOM">Nano</ZOOM>
+    </Settings>
+    <RawAnalyzer _type="ForSDAT.Core.RawDataAnalyzer" _version="3">
+        <pipeline _isList="true" _type="lists.Pipeline">
+          <_entry _type="ForSDAT.Core.Tasks.AdjustmentTask"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <adjuster _type="ForSDAT.Core.Adjusters.FDCurveOOMAdjuster">
+                <FOOM _type="util.OOM">Pico</FOOM>
+                <ZOOM _type="util.OOM">Nano</ZOOM>
+             </adjuster>
+             <shouldAdjustOriginalData _type="logical">0</shouldAdjustOriginalData>
+             <shouldAffectOriginalData _type="logical">1</shouldAffectOriginalData>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.AdjustmentTask"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <adjuster _type="ForSDAT.Core.Adjusters.DistanceSmoothingAdjuster"/>
+             <shouldAdjustOriginalData _type="logical">0</shouldAdjustOriginalData>
+             <shouldAffectOriginalData _type="logical">1</shouldAffectOriginalData>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.BaselineDetectorTask"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <detector _type="ForSDAT.Core.Baseline.CompositeBaselineDetector">
+                <primary _type="ForSDAT.Core.Baseline.SimpleBaselineDetector">
+                   <fragment _type="double">0.1</fragment>
+                   <stdScore _type="double">2.5</stdScore>
+                   <isBaselineTilted_value _type="logical">0</isBaselineTilted_value>
+                </primary>
+                <secondary _type="ForSDAT.Core.Baseline.HistogramBaselineDetector" binningMethod="sqrt">
+                   <gaussFitOpts _type="struct">
+                      <fitR2Threshold _type="double">0.5</fitR2Threshold>
+                      <useMatlabFit _type="logical">1</useMatlabFit>
+                      <order _type="double">3</order>
+                   </gaussFitOpts>
+                   <stdScore _type="double">1.25</stdScore>
+                </secondary>
+                <stdThreshold _type="double">0.1</stdThreshold>
+             </detector>
+             <baselineOffsetFactorMultiplier _type="double">2</baselineOffsetFactorMultiplier>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.ContactPointDetectorTask"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <detector _type="ForSDAT.Core.Contact.ContactPointDetector">
+                <fragment _type="double">0.015</fragment>
+                <iterativeApproachR2Threshold _type="double">0.97</iterativeApproachR2Threshold>
+                <isSorftSurface _type="logical">0</isSorftSurface>
+             </detector>
+             <shouldEstimateCantileverSpringConstant _type="logical">0</shouldEstimateCantileverSpringConstant>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.TipHeightAdjustTask"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <adjuster _type="ForSDAT.Core.Adjusters.TipHeightAdjuster">
+                <foom _type="util.OOM">Pico</foom>
+                <doom _type="util.OOM">Nano</doom>
+                <smoothDistance _type="logical">1</smoothDistance>
+             </adjuster>
+             <shouldEstimateCantileverSpringConstant _type="logical">0</shouldEstimateCantileverSpringConstant>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.RuptureEventDetectorTask" 
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <ruptureDetector _type="ForSDAT.Core.Ruptures.RuptureDetector">
+                <baselineDetector _type="ForSDAT.Core.Baseline.SimpleBaselineDetector">
+                   <fragment _type="double">0.1</fragment>
+                   <stdScore _type="double">2</stdScore>
+                   <isBaselineTilted_value _type="logical">0</isBaselineTilted_value>
+                </baselineDetector>
+                <stepSlopeDeviation _type="double">0.1745</stepSlopeDeviation>
+                <thresholdingMethods _isList="true" _type="ForSDAT.Core.Ruptures.Thresholding.IThresholdMethod">
+                   <_entry _type="ForSDAT.Core.Ruptures.Thresholding.SizeVsNoiseMethod"/>
+                   <_entry _type="ForSDAT.Core.Ruptures.Thresholding.StartBelowNoiseDomainMethod"/>
+                   <_entry _type="ForSDAT.Core.Ruptures.Thresholding.RemoveContactMethod"/>
+                </thresholdingMethods>
+                <amplifyByDivDist _type="logical">0</amplifyByDivDist>
+             </ruptureDetector>
+             <loadingDomainDetector _type="ForSDAT.Core.Ruptures.NoiseOffsetLoadingDomainDetector"/>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.InteractionWindowTask"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <filter _type="ForSDAT.Core.Ruptures.InteractionWindowSMIFilter" filterType="all">
+                <acceptedRange _type="double">20</acceptedRange>
+             </filter>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.ChainFitTask"
+                  ruptureChannel="Rupture"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <chainFitter _type="ForSDAT.Core.Ruptures.WLCLoadFitter">
+                <T _type="double">298</T>
+             </chainFitter>
+             <plotChainfitFromContactPoint _type="logical">1</plotChainfitFromContactPoint>
+             <fitAllAtOnce _type="logical">0</fitAllAtOnce>
+          </_entry>
+          <_entry _type="ForSDAT.Core.Tasks.SMIFilterTask"
+                  contactChannel="FixedContact"
+                  prefilteredRuptureChannel="RuptureWindow"
+                  ruptureChannel="Rupture"
+                  secondaryXChannel="Distance"
+                  segment="retract"
+                  xChannel="Distance"
+                  yChannel="Force">
+             <filter _type="ForSDAT.Core.Ruptures.SmoothingSMIFilter" filterType="last">
+                <baselineDetector _type="ForSDAT.Core.Baseline.SimpleBaselineDetector">
+                   <fragment _type="double">0.05</fragment>
+                   <stdScore _type="double">4</stdScore>
+                   <isBaselineTilted_value _type="logical">0</isBaselineTilted_value>
+                </baselineDetector>
+                <smoothingAdjuster _type="ForSDAT.Core.Adjusters.DataSmoothingAdjuster" algorithm="moving">
+                   <span _type="double">50</span>
+                </smoothingAdjuster>
+                <angleDefiningSeparationFromContactDomain _type="double">75</angleDefiningSeparationFromContactDomain>
+             </filter>
+          </_entry>
+       </pipeline>
+    </RawAnalyzer>
+</document>

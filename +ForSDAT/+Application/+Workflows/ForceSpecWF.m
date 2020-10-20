@@ -141,8 +141,16 @@ classdef ForceSpecWF < handle
             this.cookedAnalyzer.revertDecision(curveName);
 
             % Get previous item
-            [fdc, curveName] = this.dataQueue.previous();
-
+            [fdcNext, curveNameNext] = this.dataQueue.previous();
+            if ~isempty(fdcNext)
+                fdc = fdcNext;
+                curveName = curveNameNext;
+            else
+                % if previous curve is empty, this is the first curve in
+                % the batch. take it from the queue again.
+                [fdc, curveName] = this.dataQueue.peak();
+            end
+            
             % Analyze it
             data = this.doAnalyzeCurve(curveName, fdc);
             

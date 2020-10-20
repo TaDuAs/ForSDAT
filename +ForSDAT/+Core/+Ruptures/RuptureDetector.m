@@ -6,6 +6,7 @@ classdef RuptureDetector < handle & mfc.IDescriptor
         baselineDetector = [];
         stepSlopeDeviation = deg2rad(10);
         thresholdingMethods ForSDAT.Core.Ruptures.Thresholding.IThresholdMethod = ForSDAT.Core.Ruptures.Thresholding.SizeVsNoiseMethod.empty();
+        amplifyByDivDist (1,1) logical = true;
     end
     
     methods % factory meta data
@@ -21,7 +22,7 @@ classdef RuptureDetector < handle & mfc.IDescriptor
     end
     
     methods
-        function this = RuptureDetector(a, b, slopeDevUnits)
+        function this = RuptureDetector(a, b, slopeDevUnits, amplifyByDivDist)
             if isa(a, 'RelevantStepsAnalyzer')
                 this.initFromStepsAnalyzer(a);
             elseif nargin < 2
@@ -32,6 +33,10 @@ classdef RuptureDetector < handle & mfc.IDescriptor
                 else
                     this.initialize(a, b, slopeDevUnits);
                 end
+            end
+            
+            if nargin >= 4 && ~isempty(amplifyByDivDist) 
+                this.amplifyByDivDist = amplifyByDivDist;
             end
         end
         
@@ -102,9 +107,19 @@ classdef RuptureDetector < handle & mfc.IDescriptor
             end
         
             deltaF = [diff(frc) diff(frc(end-1:end))];
-            deltaD = [diff(dist), 0];
-            deltaD(end) = deltaD(end - 1);
-            df = deltaF./deltaD;
+            deltaD = [diff(dist), diff(dist(end-1:end))];
+            
+            % when the difference in distance is zero it creates false
+            % negative peaks in the df signal which affect noise
+            % calculation, this removes these peaks without distorting the
+            % signal
+            deltaD(deltaD <= 0) = mean(deltaD);
+            
+            if this.amplifyByDivDist
+                df = deltaF./deltaD;
+            else
+                df = deltaF;
+            end
             derivative = df;
             
             % find steps

@@ -26,7 +26,7 @@ classdef RawDataAnalyzer < handle & mfc.IDescriptor
         end
         
         function this = addTask(this, task)
-            this.pipeline.addTask(task);
+            this.pipeline.add(task);
             
         end
         

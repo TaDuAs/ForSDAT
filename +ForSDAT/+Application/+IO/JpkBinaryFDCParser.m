@@ -2,9 +2,8 @@ classdef JpkBinaryFDCParser < ForSDAT.Application.IO.IForceCurveParser
     
     methods
         function fdc = parse(this, filePath, wantedSegments, flipExtendSegments)
-            if nargin < 3
-                wantedSegments = [];
-            end
+            if nargin < 3; wantedSegments = []; end
+            if nargin < 4 || isempty(flipExtendSegments); flipExtendSegments = false; end
             dataFileSettings = ForSDAT.Application.IO.FDCurveTextFileSettings();
             
             % read wanted segments from file

@@ -19,7 +19,7 @@ classdef InteractionWindowSMIFilter < handle
         end
         
         function value = get.endAt(this)
-            value = this.linker.backboneLength + this.acceptedRange + this.molecule.backboneLength;
+            value = this.linker.backboneLength + this.acceptedRange + this.molecule.getSize();
         end
     end
     

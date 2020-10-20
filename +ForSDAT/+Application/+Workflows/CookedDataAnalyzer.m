@@ -104,12 +104,9 @@ classdef (Abstract) CookedDataAnalyzer < handle
             % switch experiments results repository
             if nargin >= 5 && ~isempty(experimentRepoName) && ...
                     (isempty(this.ExperimentRepository) || ~strcmp(experimentRepoName, this.ExperimentRepository.Name))
-                try
-                    repo = this.ExperimentRepositoryDAO.load(experimentRepoName);
-                catch ex
-                    disp(getReport(ex));
-                    repo = ForSDAT.Application.Models.ExperimentRepository.empty();
-                end
+                
+                % load experiment repository from file
+                repo = this.ExperimentRepositoryDAO.load(experimentRepoName);
                 
                 % if the file is missing or is empty or is corrupted
                 if repo.isemptyHandle() || ~isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')

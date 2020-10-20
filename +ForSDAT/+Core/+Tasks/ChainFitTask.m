@@ -7,7 +7,7 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         smoothingAdjuster = [];
         plotChainfitFromContactPoint = false;
         ruptureChannel = 'Rupture';
-        fitAllAtOnce = true;
+        fitAllAtOnce = false;
     end
     
     methods % meta data

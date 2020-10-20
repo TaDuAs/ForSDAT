@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<document _type="struct" _version="3">
+   <data Name="Example02" _isList="true"
+         _type="ForSDAT.Application.Models.ExperimentRepository">
+      <_entry FittingModel="gauss" Id="Experiment1"
+              _key="Experiment1"
+              _type="ForSDAT.Application.Models.ForsSpecExperimentResults">
+         <Speed _type="double">200</Speed>
+         <BatchInfo Path="MockDataLocation"
+                    _type="ForSDAT.Application.Models.BatchInfo">
+            <N _type="double">612</N>
+         </BatchInfo>
+         <BinningMethod _type="double">fd</BinningMethod>
+         <MinimalBins _type="double">10</MinimalBins>
+         <FitR2Threshold _type="double">0.6</FitR2Threshold>
+         <MostProbableForce _type="double">90</MostProbableForce>
+         <ForceStd _type="double">50</ForceStd>
+         <ForceErr _type="double">20</ForceErr>
+         <LoadingRate _type="double">7000</LoadingRate>
+         <LoadingRateErr _type="double">1000</LoadingRateErr>
+      </_entry>
+      <_entry FittingModel="gauss" Id="Experiment2"
+              _key="Experiment2"
+              _type="ForSDAT.Application.Models.ForsSpecExperimentResults">
+         <Speed _type="double">800</Speed>
+         <BatchInfo Path="MockDataPath"
+                    _type="ForSDAT.Application.Models.BatchInfo">
+            <N _type="double">492</N>
+         </BatchInfo>
+         <BinningMethod _type="double">fd</BinningMethod>
+         <MinimalBins _type="double">15</MinimalBins>
+         <FitR2Threshold _type="double">0.6</FitR2Threshold>
+         <MostProbableForce _type="double">110</MostProbableForce>
+         <ForceStd _type="double">65</ForceStd>
+         <ForceErr _type="double">25</ForceErr>
+         <LoadingRate _type="double">11300</LoadingRate>
+         <LoadingRateErr _type="double">1500</LoadingRateErr>
+      </_entry>
+      <_entry FittingModel="gauss" Id="Experiment3"
+              _key="Experiment3"
+              _type="ForSDAT.Application.Models.ForsSpecExperimentResults">
+         <Speed _type="double">1200</Speed>
+         <BatchInfo Path="MockDataPath"
+                    _type="ForSDAT.Application.Models.BatchInfo">
+            <N _type="double">624</N>
+         </BatchInfo>
+         <BinningMethod _type="double">fd</BinningMethod>
+         <MinimalBins _type="double">15</MinimalBins>
+         <FitR2Threshold _type="double">0.6</FitR2Threshold>
+         <MostProbableForce _type="double">150</MostProbableForce>
+         <ForceStd _type="double">72</ForceStd>
+         <ForceErr _type="double">27</ForceErr>
+         <LoadingRate _type="double">52000</LoadingRate>
+         <LoadingRateErr _type="double">9000</LoadingRateErr>
+      </_entry>
+      <_entry BinningMethod="fd" FittingModel="gauss" Id="Experiment4"
+              _key="Experiment4"
+              _type="ForSDAT.Application.Models.ForsSpecExperimentResults">
+         <Speed _type="double">2000</Speed>
+         <BatchInfo Path="MockDataPath"
+                    _type="ForSDAT.Application.Models.BatchInfo">
+            <N _type="double">1020</N>
+         </BatchInfo>
+         <BinningMethod _type="double">fd</BinningMethod>
+         <MinimalBins _type="double">15</MinimalBins>
+         <FitR2Threshold _type="double">0.6</FitR2Threshold>
+         <MostProbableForce _type="double">205</MostProbableForce>
+         <ForceStd _type="double">33</ForceStd>
+         <ForceErr _type="double">15</ForceErr>
+         <LoadingRate _type="double">83000</LoadingRate>
+         <LoadingRateErr _type="double">3000</LoadingRateErr>
+      </_entry>
+   </data>
+</document>

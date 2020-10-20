@@ -42,8 +42,9 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             polyOrder = util.cond(this.isBaselineTilted, 1, 0);
             [coefficients, s, mu] = polyfit(xSect, ySect, polyOrder);
             baseline = coefficients(1);
-            noiseAmp = this.stdScore * mu(2);
-            mu = {baseline, mu(2)};
+            yDev = std(ySect - polyval(coefficients, xSect, [], mu));
+            noiseAmp = this.stdScore * yDev;
+            mu = {baseline, yDev};
         end
         
         function b = isBaselineTilted(this)

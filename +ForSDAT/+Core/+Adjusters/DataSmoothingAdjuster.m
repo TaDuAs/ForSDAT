@@ -17,7 +17,7 @@ classdef DataSmoothingAdjuster < handle
     end
     
     properties (Constant)
-        ALGORITHMS = {ForSDAT.Core.Adjusters.DataSmoothingAdjuster.METHOD_HANDLES{:,1}};
+        ALGORITHMS = ForSDAT.Core.Adjusters.DataSmoothingAdjuster.METHOD_HANDLES(:,1);
     end
     
     properties

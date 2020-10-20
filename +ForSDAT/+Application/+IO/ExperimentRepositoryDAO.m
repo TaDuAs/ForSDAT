@@ -49,6 +49,12 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
         
         function repo = load(this, name)
             filePath = this.generateRepositoryFilePath(name);
+            
+            if ~exist(filePath, 'file')
+                repo = ForSDAT.Application.Models.ExperimentRepository.empty();
+                return;
+            end
+            
             repo = this.DAO.load(filePath);
             
             % validate repository

@@ -71,7 +71,7 @@ classdef WLCLoadFitter < ForSDAT.Core.Ruptures.ChainFit & mfc.IDescriptor
         function [funcs, isGoodFit, s, mu] = fitAll(this, x, y, ruptureIdx)
             kBT = chemo.PhysicalConstants.kB * this.T;
             ruptureDist = x(ruptureIdx(:));
-            LcRange = [ruptureDist(:), inf];
+            LcRange = [ruptureDist(:), inf(flip(size(ruptureDist)))];
             LpRange = repmat([0, inf], numel(ruptureIdx), 1);
             [p, l, s, mu] = util.wlc.fitAll(x, y, LcRange, LpRange, this.T);
 
