@@ -7,11 +7,7 @@ ForSDAT is a toolkit designed for the completely automated analysis of single mo
 [Duanis-Assaf, T., Razvag, Y. and Reches, M., 2019. ForSDAT: an automated platform for analyzing force spectroscopy measurements. Analytical Methods, 11(37), pp.4709-4718.](https://pubs.rsc.org/en/content/articlehtml/2019/ay/c9ay01150a)*
 
 ## License
-ForSDAT is available under ìCommons Clauseî License Condition v1.0, see [License](https://github.com/TaDuAs/ForSDAT/blob/master/License.md) for details.
+ForSDAT is available under ‚ÄúCommons Clause‚Äù License Condition v1.0, see [License](https://github.com/TaDuAs/ForSDAT/blob/master/License.md) for details.
 
 ## User Guide
 A simple user guide is available [here](https://github.com/TaDuAs/ForSDAT/blob/master/UserGuide.md)
-
-## References
-* [log4m](https://www.mathworks.com/matlabcentral/fileexchange/37701-log4m-a-powerful-and-simple-logger-for-matlab)
-
