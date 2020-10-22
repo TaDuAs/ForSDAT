@@ -24,6 +24,7 @@ classdef MeanValue
     
     methods
         function this = MeanValue(arr, a)
+            if nargin < 1; arr = []; end
             if nargin < 2 || isempty(a); a = 0.05; end
             
             this.Value = mean(arr(:));
