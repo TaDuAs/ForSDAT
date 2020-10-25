@@ -92,5 +92,13 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
             experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
         end
     end
+    
+    % post analysis
+    methods
+        function data = getRepositoryData(this)
+            data = [this.ExperimentRepository.values{:}];
+        end
+    end
+    
 end
 

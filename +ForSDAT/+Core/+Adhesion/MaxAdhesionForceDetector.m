@@ -1,7 +1,7 @@
 classdef MaxAdhesionForceDetector < ForSDAT.Core.Adhesion.ISectionDetector
     methods        
-        function [adhesion, pos] = detect(this, z, f, noiseAmp)
-            mask = this.getLogicalIndex(z);
+        function [adhesion, pos] = detect(this, z, f, noiseAmp, ruptureDistance)
+            mask = this.getBoundsMask(z, f, ruptureDistance);
             
             [adhesion, idx] = max(-f(mask));
             

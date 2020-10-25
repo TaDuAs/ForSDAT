@@ -22,7 +22,7 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             end
         end
         
-        function [baseline, y, noiseAmp, coefficients, s, mu] = detect(this, x, y)
+        function [baseline, y, noiseAmp, coefficients, s, msd] = detect(this, x, y)
         % Finds the baseline of the curve
         % Returns:
         %   baseline - the numeric value of the baseline
@@ -30,7 +30,7 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         %   noiseAmp - the evaluated amplitude of noise oscilations
         %   coefficients - the coefficients of the baseline polynomial fit
         %   s - standard error values
-        %   mu - [avg, std]
+        %   msd - {mean, std}
 
             if length(this.fragment) == 1
                 xSect = util.croparr(x, this.fragment, 'end');
@@ -40,11 +40,11 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
                 ySect = util.croparr(y, this.fragment);
             end
             polyOrder = util.cond(this.isBaselineTilted, 1, 0);
-            [coefficients, s, mu] = polyfit(xSect, ySect, polyOrder);
+            [coefficients, s] = polyfit(xSect, ySect, polyOrder);
             baseline = coefficients(1);
-            yDev = std(ySect - polyval(coefficients, xSect, [], mu));
+            yDev = std(ySect - polyval(coefficients, xSect, s));
             noiseAmp = this.stdScore * yDev;
-            mu = {baseline, yDev};
+            msd = {baseline, yDev};
         end
         
         function b = isBaselineTilted(this)

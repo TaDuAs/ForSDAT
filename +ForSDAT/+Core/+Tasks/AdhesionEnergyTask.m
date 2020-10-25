@@ -1,7 +1,6 @@
-classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
+classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Tasks.ICareAboutRuptureDistanceTask & mfc.IDescriptor
     properties
         detector;
-        rupturesChannel = 'Rupture';
     end
     
     methods % meta data
@@ -62,15 +61,6 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             end 
             
             hold off;
-        end
-        
-        function ruptureDist = getRuptureDistances(this, data)
-            ruptures = this.getChannelData(data, this.rupturesChannel, false);
-            if ~isempty(ruptures)
-                ruptureDist = ruptures.distance;
-            else
-                ruptureDist = 0;
-            end
         end
         
         function init(this, settings)

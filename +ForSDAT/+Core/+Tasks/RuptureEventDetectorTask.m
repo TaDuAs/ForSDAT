@@ -2,7 +2,8 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
     %RUPTUREEVENTDETECTORTASK Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetObservable)
+        outputXChannel = '';
         ruptureDetector;
         loadingDomainDetector;
     end
@@ -38,7 +39,7 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             if exist('loadingDomainDetector', 'var') && ~isempty(loadingDomainDetector)
                 this.loadingDomainDetector = loadingDomainDetector;
             else
-                this.loadingDomainDetector = PreviousRuptureEndLoadingDomain();
+                this.loadingDomainDetector = ForSDAT.Core.Ruptures.PreviousRuptureEndLoadingDomain();
             end
         end
         
@@ -66,6 +67,11 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             
             % rebuild rupture index matrix as follows: [loadingStart; ruptureStart; ruptureEnd]
             lsRsRe = [loadingDomainStartIndices; events([1,2], :)];
+            
+            % replace distance by fixed distance if needed
+            if ~isempty(this.outputXChannel)
+                x = this.getChannelData(data,this.outputXChannel);
+            end
             
             % Build output data struct
             data = ForSDAT.Core.Tasks.buildRuptureOutputStructure(data, 'Rupture', x, lsRsRe, events(3,:), 1:size(events, 2), derivative);

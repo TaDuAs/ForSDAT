@@ -1,4 +1,4 @@
-classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
+classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Tasks.ICareAboutRuptureDistanceTask  & mfc.IDescriptor
     properties
         detector;
         threshold (1,1) double = 0;
@@ -35,8 +35,9 @@ classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             z = this.getChannelData(data, 'x');
             f = this.getChannelData(data, 'y');
             noiseAmp = data.NoiseAmplitude;
+            ruptureDist = this.getRuptureDistances(data);
             
-            [adhForce, pos] = this.detector.detect(z, f, noiseAmp);
+            [adhForce, pos] = this.detector.detect(z, f, noiseAmp, ruptureDist);
             
             data.AdhesionForce.Value = adhForce;
             data.AdhesionForce.Position = pos;
