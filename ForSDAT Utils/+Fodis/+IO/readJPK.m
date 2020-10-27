@@ -3,7 +3,29 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
 % https://github.com/galvanetto/Fodis
 % N. Galvanetto, et al. Fodis: Software for Protein Unfolding Analysis, Biophysical Journal. 114 (2018) 1264–1266. doi:10.1016/j.bpj.2018.02.004.
 % 
-% slight modifications by TADA, 2020
+% modifications by TADA, 2020:
+% * Reading all segments by default and not only retract segment
+% * Added ability to read only wanted segments using input, segments are
+%   chosen either by name or by index 1..N
+% * Curve data is returned as cell array of segments/channel data as 
+%   follows:
+%   {nExtractedSegments, nExtractedChannels = 3}
+% * Extracted channels include vertical-deflection, tip-sample-separation
+%   and segment-time which is evaluated from segment duration and 
+%   sampling-rate. All segments extracted are hard-coded into the function
+%   and cannot be configured from outside
+% * Output includes segment meta-data in the form of a struct array in the 
+%   varriable headers, whose indices correspond to the indices of the first
+%   dimention of outSegments. The struct has the following fields:
+%       {
+%            index;             % double, segment index, i.e. 1..N
+%            name;              % char, segment name, i.e. extend/retract/delay
+%            springConstant;    % double, cantilever spring constant
+%            sensitivity;       % double, cantilever sensitivity;
+%            xPosition;         % double, x-position of the scanner, for force maps
+%            yPosition;         % double, y-position of the scanner, for force maps
+%            curveIndex;        % double, the index of the curve in the batch, for force maps
+%       }
 
     if nargin < 2 || isempty(wantedSegments)
         wantedSegments = 'all';
@@ -179,6 +201,22 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
             xChannel = Fodis.IO.extractParameterValue(dataSegmentHeader, ['channel.' xChannelName '.lcd-info']);
             xFormat = structChannel.(['Channel' xChannel]).format;
             xMultiplier = structChannel.(['Channel' xChannel]).multiplier.Total;
+            
+            % extract cantilever spring constant
+            springConstantRaw = structChannel.(['Channel' yChannel]).multiplier.force;
+            if isnumeric(springConstantRaw)
+                springConstant = springConstantRaw;
+            else
+                springConstant = str2double(springConstantRaw);
+            end
+            
+            % extract cantilever sensitivity
+            sensitivityRaw = structChannel.(['Channel' yChannel]).multiplier.distance;
+            if isnumeric(sensitivityRaw)
+                sensitivity = sensitivityRaw;
+            else
+                sensitivity = str2double(sensitivityRaw);
+            end
 
         else  %%Versione old pre 2011
 
@@ -189,6 +227,21 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
             xStructChannel = Fodis.IO.extractSegmentHeaderInformation(allFilenameInActualSegment(segmentHeader), xChannelName);
             xFormat = xStructChannel.(xChannelName).format;
             xMultiplier = xStructChannel.(xChannelName).multiplier.Total;
+            
+            % I don't have reference for testing, lets assume it is the same
+            springConstantRaw = structChannel.(['Channel' yChannel]).multiplier.force;
+            if isnumeric(springConstantRaw)
+                springConstant = springConstantRaw;
+            else
+                springConstant = str2double(springConstantRaw);
+            end
+            
+            sensitivityRaw = structChannel.(['Channel' yChannel]).multiplier.distance;
+            if isnumeric(sensitivityRaw)
+                sensitivity = sensitivityRaw;
+            else
+                sensitivity = str2double(sensitivityRaw);
+            end
         end
 
         % Read the good x channel from file
@@ -216,8 +269,8 @@ function [outSegments, headers] = readJPK(file, wantedSegments)
         % send headers as output
         headers(j).index = kk + 1;
         headers(j).name = segmentType;
-        headers(j).springConstant = yMultiplier;
-        headers(j).sensitivity = xMultiplier;
+        headers(j).springConstant = springConstant;
+        headers(j).sensitivity = sensitivity;
         headers(j).xPosition = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.environment.xy-scanner-position-map.xy-scanner.tip-scanner.start-position.x'));
         headers(j).yPosition = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.environment.xy-scanner-position-map.xy-scanner.tip-scanner.start-position.y'));
         headers(j).curveIndex = str2double(Fodis.IO.extractParameterValue(dataSegmentHeader, 'force-segment-header.environment.xy-scanner-position-map.xy-scanners.position-index'));
