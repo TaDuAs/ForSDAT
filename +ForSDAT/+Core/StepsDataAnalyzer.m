@@ -9,6 +9,7 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
         Model = 'gauss';
         ModelFittingMode {mustBeMember(ModelFittingMode, {'data', 'frequencies'})} = 'data';
         Alpha = 0.05;
+        LRPrecentile = [];
         
         % The method for evaluating errors
         % Accepts values:
@@ -102,6 +103,11 @@ classdef StepsDataAnalyzer < mfc.IDescriptor
             lrVector = lrVector(~isnan(lrVector));
             if isempty(lrVector)
                 lrVector = -1*slope(slope<0)*speed;
+            end
+            
+            if ~isempty(this.LRPrecentile)
+                lrCutoff = prctile(lrVector, this.LRPrecentile);
+                lrVector = lrVector(lrVector < lrCutoff);
             end
             lr = mean(lrVector);
             lrErr = this.calculateError(lrVector);
