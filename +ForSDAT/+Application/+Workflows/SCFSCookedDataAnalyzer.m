@@ -76,6 +76,10 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
             
             avgInterRuptDistance = arrayfun(@(x) mean(diff(x.ruptureDistance)), dataList);
             results.InterRuptureDistance = ForSDAT.Application.Models.MeanValue(avgInterRuptDistance);
+            
+            % lists
+            results.RuptureForceList = [dataList.ruptureForce];
+            results.RuptureDistanceList = [dataList.ruptureDistance];
         end
 
         function bool = examineCurveAnalysisResults(this, data)
@@ -95,7 +99,10 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
     
     % post analysis
     methods
-        function data = getRepositoryData(this)
+        function data = getRepositoryData(this, repo)
+            if nargin >= 2 && ~isempty(repo) && gen.isSingleString(repo)
+                this.importExperimentsRepository(repo);
+            end
             data = [this.ExperimentRepository.values{:}];
         end
     end

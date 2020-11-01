@@ -13,6 +13,10 @@ classdef SCFSExperimentResults
         RuptureForce ForSDAT.Application.Models.MeanValue = ForSDAT.Application.Models.MeanValue();
         InterRuptureDistance ForSDAT.Application.Models.MeanValue = ForSDAT.Application.Models.MeanValue();
         MaxRuptureDistance ForSDAT.Application.Models.MeanValue = ForSDAT.Application.Models.MeanValue();
+        
+        % Results Lists
+        RuptureForceList;
+        RuptureDistanceList;
     end
 end
 

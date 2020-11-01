@@ -6,9 +6,9 @@ classdef WLCInteraction < ForSDAT.Sim.SimulatedInteraction
     
     methods
         function resolve(this)
-            [p, l] = Simple.Math.wlc.PL(...
+            [p, l] = util.wlc.PL(...
                 this.RuptureDistance, this.RuptureForce, this.RuptureSlope);
-            [~, this.PersistenceLength, this.ContourLength] = Simple.Math.wlc.correctSolution(...
+            [~, this.PersistenceLength, this.ContourLength] = util.wlc.correctSolution(...
                 this.LoadingDomainX, p, l);
             
         end
@@ -19,7 +19,7 @@ classdef WLCInteraction < ForSDAT.Sim.SimulatedInteraction
             end
             
             contactPointIndex = curve.SimInfo.ContactPointIndex;
-            wlcY = Simple.Math.wlc.F(this.LoadingDomainX, this.PersistenceLength, this.ContourLength);
+            wlcY = util.wlc.F(this.LoadingDomainX, this.PersistenceLength, this.ContourLength);
             y = -[zeros(1, contactPointIndex), wlcY, zeros(1, numel(x) - numel(this.LoadingDomainX) - contactPointIndex)];
         end
     end

@@ -10,6 +10,8 @@ classdef MainWindow < mvvm.view.MainAppView
         MainInfoContainer;
         PlotPanel ForSDAT.Application.Client.PlotPanel;
         EditPanel ForSDAT.Application.Client.EditPanel;
+        
+        ModelUpdatedByUserListener event.listener;
     end
     
     methods
@@ -25,12 +27,15 @@ classdef MainWindow < mvvm.view.MainAppView
         function init(this)
             init@mvvm.view.MainAppView(this);
             
-            % link ocurrent window biners to the controller and current
+            % link ocurrent window binders to the controller and current
             % session
-            % Not using the ViewProviderMapping mechanism because the
-            % is initialized in a later stage tahn construction
+            % Not using the ViewProviderMapping mechanism because the view
+            % is initialized in a later stage than construction
             this.BindingManager.setModelProvider(this.Fig,...
                 mvvm.providers.ControllerProvider('ForceSpecAnalysisController', this.Session));
+            
+            % listen to model updates
+            this.ModelUpdatedByUserListener = this.BindingManager.addlistener('modelUpdated', @this.onCongifEditedByUser);
         end
         
         function initializeComponents(this)
@@ -65,6 +70,14 @@ classdef MainWindow < mvvm.view.MainAppView
                 mvvm.providers.ControllerProvider('ProcessSetupController', this.Session),... % model provider
                 this.ViewManager, this.Session.IocContainer.get('mxml.XmlSerializer'));
             
+        end
+    end
+    
+    methods (Access=private)
+        function onCongifEditedByUser(this, ~, ~)
+            controller = this.getModel();
+            controller.analyzeCurve();
+            this.PlotPanel.plot();
         end
     end
 end

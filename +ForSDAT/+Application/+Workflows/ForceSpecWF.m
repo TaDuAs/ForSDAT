@@ -65,6 +65,32 @@ classdef ForceSpecWF < handle
             results = this.cookedAnalyzer.getAcceptedResults();
         end
         
+        function [data, curveName] = getCurrentCurveAnalysis(this, curveName)
+            % Gets the analysis of the current curve in the queue from
+            % cache, or analyzes it, if it's not there.
+            % getCurrentCurveAnalysis(this)
+            %   uses the current curve in the queue
+            % getCurrentCurveAnalysis(this, curveName)
+            %   jumps to the specified curveName in the queue if necessary
+            
+            if nargin < 2; curveName = []; end;
+            
+            % Get current curve
+            [~, curveName] = this.getCurveFromQueue(curveName);
+            
+            % Get current curve analysis from cache
+            [data, lastAnalyzedItemKey] = this.getLastAnalyzedItem();
+            
+            % Check if the current curve mathces the current analysis from
+            % cache
+            if isempty(data) || ~strcmp(lastAnalyzedItemKey, curveName)
+                % If not, analyze the curve (the new curve is now the
+                % current curve since we moved the queue to the position of
+                % the curve matching curveName
+                data = this.analyzeCurve();
+            end
+        end
+        
         function [data, curveName] = analyzeCurve(this, curveName)
             % analyzeCurve() - Analyzes the current curve in the queue. Use
             %       this option when updating the analysis process pipeline
@@ -218,6 +244,11 @@ classdef ForceSpecWF < handle
         end
         
         function plotLastAnalyzedCurve(this, fig, taskNameOrIndex)
+            %
+            % TODO: Plotting has no buisness in the workflow
+            %       Get rid of it
+            %
+            
             % Plots the last analyzed curve, if 
             if nargin < 3
                 taskNameOrIndex = [];
@@ -270,32 +301,6 @@ classdef ForceSpecWF < handle
                 [data, curveName] = this.acceptCurve();
             else
                 [data, curveName] = this.rejectCurve();
-            end
-        end
-        
-        function [data, curveName] = getCurrentCurveAnalysis(this, curveName)
-            % Gets the analysis of the current curve in the queue from
-            % cache, or analyzes it, if it's not there.
-            % getCurrentCurveAnalysis(this)
-            %   uses the current curve in the queue
-            % getCurrentCurveAnalysis(this, curveName)
-            %   jumps to the specified curveName in the queue if necessary
-            
-            if nargin < 2; curveName = []; end;
-            
-            % Get current curve
-            [~, curveName] = this.getCurveFromQueue(curveName);
-            
-            % Get current curve analysis from cache
-            [data, lastAnalyzedItemKey] = this.getLastAnalyzedItem();
-            
-            % Check if the current curve mathces the current analysis from
-            % cache
-            if isempty(data) || ~strcmp(lastAnalyzedItemKey, curveName)
-                % If not, analyze the curve (the new curve is now the
-                % current curve since we moved the queue to the position of
-                % the curve matching curveName
-                data = this.analyzeCurve();
             end
         end
         

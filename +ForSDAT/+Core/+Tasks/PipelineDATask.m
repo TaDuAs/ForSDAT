@@ -32,6 +32,11 @@ classdef PipelineDATask < lists.PipelineTask
             error('not implemented task');
         end
         
+        function clearPlot(this, h)
+            ax = sui.gca(h);
+            cla(ax);
+        end
+        
         function focusPlot(this, sp)
             % If derived class doesn't implement this
             if isa(sp, 'matlab.ui.Figure') || isnumeric(sp)

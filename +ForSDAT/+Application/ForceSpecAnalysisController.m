@@ -135,15 +135,22 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
         end
         
-        function plotLastAnalyzedCurve(this, plotTask, sp)
-            if nargin < 3; sp = figure(1); end
-            wf = this.buildWF();
-            
-            if nargin < 2
-                wf.plotLastAnalyzedCurve(sp);
-            elseif ~isempty(plotTask) && (ischar(plotTask) || isnumeric(plotTask) || isa(plotTask, 'lists.PipelineTask'))
-                wf.plotLastAnalyzedCurve(sp, plotTask);
+        function plotLastAnalyzedCurve(this, plotTask, view)
+            if nargin < 3
+                view = figure(1); 
             end
+            
+            if nargin < 2 || isempty(plotTask)
+                plotTask = this.Project.CurrentViewedTask;
+%                 wf.plotLastAnalyzedCurve(view);
+            elseif ischar(plotTask) || isnumeric(plotTask)
+                plotTask = this.Project.RawAnalyzer.getTask(plotTask);
+%                 wf.plotLastAnalyzedCurve(view, plotTask);
+            end
+            
+            wf = this.buildWF();
+            data = wf.getCurrentCurveAnalysis();
+            plotTask.plotData(data, view);
         end
         
         function [data, newCurveName] = rejectAndNext(this, plotTask)

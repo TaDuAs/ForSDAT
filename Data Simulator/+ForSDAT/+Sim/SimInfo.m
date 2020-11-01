@@ -3,8 +3,8 @@ classdef SimInfo < handle & matlab.mixin.SetGet
     %   Detailed explanation goes here
     
     properties
-        Foom = Simple.Math.OOM.Pico;
-        Doom = Simple.Math.OOM.Nano;
+        Foom = util.OOM.Pico;
+        Doom = util.OOM.Nano;
         SamplingRate = 1024;
         ZLength = 500;
         RetractVelocity = 0.4 * 10^3;

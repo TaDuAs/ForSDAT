@@ -3,8 +3,8 @@ classdef CompositeBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector & mf
     %   Detailed explanation goes here
     
     properties
-        primary = [];
-        secondary = [];
+        primary ForSDAT.Core.Baseline.BaselineDetector;
+        secondary ForSDAT.Core.Baseline.BaselineDetector;
         stdThreshold = 0.1;
     end
     
@@ -28,6 +28,11 @@ classdef CompositeBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector & mf
             if nargin >= 3 && ~isempty(stdThreshold)
                 this.stdThreshold = stdThreshold;
             end
+        end
+        
+        function init(this, varargin)
+            this.primary.init(varargin{:});
+            this.secondary.init(varargin{:});
         end
         
         function [baseline, y, noiseAmp, coefficients, s, mu] = detect(this, x, y)

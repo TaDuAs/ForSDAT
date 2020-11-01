@@ -21,7 +21,11 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
             task = scope.getModel();
             h.box = uipanel('Parent', container, 'Units', 'pixels', 'Position', [1 1 98 64], 'BackgroundColor', [1 1 1]);
             
-            taskImg = sui.getIconCData(fullfile(this.ResourcePath, 'Tasks', [task.name '.png']), [255 255 255], [60, 60]);
+            taskIconPath = fullfile(this.ResourcePath, 'Tasks', [task.name '.png']);
+            if ~exist(taskIconPath, 'file')
+                taskIconPath = fullfile(this.ResourcePath, 'Tasks', 'FDC.png');
+            end
+            taskImg = sui.getIconCData(taskIconPath, [255 255 255], [60, 60]);
 %             h.taskButtonBox = uipanel(h.box, 'Units', 'pixels', 'Position', [16 1 64 64], 'BackgroundColor', [1 1 1]);
             h.taskButton = uicontrol('Style', 'pushbutton', 'Parent', h.box, ...
                 'Units', 'pixels', ...

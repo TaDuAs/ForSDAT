@@ -2,7 +2,7 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
     %SIMPLEBASELINEDETECTOR Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetObservable)
         fragment = 0.1
         stdScore = 3;
         isBaselineTilted_value = false;
@@ -41,7 +41,7 @@ classdef SimpleBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             end
             polyOrder = util.cond(this.isBaselineTilted, 1, 0);
             [coefficients, s] = polyfit(xSect, ySect, polyOrder);
-            baseline = coefficients(1);
+            baseline = coefficients(end);
             yDev = std(ySect - polyval(coefficients, xSect, s));
             noiseAmp = this.stdScore * yDev;
             msd = {baseline, yDev};

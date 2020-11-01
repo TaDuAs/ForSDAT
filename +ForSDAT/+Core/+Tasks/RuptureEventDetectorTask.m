@@ -113,6 +113,14 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             
             hold off;
         end
+        
+        function clearPlot(this, h)
+            ax = sui.gca(h);
+            yyaxis(ax, 'right');
+            cla(ax);
+            yyaxis(ax, 'left');
+            cla(ax);
+        end
     end
 end
 

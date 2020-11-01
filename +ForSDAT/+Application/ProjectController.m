@@ -7,7 +7,7 @@ classdef ProjectController < mvvm.AppController
     end
     
     properties (Access=protected)
-        ignoreProjectUpdate;
+        ignoreProjectUpdate = false;
     end
     
     methods % property accessors

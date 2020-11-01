@@ -14,7 +14,7 @@ classdef PlotPanel < mvvm.view.ComponentView
         end
         
         function plot(this)
-            this.Controller.plotLastAnalyzedCurve('do something to get the current task', this.Axis);
+            this.Controller.plotLastAnalyzedCurve([], this.Axis);
         end
     end
     
