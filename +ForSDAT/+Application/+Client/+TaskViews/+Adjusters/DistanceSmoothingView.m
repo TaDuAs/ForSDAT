@@ -1,23 +1,14 @@
-classdef DistanceSmoothingView
-    %DISTANCESMOOTHINGVIEW Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    properties
-        Property1
-    end
-    
+classdef DistanceSmoothingView < mvvm.view.ComponentView
     methods
-        function obj = DistanceSmoothingView(inputArg1,inputArg2)
-            %DISTANCESMOOTHINGVIEW Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+        function this = DistanceSmoothingView(parent, ownerView, varargin)
+            this@mvvm.view.ComponentView(parent, 'OwnerView', ownerView, 'BoxType', @sui.FlowBox, varargin{:});
         end
-        
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+    end
+    methods (Access=protected)
+        function initializeComponents(this)
+            initializeComponents@mvvm.view.ComponentView(this);
+            
+            this.addChild(uicontrol('style', 'text', 'String', 'DistanceSmoothingView'));
         end
     end
 end
-

@@ -43,17 +43,18 @@ classdef EditPanel < mvvm.view.ComponentView
             
             % One day this should be passed over to some app-map of sorts,
             % or at least a proper factory
-            this.Frame.add("OOM Adjuster", @ForSDAT.Application.Client.TaskViews.OOMAdjusterView);
-            this.Frame.add("Baseline", @this.mxmlTaskEditor);
-            this.Frame.add("Chain Fit", @this.mxmlTaskEditor);
-            this.Frame.add("Contact Point Detector", @this.mxmlTaskEditor);
-            this.Frame.add("Interaction Window", @this.mxmlTaskEditor);
-            this.Frame.add("Rupture Detector", @this.mxmlTaskEditor);
-            this.Frame.add("Smoothing", @this.mxmlTaskEditor);
-            this.Frame.add("Specific Interaction Detector", @this.mxmlTaskEditor);
-            this.Frame.add("Tip Height Adjuster", @this.mxmlTaskEditor);
-            this.Frame.add("Adhesion Energy", @this.mxmlTaskEditor);
-            this.Frame.add("Adhesion Force", @this.mxmlTaskEditor);
+            this.Frame.add("OOM Adjuster", @ForSDAT.Application.Client.TaskViews.Adjusters.OOMAdjusterView);
+            this.Frame.add("Baseline", @ForSDAT.Application.Client.TaskViews.BaselineAndContact.BaselineTaskView);
+            this.Frame.add("Chain Fit", @ForSDAT.Application.Client.TaskViews.Ruptures.ChainFitTaskView);
+            this.Frame.add("Contact Point Detector", @ForSDAT.Application.Client.TaskViews.BaselineAndContact.ContactPointTaskView);
+            this.Frame.add("Interaction Window", @ForSDAT.Application.Client.TaskViews.Ruptures.InteractionWindowView);
+            this.Frame.add("Rupture Detector", @ForSDAT.Application.Client.TaskViews.Ruptures.RuptureDetectorView);
+            this.Frame.add("Smoothing", @ForSDAT.Application.Client.TaskViews.Adjusters.SmoothingAdjusterView);
+            this.Frame.add("Distance Smoothing", @ForSDAT.Application.Client.TaskViews.Adjusters.DistanceSmoothingView);
+            this.Frame.add("Specific Interaction Detector", @ForSDAT.Application.Client.TaskViews.Ruptures.SmootingSMIView);
+            this.Frame.add("Tip Height Adjuster", @ForSDAT.Application.Client.TaskViews.Adjusters.TipHeightAdjusterView);
+            this.Frame.add("Adhesion Energy", @ForSDAT.Application.Client.TaskViews.Adhesion.DetachmentWorkView);
+            this.Frame.add("Adhesion Force", @ForSDAT.Application.Client.TaskViews.Adhesion.MaxAdhesionForceView);
             this.Frame.add("Oscillatory Baseline Adjuster", @this.mxmlTaskEditor);
         end
         
