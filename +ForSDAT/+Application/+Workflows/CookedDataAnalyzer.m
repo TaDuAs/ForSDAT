@@ -30,6 +30,12 @@ classdef (Abstract) CookedDataAnalyzer < handle
         
         % The batch info of current analyzed experiment
         CurrentBatchInfo ForSDAT.Application.Models.BatchInfo;
+        
+        % The method used to evaluate outliers
+        OutlierEvalMethod char {mustBeMember(OutlierEvalMethod, {'movmedian', 'movmean'})} = 'movmedian';
+        
+        % The logarithmic (natural logarithm) window for outlier evaluation
+        OutlierEvalLogarithmicWindow double = 1.5;
     end
     
     %
@@ -447,6 +453,36 @@ classdef (Abstract) CookedDataAnalyzer < handle
                 refForce(i, :) = [frc, frcErr];
             end
         end
+        
+        function [mpf, mpfErr, x, xErr] = prepareBellEvansData(this)
+        % Gets the full list of MPF vs. ln(r) values from the current
+        % experiment repository.
+        % Where MPF is the most probable force and r is the loading rate of
+        % of a given experiment 
+        % 
+        % prepareBellEvansData(analyzer)
+        % Output:
+        %   mpf -    row vector of the MPFs of all experiments in the 
+        %            current experiments repository
+        %   mpfErr - row vector of the MPF errors of all experiments in the 
+        %            current experiments repository
+        %   x -      row vector of the ln(r) of all experiments in the 
+        %            current experiments repository
+        %   xErr -   row vector of the ln(r) errors of all experiments in 
+        %            the current experiments repository
+        %
+        
+            data = [this.ExperimentRepository.values{:}];
+            
+            lr = vertcat(data.LoadingRate);
+            lrErr = vertcat(data.LoadingRateErr);
+            mpf = vertcat(data.MostProbableForce);
+            mpfErr = vertcat(data.ForceErr);
+            
+            % Calculate reggression
+            x = log(lr);
+            xErr = lrErr./lr;
+        end
     end
     
     methods (Access=protected)
@@ -507,6 +543,28 @@ classdef (Abstract) CookedDataAnalyzer < handle
             map = this.getDataList();
             map.remove(map.keys);
         end
+        
+        function markOutlierExperiments(this, window)
+            if nargin < 2 || isempty(window)
+                window = this.OutlierEvalLogarithmicWindow;
+            end
+            
+            [mpf, ~, lnr] = this.prepareBellEvansData();
+            
+            [x, i] = sort(lnr);
+            dx = [1, diff(x)];
+            incrementMask = dx == 0;
+            x(incrementMask) = x(incrementMask) + abs(0.0001*dx(find(incrementMask) - 1));
+            y = mpf(i);
+            
+            % determine which experiments are outliers
+            % the outlier mask should match the order of the original data
+            otlierMask(i) = isoutlier(y, this.OutlierEvalMethod, window, 'SamplePoints', x);
+            
+            for i = find(otlierMask)
+                experiment = this.ExperimentRepository.getv(i);
+            end
+        end
     end
     
     methods (Abstract, Access=protected)
@@ -527,20 +585,6 @@ classdef (Abstract) CookedDataAnalyzer < handle
     methods (Access=private)
         function onRepositoryUpdated(this, repo, ~)
             this.ExperimentRepositoryDAO.save(repo);
-        end
-        
-        function [mpf, mpfErr, x, xErr] = prepareBellEvansData(this)
-            
-            data = [this.ExperimentRepository.values{:}];
-            
-            lr = vertcat(data.LoadingRate);
-            lrErr = vertcat(data.LoadingRateErr);
-            mpf = vertcat(data.MostProbableForce);
-            mpfErr = vertcat(data.ForceErr);
-            
-            % Calculate reggression
-            x = log(lr);
-            xErr = lrErr./lr;
         end
     end
 end

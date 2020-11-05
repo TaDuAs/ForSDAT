@@ -17,6 +17,9 @@ classdef ForsSpecExperimentResults
         ForceErr;
         LoadingRate;
         LoadingRateErr;
+        
+        % final thing
+        IsOutlier = false;
     end
 end
 
