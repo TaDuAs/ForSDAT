@@ -474,10 +474,12 @@ classdef (Abstract) CookedDataAnalyzer < handle
         
             data = [this.ExperimentRepository.values{:}];
             
-            lr = vertcat(data.LoadingRate);
-            lrErr = vertcat(data.LoadingRateErr);
-            mpf = vertcat(data.MostProbableForce);
-            mpfErr = vertcat(data.ForceErr);
+            validValues = data(~[data.IsOutlier]);
+            
+            lr = vertcat(validValues.LoadingRate);
+            lrErr = vertcat(validValues.LoadingRateErr);
+            mpf = vertcat(validValues.MostProbableForce);
+            mpfErr = vertcat(validValues.ForceErr);
             
             % Calculate reggression
             x = log(lr);
@@ -544,27 +546,27 @@ classdef (Abstract) CookedDataAnalyzer < handle
             map.remove(map.keys);
         end
         
-        function markOutlierExperiments(this, window)
-            if nargin < 2 || isempty(window)
-                window = this.OutlierEvalLogarithmicWindow;
-            end
-            
-            [mpf, ~, lnr] = this.prepareBellEvansData();
-            
-            [x, i] = sort(lnr);
-            dx = [1, diff(x)];
-            incrementMask = dx == 0;
-            x(incrementMask) = x(incrementMask) + abs(0.0001*dx(find(incrementMask) - 1));
-            y = mpf(i);
-            
-            % determine which experiments are outliers
-            % the outlier mask should match the order of the original data
-            otlierMask(i) = isoutlier(y, this.OutlierEvalMethod, window, 'SamplePoints', x);
-            
-            for i = find(otlierMask)
-                experiment = this.ExperimentRepository.getv(i);
-            end
-        end
+%         function markOutlierExperiments(this, window)
+%             if nargin < 2 || isempty(window)
+%                 window = this.OutlierEvalLogarithmicWindow;
+%             end
+%             
+%             [mpf, ~, lnr] = this.prepareBellEvansData();
+%             
+%             [x, i] = sort(lnr);
+%             dx = [1, diff(x)];
+%             incrementMask = dx == 0;
+%             x(incrementMask) = x(incrementMask) + abs(0.0001*dx(find(incrementMask) - 1));
+%             y = mpf(i);
+%             
+%             % determine which experiments are outliers
+%             % the outlier mask should match the order of the original data
+%             otlierMask(i) = isoutlier(y, this.OutlierEvalMethod, window, 'SamplePoints', x);
+%             
+%             for i = find(otlierMask)
+%                 experiment = this.ExperimentRepository.getv(i);
+%             end
+%         end
     end
     
     methods (Abstract, Access=protected)
