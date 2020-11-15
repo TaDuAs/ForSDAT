@@ -136,7 +136,10 @@ classdef PipelineDATask < lists.PipelineTask
                 plotFlags = [plotFlags, true(1, nplots - specifiedPlots)];
             end
         end
+        
+        function fieldIds = getGeneratedFields(~)
+            fieldIds = ForSDAT.Core.Fields.FieldID.empty();
+        end
     end
-    
 end
 

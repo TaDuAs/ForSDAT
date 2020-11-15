@@ -23,6 +23,10 @@ classdef InteractionWindowTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescri
             name = 'Interaction Window';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Rupture, 'RuptureWindow');
+        end
+        
         function this = InteractionWindowTask(filter, xChannel, yChannel, segment)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

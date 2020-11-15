@@ -1,4 +1,8 @@
 classdef CompositeBaselineView < mvvm.view.ComponentView
+    properties
+        Frame sui.ViewSwitch
+    end
+    
     methods
         function this = CompositeBaselineView(parent, ownerView, varargin)
             this@mvvm.view.ComponentView(parent, 'OwnerView', ownerView, 'BoxType', @sui.FlowBox, varargin{:});

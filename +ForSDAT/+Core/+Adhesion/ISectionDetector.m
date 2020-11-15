@@ -25,9 +25,9 @@ classdef (Abstract) ISectionDetector < handle
                     mask = this.getLogicalIndex(z);
                 case ForSDAT.Core.BoundingLimitTypes.LastRupture
                     if isempty(ruptureDistance)
-                        mask = z <= 0;
+                        mask = false(size(ruptureDistance));
                     else
-                        mask = z <= max(ruptureDistance);
+                        mask = z <= max(ruptureDistance) & z > 0;
                     end
                 case ForSDAT.Core.BoundingLimitTypes.LinkerBounds
                     %TODO implement linker size window

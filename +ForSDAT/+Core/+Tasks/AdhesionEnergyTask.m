@@ -19,6 +19,10 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.T
             name = 'Adhesion Energy';
         end
         
+        function fieldIds = getGeneratedFields(~)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Adhesion, 'AdhesionEnergy');
+        end
+        
         function this = AdhesionEnergyTask(detector, xChannel, yChannel, segment)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

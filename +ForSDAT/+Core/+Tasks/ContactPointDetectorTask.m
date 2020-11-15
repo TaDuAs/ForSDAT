@@ -23,6 +23,10 @@ classdef ContactPointDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             name = 'Contact Point Detector';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Contact, 'Contact');
+        end
+        
         function this = ContactPointDetectorTask(detector, xChannel, yChannel, segment, shouldEstimateCantileverSpringConstant)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

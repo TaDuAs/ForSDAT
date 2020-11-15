@@ -3,7 +3,6 @@ classdef EditPanel < mvvm.view.ComponentView
     %   Detailed explanation goes here
     
     properties
-%         SubViewsBinder mvvm.Repeater;
         Frame sui.ViewSwitch;
         CurrentFrameBinder mvvm.Binder;
         Serialzier mxml.XmlSerializer;

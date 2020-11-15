@@ -25,6 +25,12 @@ classdef TipHeightAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescript
             name = 'Tip Height Adjuster';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = [...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Distance, 'FixedDistance'),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Contact, 'FixedContact')];
+        end
+        
         function this = TipHeightAdjustTask(adjuster, shouldEstimateCantileverSpringConstant, xChannel, yChannel, segment)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

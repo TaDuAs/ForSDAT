@@ -27,6 +27,13 @@ classdef BaselineDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescrip
             name = 'Baseline';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = [...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Baseline, 'Baseline'),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Noise, 'NoiseAmplitude'),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Threshold, 'BaselineOffsetFactor')];
+        end
+        
         function this = BaselineDetectorTask(detector, baselineOffsetFactorMultiplier, xChannel, yChannel, segment, applyToYChannels)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

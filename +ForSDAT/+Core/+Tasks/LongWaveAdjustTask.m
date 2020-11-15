@@ -22,6 +22,10 @@ classdef LongWaveAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             name = 'Oscillatory Baseline Adjuster';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Miscellaneous, 'Fourier');
+        end
+        
         function this = LongWaveAdjustTask(adjuster, xChannel, yChannel, segment)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

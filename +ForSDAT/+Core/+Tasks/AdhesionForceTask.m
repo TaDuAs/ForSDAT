@@ -20,6 +20,10 @@ classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Ta
             name = 'Adhesion Force';
         end
         
+        function fieldIds = getGeneratedFields(~)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Adhesion, 'AdhesionForce');
+        end
+        
         function this = AdhesionForceTask(detector, xChannel, yChannel, segment)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

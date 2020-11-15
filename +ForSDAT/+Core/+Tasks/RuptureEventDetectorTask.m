@@ -26,6 +26,10 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             name = 'Rupture Detector';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Rupture, 'Rupture');
+        end
+        
         function this = RuptureEventDetectorTask(ruptureDetector, xChannel, yChannel, segment, loadingDomainDetector)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';

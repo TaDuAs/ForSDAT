@@ -90,7 +90,7 @@ classdef MeanValue
                 % see Cochrane handbook Version 6.1, 2020, table 6.5.a
                 cv = ((cn-1)*cv + (n2-1)*v2 + cn*n2/(cn+n2)*(cu^2 + u2^2 -2*cu*u2))/(cn + n2 - 1);
                 cu = (cu*cn + u2*n2)/(cn+n2);
-                cn = sum(cn, n2);
+                cn = cn + n2;
             end
             
             % take the square root of the combined groups' variance
