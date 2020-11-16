@@ -45,7 +45,7 @@ classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Ta
             
             data.AdhesionForce.Value = adhForce;
             data.AdhesionForce.Position = pos;
-            data.AdhesionForce.AboveThreshold = adhForce > this.threshold;
+            data.AdhesionForce.AboveThreshold = ~isempty(adhForce) && adhForce > this.threshold;
         end
         
         function plotData(this, fig, data, extras)
@@ -58,9 +58,13 @@ classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Ta
             hold on;
             
             % plot curve picking analysis
+            try
             if plotFlags(2) && data.AdhesionForce.AboveThreshold
                 scatter(data.AdhesionForce.Position, -data.AdhesionForce.Value, 'filled', 'Marker', 'o');
-            end 
+            end
+            catch ex
+                rethrow(ex);
+            end
             
             hold off;
         end

@@ -103,6 +103,57 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             wf.start();
         end
         
+        function resumeLastProcess(this)
+            app = this.App.getApp();
+            
+            % check if restore point exists
+            if ~isfield(app.Preferences, 'ProjectRestore') || isempty(app.Preferences.ProjectRestore)
+                return;
+            end
+            
+            % get restore point
+            restorePoint = app.Preferences.ProjectRestore;
+            
+            % get permission to commit restore
+            message = mvvm.RelayMessage(ForSDAT.Application.AppMessages.RestoreProcess, restorePoint);
+            message.Result.flag = true;
+            app.Messenger.send(message);
+            
+            % if there was an objection to project restoration
+            if ~message.Result.flag
+                % clear restore point
+                app.Preferences.ProjectRestore = [];
+                return;
+            end
+            
+            % reload last unfinished process from app preferences
+            this.setProject(restorePoint.Project);
+            this.Project.CookedAnalyzer.restoreProcess(restorePoint.CookedAnalyzerRestorePoint);
+            
+            % set the last edited curve
+            wf = this.buildWF();
+            wf.analyzeCurve(restorePoint.LastItemID);
+            
+            % clear restore point
+            app.Preferences.ProjectRestore = [];
+        end
+        
+        function saveAndContinueProcessLater(this)            
+            % get id of current analyzed curve
+            wf = this.buildWF();
+            [~, currCurveName] = wf.getCurrentCurveAnalysis();
+            
+            % create project restoration point
+            restorePoint = ForSDAT.Application.Models.ProjectRestorePoint();
+            restorePoint.Project = this.Project;
+            restorePoint.LastItemID = currCurveName;
+            restorePoint.CookedAnalyzerRestorePoint = this.Project.CookedAnalyzer.createRestorePoint();
+            
+            % save project restoration point in Application Preferences,
+            % this will be automatically reloaded next time the app starts
+            this.App.getApp().Preferences.ProjectRestore = restorePoint;
+        end
+        
         function [results, progress, workLeft] = getAnalysisReport(this)
             wf = this.buildWF();
             

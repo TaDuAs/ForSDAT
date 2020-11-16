@@ -31,7 +31,7 @@ classdef (Abstract) ISectionDetector < handle
                     end
                 case ForSDAT.Core.BoundingLimitTypes.LinkerBounds
                     %TODO implement linker size window
-                    throw(MException('ForSDAT:Core:Adhesion:AdhesionEnergyDetector:LinkerNotImplemented', 'ForSDAT.Core.BoundingLimitTypes.LinkerBounds functionality not implemented yet'));
+                    throw(MException('ForSDAT:Core:SectionDetector:LinkerNotImplemented', 'ForSDAT.Core.BoundingLimitTypes.LinkerBounds functionality not implemented yet'));
                 otherwise
                     mask = true(size(z));
             end

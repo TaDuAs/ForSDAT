@@ -73,7 +73,7 @@ classdef ForceSpecWF < handle
             % getCurrentCurveAnalysis(this, curveName)
             %   jumps to the specified curveName in the queue if necessary
             
-            if nargin < 2; curveName = []; end;
+            if nargin < 2; curveName = []; end
             
             % Get current curve
             [~, curveName] = this.getCurveFromQueue(curveName);

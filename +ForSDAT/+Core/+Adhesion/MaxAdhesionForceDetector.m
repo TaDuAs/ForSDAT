@@ -1,4 +1,4 @@
-classdef MaxAdhesionForceDetector < ForSDAT.Core.Adhesion.ISectionDetector
+classdef MaxAdhesionForceDetector < ForSDAT.Core.Base.ISectionDetector
     methods        
         function [adhesion, pos] = detect(this, z, f, noiseAmp, ruptureDistance)
             mask = this.getBoundsMask(z, f, ruptureDistance);

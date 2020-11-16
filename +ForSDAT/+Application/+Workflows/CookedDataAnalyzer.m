@@ -164,18 +164,55 @@ classdef (Abstract) CookedDataAnalyzer < handle
             this.rejectData(curveKey);
         end
         
-        function experimentId = loadPreviouslyProcessedDataOutput(this, importDetails)
-        % Loads previously processed data
+        function restorePoint = createRestorePoint(this, data, results)
+        % Creates a process-in-progress restoration point struct
+        
+            restorePoint = struct();
+            
+            % prep accepted curve data object list
+            if nargin < 2 || isempty(data)
+                valuesCellArray = this.getDataList().values;
+                restorePoint.data = [valuesCellArray{:}];
+            else
+                restorePoint.data = data;
+            end
+            
+            % set meta data restoration info
+            if nargin < 3 || isempty(results)
+                restorePoint.results = struct();
+                restorePoint.results.BatchInfo = this.CurrentBatchInfo;
+                restorePoint.results.Id = this.RunningExperimentId;
+            else
+                restorePoint.results = results;
+            end
+        end
+        
+        function experimentId = restoreProcess(this, restorePoint)
+        % Restores a process-in-progress from a previous restoration point
+        % or exported analyzed data
+            
             this.clearDataList();
-            [data, results] = this.DataAccessor.importResults(importDetails);
+            
+            data = restorePoint.data;
+            results = restorePoint.results;
+            
+            % restore batch info and experiment id
             this.CurrentBatchInfo = results.BatchInfo;
             this.RunningExperimentId = results.Id;
             
+            % return experiment id
             experimentId = results.Id;
             
             for i = 1:length(data)
-                this.addToDataList(data(i), data(i).(importDetails.keyField));
+                currItem = data(i);
+                this.addToDataList(currItem, currItem.(importDetails.keyField));
             end
+        end
+        
+        function experimentId = loadPreviouslyProcessedDataOutput(this, importDetails)
+        % Loads previously processed data
+            [data, results] = this.DataAccessor.importResults(importDetails);
+            experimentId = this.restoreProcess(this.createRestorePoint(data, results));
         end
         
         function startFresh(this, batchInfo)

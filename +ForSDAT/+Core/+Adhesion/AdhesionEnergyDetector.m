@@ -1,4 +1,4 @@
-classdef AdhesionEnergyDetector < ForSDAT.Core.Adhesion.ISectionDetector
+classdef AdhesionEnergyDetector < ForSDAT.Core.Base.ISectionDetector
     properties
         EOOM util.OOM = util.OOM.Atto;
         FOOM util.OOM = util.OOM.Pico;

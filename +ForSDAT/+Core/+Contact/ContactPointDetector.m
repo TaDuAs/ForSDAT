@@ -32,9 +32,7 @@ classdef ContactPointDetector < handle
         %   s - standard error values
         %   msd - mean and standard deviation of the residuals {mean, std}
             
-            if ~exist('baseline', 'var')
-                baseline = [0 0];
-            end
+            if nargin < 4; baseline = [0 0]; end
             
             if this.isSorftSurface
                 contact = findSoftSurfaceContactPoint(this, x, y, baseline);
@@ -87,10 +85,7 @@ classdef ContactPointDetector < handle
         end
         
         function [contact, coefficients] = findSoftSurfaceContactPoint(this, x, y, baseline)
-            i = 1;
-            while i < length(x) && y(i) > baseline
-                i = i+1;
-            end
+            i = find(y <= baseline(1), 1, 'first');
             contact = x(i);
             a = (baseline - y(1))/(contact - x(1));
             b = y(1) - a*x(1);
