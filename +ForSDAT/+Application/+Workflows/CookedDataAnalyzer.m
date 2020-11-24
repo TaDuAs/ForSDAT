@@ -203,14 +203,19 @@ classdef (Abstract) CookedDataAnalyzer < handle
             % return experiment id
             experimentId = results.Id;
             
+            % the field of each data item used as unique id
+            keyField = this.getDataItemKeyField();
+            
+            % add all restored data items to the accepted data list
             for i = 1:length(data)
                 currItem = data(i);
-                this.addToDataList(currItem, currItem.(importDetails.keyField));
+                this.addToDataList(currItem, currItem.(keyField));
             end
         end
         
-        function experimentId = loadPreviouslyProcessedDataOutput(this, importDetails)
+        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
         % Loads previously processed data
+            importDetails = this.getImportDetails(path);
             [data, results] = this.DataAccessor.importResults(importDetails);
             experimentId = this.restoreProcess(this.createRestorePoint(data, results));
         end
@@ -619,6 +624,17 @@ classdef (Abstract) CookedDataAnalyzer < handle
         % Examine the analysis results of a single curve and determine
         % whether should accept or reject it.
         bool = examineCurveAnalysisResults(this, data)
+    end
+    
+    methods (Access=protected)
+        function importDetails = getImportDetails(this, path)
+            importDetails.path = path;
+            importDetails.keyField = this.getDataItemKeyField();
+        end
+        
+        function keyField = getDataItemKeyField(this)
+            keyField = 'file';
+        end
     end
     
     methods (Access=private)

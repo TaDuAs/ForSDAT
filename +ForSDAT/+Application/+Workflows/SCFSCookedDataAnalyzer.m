@@ -88,13 +88,6 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
 %             bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
             bool = true;
         end
-        
-        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
-        % Loads previously processed data
-            importDetails.path = path;
-            importDetails.keyField = 'file';
-            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
-        end
     end
     
     % post analysis

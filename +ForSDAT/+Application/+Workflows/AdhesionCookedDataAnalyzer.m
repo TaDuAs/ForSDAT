@@ -84,13 +84,6 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         % whether adhesion event was detected
             bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
         end
-        
-        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
-        % Loads previously processed data
-            importDetails.path = path;
-            importDetails.keyField = 'file';
-            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
-        end
     end
 end
 

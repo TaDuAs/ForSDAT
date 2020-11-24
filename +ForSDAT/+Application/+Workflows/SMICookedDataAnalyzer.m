@@ -90,13 +90,6 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         % whether a single molecule interaction (SMI) was detected
             bool = mvvm.getobj(data, 'SingleInteraction.didDetect', false, 'nowarn');
         end
-        
-        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
-        % Loads previously processed data
-            importDetails.path = path;
-            importDetails.keyField = 'file';
-            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
-        end
     end
 end
 
