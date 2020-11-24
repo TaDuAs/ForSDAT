@@ -6,6 +6,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
     end
     
     properties (Access=private)
+        restorePointPath;
         processingProgressListener;
         progressbar util.ConsoleProggressBar;
         serializer mxml.ISerializer = mxml.XmlSerializer.empty();
@@ -82,6 +83,14 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         end
     end
     
+    methods % initialization
+        function init(this, app)
+            init@ForSDAT.Application.ProjectController(this, app);
+            
+            this.restorePointPath = fullfile(app.RootPath, 'Temp', 'projectResorePoint.xml');
+        end
+    end
+    
     methods (Access=private)
         function wf = buildWF(this)
             wf = ForSDAT.Application.Workflows.ForceSpecWF(...
@@ -103,16 +112,20 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             wf.start();
         end
         
+        function clearLastRestorePoint(this)
+            delete(this.restorePointPath);
+        end
+        
         function resumeLastProcess(this)
             app = this.App.getApp();
             
             % check if restore point exists
-            if ~isfield(app.Preferences, 'ProjectRestore') || isempty(app.Preferences.ProjectRestore)
+            if ~exist(this.restorePointPath, 'file')
                 return;
             end
             
             % get restore point
-            restorePoint = app.Preferences.ProjectRestore;
+            restorePoint = this.serializer.load(this.restorePointPath);
             
             % get permission to commit restore
             message = mvvm.RelayMessage(ForSDAT.Application.AppMessages.RestoreProcess, restorePoint);
@@ -121,21 +134,21 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             
             % if there was an objection to project restoration
             if ~message.Result.flag
-                % clear restore point
-                app.Preferences.ProjectRestore = [];
+                this.clearLastRestorePoint();
                 return;
             end
             
             % reload last unfinished process from app preferences
             this.setProject(restorePoint.Project);
             this.Project.CookedAnalyzer.restoreProcess(restorePoint.CookedAnalyzerRestorePoint);
+            this.AnalyzedSegment = restorePoint.AnalyzedSegment;
             
             % set the last edited curve
             wf = this.buildWF();
             wf.analyzeCurve(restorePoint.LastItemID);
             
             % clear restore point
-            app.Preferences.ProjectRestore = [];
+            this.clearLastRestorePoint();
         end
         
         function saveAndContinueProcessLater(this)            
@@ -148,10 +161,11 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             restorePoint.Project = this.Project;
             restorePoint.LastItemID = currCurveName;
             restorePoint.CookedAnalyzerRestorePoint = this.Project.CookedAnalyzer.createRestorePoint();
+            restorePoint.AnalyzedSegment = this.AnalyzedSegment;
             
             % save project restoration point in Application Preferences,
             % this will be automatically reloaded next time the app starts
-            this.App.getApp().Preferences.ProjectRestore = restorePoint;
+            this.serializer.save(restorePoint, this.restorePointPath);
         end
         
         function [results, progress, workLeft] = getAnalysisReport(this)

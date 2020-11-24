@@ -1,4 +1,4 @@
-classdef (Abstract) CookedDataAnalyzer < handle
+classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
     % CookedDataAnalyzer is a base class for cooked data analyzers.
     % Cooked data analyzers saves and analyzes the processed raw data and
     % manage experminet repository for post-processing the results of 
@@ -11,7 +11,13 @@ classdef (Abstract) CookedDataAnalyzer < handle
                                    % Li et al. Langmuir 2014, https://doi.org/10.1021/la501189n
         BellEvansAlpha = 0.95;
     end
-        
+    
+    methods (Hidden)
+        function ignoreList = getMXmlIgnoreFieldsList(~)
+            ignoreList = {'ExperimentRepository', 'RepositoryContext', 'ExperimentRepositoryListener'};
+        end
+    end
+    
     % 
     % Current running analysis properties
     %
