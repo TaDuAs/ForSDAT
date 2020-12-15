@@ -57,6 +57,7 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.T
             x = this.getChannelData(data, 'x');
             y = this.getChannelData(data, 'y');
             ruptureDist = this.getRuptureDistances(data);
+            
             areaMask = y < 0 & this.detector.getBoundsMask(x, y, ruptureDist);
             
             % plot curve picking analysis

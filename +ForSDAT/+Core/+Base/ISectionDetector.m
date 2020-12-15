@@ -25,7 +25,7 @@ classdef (Abstract) ISectionDetector < handle
                     mask = this.getLogicalIndex(z);
                 case ForSDAT.Core.BoundingLimitTypes.LastRupture
                     if isempty(ruptureDistance)
-                        mask = false(size(ruptureDistance));
+                        mask = false(size(z));
                     else
                         mask = z <= max(ruptureDistance) & z > 0;
                     end
