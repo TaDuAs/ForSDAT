@@ -199,7 +199,11 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             
             this.clearDataList();
             
-            data = restorePoint.data;
+            if isfield(restorePoint, 'data')
+                data = restorePoint.data;
+            else
+                data = [];
+            end
             results = restorePoint.results;
             
             % restore batch info and experiment id
