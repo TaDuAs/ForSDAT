@@ -45,7 +45,11 @@ classdef LongWaveAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
         
         function data = process(this, data)
             
-            fitSegData = this.getChannelData(data, this.adjuster.fitToSegmentId);
+            if ~isempty(this.adjuster.fitToSegmentId)
+                fitSegData = this.getChannelData(data, this.adjuster.fitToSegmentId);
+            else
+                fitSegData = struct('Distance', this.getChannelData(data, 'x'), 'Force', this.getChannelData(data, 'y'));
+            end
 %             fixThisSegData = this.getChannelData(this.adjuster.fixSegmentId);
             
             k = data.Cantilever.springConstant;
@@ -69,10 +73,10 @@ classdef LongWaveAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             plotFlags = this.getPlotFlags(extras, 4);
             
             if plotFlags(2)
-                plot(data.retract.Distance, data.retract.Force);
+                plot(data.retract.Distance, data.retract.Force - data.retract.Force(1) + data.Force(1), 'LineStyle', '-', 'LineWidth', 1, 'Color', rgb('Silver'));
             end
             if plotFlags(3)
-                plot(data.extend.Distance, data.extend.Force, 'LineStyle', '-', 'LineWidth', 1, 'Color', rgb('Red'));
+                plot(data.extend.Distance, data.extend.Force - data.retract.Force(1) + data.Force(1), 'LineStyle', '-', 'LineWidth', 1, 'Color', rgb('Red'));
             end
             if plotFlags(4)
                 plot(data.retract.Distance, data.Fourier.vector + data.Fourier.shift, 'LineStyle', '-', 'LineWidth', 2, 'Color', rgb('Gold'));

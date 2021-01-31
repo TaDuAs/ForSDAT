@@ -3,7 +3,7 @@ classdef LongWaveDisturbanceAdjusterBeta < handle
     % according to a fourier transform.
     
     properties
-        fitToSegmentId = ForSDAT.Application.IO.FDCurveTextFileSettings.defaultExtendSegmentName;
+        fitToSegmentId;
         fixSegmentId = ForSDAT.Application.IO.FDCurveTextFileSettings.defaultRetractSegmentName;
         fittingRangeParams;
         fourierSeriesOrder = 2;
@@ -26,7 +26,7 @@ classdef LongWaveDisturbanceAdjusterBeta < handle
                 this.fourierSeriesOrder = fourierSeriesOrder;
             end
             
-            if exist('fitToSegmentId', 'var') && ~isempty(fitToSegmentId)
+            if exist('fitToSegmentId', 'var')
                 this.fitToSegmentId = fitToSegmentId;
             end
             
@@ -37,7 +37,14 @@ classdef LongWaveDisturbanceAdjusterBeta < handle
         
         function [fFixed, fourierFit, waveFVector, shift] = adjust(this, fToFix, zToFix, fFit, zFit, k)
         % Adjusts long-wavelength disturbances to the baseline
-        
+            if this.fourierSeriesOrder == 0
+                fFixed = fToFix;
+                fourierFit = [];
+                waveFVector = zeros(size(fToFix));
+                shift = 0;
+                return;
+            end
+            
             % Fit wave function
             fFitSegment = util.croparr(fFit, this.fittingRangeParams.a, this.fittingRangeParams.b);
             zFitSegment = util.croparr(zFit, this.fittingRangeParams.a, this.fittingRangeParams.b);
@@ -59,12 +66,13 @@ classdef LongWaveDisturbanceAdjusterBeta < handle
         end
         
         function waveFVector = calcWaveVector(this, z, fourierFit)
-            waveFVector = zeros(1, length(z));
-            for i = 1:this.fourierSeriesOrder
-                a = fourierFit.(['a' num2str(i)]);
-                b = fourierFit.(['b' num2str(i)]);
-                waveFVector = waveFVector + a*cos(i*z*fourierFit.w) + b*sin(i*z*fourierFit.w);
-            end
+            waveFVector = reshape(feval(fourierFit, z), size(z));
+%             waveFVector = zeros(1, length(z));
+%             for i = 1:this.fourierSeriesOrder
+%                 a = fourierFit.(['a' num2str(i)]);
+%                 b = fourierFit.(['b' num2str(i)]);
+%                 waveFVector = waveFVector + a*cos(i*z*fourierFit.w) + b*sin(i*z*fourierFit.w);
+%             end
         end
     end 
 end

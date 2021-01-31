@@ -1,7 +1,12 @@
-classdef TaskViewBase < mvvm.view.ComponentView
+classdef TaskBasePropsControl < mvvm.view.ComponentView
     properties
         ExtraChannels;
         ExtraChannelTypes;
+    end
+    
+    properties (Access=private)
+        TaskChannelControl;
+        TaskChannelBinder;
     end
     
     methods (Access=protected)

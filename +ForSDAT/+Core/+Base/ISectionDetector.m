@@ -27,7 +27,7 @@ classdef (Abstract) ISectionDetector < handle
                     if isempty(ruptureDistance)
                         mask = false(size(z));
                     else
-                        mask = z <= max(ruptureDistance) & z > 0;
+                        mask = z <= max(ruptureDistance);
                     end
                 case ForSDAT.Core.BoundingLimitTypes.LinkerBounds
                     %TODO implement linker size window
