@@ -199,17 +199,10 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             
             this.clearDataList();
             
-<<<<<<< Updated upstream
-            if isfield(restorePoint, 'data')
-                data = restorePoint.data;
-            else
-                data = [];
-=======
             if ~isfield(restorePoint, 'data')
                 data = [];
             else
                 data = restorePoint.data;
->>>>>>> Stashed changes
             end
             results = restorePoint.results;
             
