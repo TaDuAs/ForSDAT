@@ -23,20 +23,27 @@ classdef MeanValue
     end
     
     methods
-        function this = MeanValue(arr, a)
+        function this = MeanValue(arr, a, flag)
             if nargin < 1; arr = []; end
             if nargin < 2 || isempty(a); a = 0.05; end
+            if nargin < 3 || isempty(flag); flag = 'omitnan'; end
             
-            this = this.setData(arr, a);
+            this = this.setData(arr, a, flag);
         end
         
-        function this = setData(this, arr, a)
+        function this = setData(this, arr, a, flag)
             if nargin < 1; arr = []; end
             if nargin < 2 || isempty(a); a = 0.05; end
+            if nargin < 3 || isempty(flag); flag = 'omitnan'; end
             
-            this.Value = mean(arr(:));
-            this.Std = std(arr(:));
-            this.N = this.calcN(arr);
+            if strcmp(flag, 'zeronan')
+                arr(isnan(arr)) = 0;
+                flag = 'omitnan';
+            end
+            
+            this.Value = mean(arr(:), flag);
+            this.Std = std(arr(:), flag);
+            this.N = this.calcN(arr, flag);
             this.SEM = this.Std/sqrt(this.N);
             [this.CiError, this.ConfidenceIntervals] = util.econfi(this.Value, a, this.Std, this.N);
             this.Alpha = a;
@@ -45,19 +52,26 @@ classdef MeanValue
     
     % combining groups
     methods 
-        function n = calcN(A, arr)
+        function n = calcN(A, arr, flag)
+            if nargin < 3 || isempty(flag); flag = 'omitnan'; end
             if nargin < 2
-                n = sum(arrayfun(@(mv) mv.N, A));
+                n = sum(arrayfun(@(mv) mv.N, A), flag);
             elseif isnumeric(arr)
-                n = numel(arr);
+                if strcmp(flag, 'omitnan')
+                    n = sum(~isnan(arr));
+                else
+                    n = numel(arr);
+                end
             elseif isa(arr, 'ForSDAT.Application.Models.MeanValue')
-                n = sum(arrayfun(@(mv) mv.N, arr));
+                n = sum(arrayfun(@(mv) mv.N, arr), flag);
             else
                 throw(MException('ForSDAT:Application:Models:MeanValue:InvalidValueType', 'ForSDAT.Application.Models.MeanValue can only perform calculations on numeric values and ForSDAT.Application.Models.MeanValue'));
             end
         end
         
-        function combinedMean = mean(A)
+        function combinedMean = mean(A, flag)
+            if nargin < 2 || isempty(flag); flag = 'omitnan'; end
+            
             % calculateas the combined groups mean value
             n = zeros(size(A));
             u = zeros(size(A));
@@ -67,10 +81,11 @@ classdef MeanValue
                 u(i) = mv.Value;
             end
             
-            combinedMean = sum(u.*n)/sum(n);
+            combinedMean = sum(u.*n, flag)/sum(n, flag);
         end
         
-        function combinedSD = std(A)
+        function combinedSD = std(A, flag)
+            if nargin < 2 || isempty(flag); flag = 'omitnan'; end
             % calculates the combined groups standard deviation
             
             if numel(A) == 0
@@ -82,10 +97,20 @@ classdef MeanValue
             cu = A(1).Value;
             cv = A(1).Std^2;
             
+            if isnan(cu)
+                cu = 0;
+                cv = 0;
+                cn = 0;
+            end
+            
             for i = 2:numel(A)
                 n2 = A(i).N;
                 u2 = A(i).Value;
                 v2 = A(i).Std^2;
+                
+                if isnan(u2) && strcmp(flag, 'omitnan')
+                    continue;
+                end
                 
                 % see Cochrane handbook Version 6.1, 2020, table 6.5.a
                 cv = ((cn-1)*cv + (n2-1)*v2 + cn*n2/(cn+n2)*(cu^2 + u2^2 -2*cu*u2))/(cn + n2 - 1);
