@@ -15,6 +15,10 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         % setup
         speed = [];
         samplingRate = [];
+        
+        % data manipulations
+        minimalDistance = [];
+        maximalDistance = [];
     end
     
     methods
@@ -81,7 +85,8 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             
             % use gaussian fit to extract baseline
             if useHistModeling
-                statData = histool.stats(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
+                [~, yCropped] = this.cropData(x, y);
+                statData = histool.stats(yCropped, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
 
                 % get distribution data from object
                 baseline = statData.MPV;
@@ -103,8 +108,9 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         
         function [h1, bins, freq, fitOutput] = plotHistogram(this, x, y)
             
+            [~, yCropped] = this.cropData(x, y);
             histModel = this.prepModel();
-            [statData, h] = histool.histdist(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
+            [statData, h] = histool.histdist(yCropped, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
             
             h1 = h(1);
             bins = statData.BinEdges;
@@ -185,7 +191,8 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         
         function [baseline, yOut, coefficients, sig] = histPlateauLinFit(this, x, y)
             % prepare histogram data
-            statData = histool.stats(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins);
+            [xCropped, yCropped] = this.cropData(x, y);
+            statData = histool.stats(yCropped, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins);
 
             % find plateau
             avgFreq = mean(statData.Frequencies);
@@ -197,7 +204,7 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             forcePlateau = statData.BinEdges(statData.Frequencies > plateauThreshold);
             
             % prepare mask of the data that corresponds to the plateau
-            plateauMask = y >= min(forcePlateau) & y <= max(forcePlateau);
+            plateauMask = yCropped >= min(forcePlateau) & yCropped <= max(forcePlateau);
 
             % backcalculate the expected distance vector which corresponds
             % to the sampled force values according to the scanner speed
@@ -215,8 +222,8 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
 
             % estimate tilted baseline with either positive or negative
             % slope for the plateau corresponding regions
-            xPlateauRegion = x(plateauMask);
-            yPlateauRegion = y(plateauMask);
+            xPlateauRegion = xCropped(plateauMask);
+            yPlateauRegion = yCropped(plateauMask);
             minX = xPlateauRegion(1);
             yTiltPos = (xPlateauRegion-minX)*slope + baseline;
             yTiltNeg = -(xPlateauRegion-minX)*slope + baseline;
@@ -249,6 +256,29 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             yOut = y - tiltedBaselineComplete;
             sig = std(realResiduals);
             coefficients = [slope, baseline];
+        end
+    end
+    
+    methods (Access=private)
+        function [x, y] = cropData(this, x, y)
+            mask = [];
+            if ~isempty(this.minimalDistance)
+                mask = x >= this.minimalDistance;
+            end
+            if ~isempty(this.maximalDistance)
+                mask2 = x <= this.maximalDistance;
+                
+                if isempty(mask)
+                    mask = mask2;
+                else
+                    mask = mask & mask2;
+                end
+            end
+            
+            if ~isempty(mask)
+                x = x(mask);
+                y = y(mask);
+            end
         end
     end
     
