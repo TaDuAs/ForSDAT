@@ -314,6 +314,16 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
                     'MarkerFaceColor', 'b',...
                     'MarkerEdgeColor', 'b',...
                     'LineStyle', 'none'};
+                regPlotParams = {};
+            else
+                regParamsMask = cellfun(@(p) isequal(p, 'RegressionPlotParams'), varargin);
+                if ~any(regParamsMask)
+                    regPlotParams = {};
+                else
+                    regParamsIdx = find(regParamsMask, 1, 'first');
+                    regPlotParams = varargin{regParamsIdx + 1};
+                    varargin(regParamsIdx:regParamsIdx+1) = [];
+                end
             end
             
             if nargin < 2 || isempty(fig)
@@ -328,7 +338,7 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             
             hold on;
             regY = polyval(p, x);
-            plot(x, regY);
+            plot(x, regY, regPlotParams{:});
             
             % Create xlabel
             xlabel({'ln(r)'}, 'FontSize', 24);
