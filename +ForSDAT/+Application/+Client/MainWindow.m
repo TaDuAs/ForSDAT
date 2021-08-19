@@ -29,10 +29,10 @@ classdef MainWindow < mvvm.view.MainAppView
             
             % link ocurrent window binders to the controller and current
             % session
-            % Not using the ViewProviderMapping mechanism because the view
-            % is initialized in a later stage than construction
-            this.BindingManager.setModelProvider(this.Fig,...
-                mvvm.providers.ControllerProvider('ForceSpecAnalysisController', this.Session));
+            % Not using the views builtin ViewProviderMapping mechanism 
+            % because the view this class can't access the session when
+            % calling the base ctor.
+            this.ModelProviderMapping.ModelProvider = mvvm.providers.ControllerProvider('ForceSpecAnalysisController', this.Session);
             
             % listen to model updates
             this.ModelUpdatedByUserListener = this.BindingManager.addlistener('modelUpdated', @this.onCongifEditedByUser);
@@ -44,6 +44,7 @@ classdef MainWindow < mvvm.view.MainAppView
             this.Fig.WindowState = 'maximized';
             this.Fig.MenuBar = 'none';
             this.Fig.ToolBar = 'none';
+            this.Fig.Tag = 'ForSDAT_Main_Window';
             
             % layout of all panels from the top to the bottom
             this.MainContainer = uiextras.VBoxFlex('Parent', this.Fig,...
@@ -53,22 +54,26 @@ classdef MainWindow < mvvm.view.MainAppView
             
             this.PipelinePanel = ForSDAT.Application.Client.PipelinePanel(...
                 this.MainContainer, this, this.Session,...
-                mvvm.providers.ControllerProvider('ProcessSetupController', this.Session)... % model provider
-                );
+                mvvm.providers.ControllerProvider('ProcessSetupController', this.Session),... % model provider
+                this.BindingManager,...
+                'Id', 'ProcessPipelineContainer');
             
             this.MainInfoContainer = uiextras.HBoxFlex('Parent', this.MainContainer,...
                 'Units', 'norm', ...
                 'Spacing', 5, 'Padding', 0, ...
-                'BackgroundColor', 'White');
+                'BackgroundColor', 'White',...
+                'Tag', 'MainInfoContainer');
             
             set(this.MainContainer, 'Sizes', [100, -10]);
             
             controller = this.Session.getController('ForceSpecAnalysisController');
             this.PlotPanel = ForSDAT.Application.Client.PlotPanel(this.MainInfoContainer, this, this.Messenger, controller, this.BindingManager);
+            this.PlotPanel.Id = 'PlotTaskPanel';
             this.EditPanel = ForSDAT.Application.Client.EditPanel(...
                 this.MainInfoContainer, this, this.Messenger, this.BindingManager, ...
                 mvvm.providers.ControllerProvider('ProcessSetupController', this.Session),... % model provider
                 this.ViewManager, this.Session.IocContainer.get('mxml.XmlSerializer'));
+            this.EditPanel.Id = 'EditTaskPanel';
             
         end
     end
