@@ -7,10 +7,12 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
         ViewTaskImage;
         EditTaskImage;
         ModelProvider;
+        BindingManager;
     end
     
     methods
-        function this = PipelineTaskTemplate(resourcesPath, modelProvider)
+        function this = PipelineTaskTemplate(resourcesPath, modelProvider, bm)
+            this.BindingManager = bm;
             this.ModelProvider = modelProvider;
             this.ResourcePath = resourcesPath;
             this.ViewTaskImage = sui.getIconCData(fullfile(resourcesPath, 'Tasks', 'display.png'), [255 255 255], [28, 28]);
@@ -34,7 +36,8 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
                 'CData', taskImg);
             h.showAllCmd = mvvm.Command('viewAndEditTask', h.taskButton, 'Callback',...
                 'Params', { scope },...
-                'ModelProvider', this.ModelProvider);
+                'ModelProvider', this.ModelProvider,...
+                'BindingManager', this.BindingManager);
             
             h.deleteButton = uicontrol('style', 'pushbutton', 'Parent', h.box,...
                 'Units', 'pixels', ...
@@ -44,7 +47,8 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
                 'ForegroundColor', [1 1 1]);
             h.deleteButtonCmd = mvvm.Command('removeTask', h.deleteButton, 'Callback',...
                 'Params', { mvvm.providers.ScopeKeyCommandParameter(scope) },...
-                'ModelProvider', this.ModelProvider);
+                'ModelProvider', this.ModelProvider,...
+                'BindingManager', this.BindingManager);
             
 %             h.editBox = uipanel(h.box, 'Units', 'pixels', 'Position', [79 32 32 32], 'BackgroundColor', [1 1 1]);
             h.editTask = uicontrol('Style', 'pushbutton', ...
@@ -55,7 +59,8 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
                 'CData', this.EditTaskImage);
             h.editTaskCmd = mvvm.Command('editTask', h.editTask, 'Callback',...
                 'Params', { scope },...
-                'ModelProvider', this.ModelProvider);
+                'ModelProvider', this.ModelProvider,...
+                'BindingManager', this.BindingManager);
             
 %             h.viewBox = uipanel(h.box, 'Units', 'pixels', 'Position', [79 1 32 32], 'BackgroundColor', [1 1 1]);
             h.viewTask = uicontrol('Style', 'pushbutton', ...
@@ -66,7 +71,8 @@ classdef PipelineTaskTemplate < mvvm.ITemplate
                 'CData', this.ViewTaskImage);
             h.viewTaskCmd = mvvm.Command('viewTask', h.viewTask, 'Callback',...
                 'Params', { scope },...
-                'ModelProvider', this.ModelProvider);
+                'ModelProvider', this.ModelProvider,...
+                'BindingManager', this.BindingManager);
         end
         
         function teardown(this, scope, container, h)
