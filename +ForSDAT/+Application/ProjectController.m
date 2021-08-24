@@ -1,6 +1,4 @@
 classdef ProjectController < mvvm.AppController
-    %PROJECTCONTROLLER Summary of this class goes here
-    %   Detailed explanation goes here
     
     properties (Dependent, SetObservable)
         Project (1,1) ForSDAT.Application.Models.ForSpecProj;
@@ -8,6 +6,7 @@ classdef ProjectController < mvvm.AppController
     
     properties (Access=protected)
         ignoreProjectUpdate = false;
+        Serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
     
     methods % property accessors
@@ -24,6 +23,12 @@ classdef ProjectController < mvvm.AppController
         end
     end
     
+    methods % ctor
+        function this = ProjectController(serializer)
+            this.Serializer = serializer;
+        end
+    end
+    
     methods % initialization
         function init(this, app)
             init@mvvm.AppController(this, app);
@@ -36,6 +41,14 @@ classdef ProjectController < mvvm.AppController
         
         function startNewProject(this)
             this.Project = ForSDAT.Application.Models.ForSpecProj(this.App.Context);
+        end
+        
+        function setProject(this, project)
+            if isa(project, 'ForSDAT.Application.Models.ForSpecProj')
+                this.Project = project;
+            else
+                this.Project = this.Serializer.load(project);
+            end
         end
     end
     
@@ -58,6 +71,10 @@ classdef ProjectController < mvvm.AppController
             % this is a workaround to fire the post set event of the
             % project property
             this.Project = this.Project;
+        end
+        
+        function notifyProjectDataChangeSystemwise(this)
+            this.App.Messenger.send(ForSDAT.Application.AppMessages.CurrentProjectDataChanged);
         end
     end
 end

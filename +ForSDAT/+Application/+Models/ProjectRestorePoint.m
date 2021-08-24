@@ -6,7 +6,6 @@ classdef ProjectRestorePoint < handle
         Project ForSDAT.Application.Models.ForSProj;
         LastItemID;
         CookedAnalyzerRestorePoint;
-        AnalyzedSegment;
     end
 end
 

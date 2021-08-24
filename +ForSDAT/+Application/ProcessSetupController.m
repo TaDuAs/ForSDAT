@@ -3,13 +3,12 @@ classdef ProcessSetupController < ForSDAT.Application.ProjectController
     
     properties
         Factory ForSDAT.Application.Workflows.AnalyzerFactory;
-        Serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
     
     methods
         function this = ProcessSetupController(factory, serializer)
+            this@ForSDAT.Application.ProjectController(serializer);
             this.Factory = factory;
-            this.Serializer = serializer;
         end
         
         function task = newTask(this, taskName)
@@ -49,6 +48,11 @@ classdef ProcessSetupController < ForSDAT.Application.ProjectController
         
         function removeTask(this, taskId)
             this.Project.RawAnalyzer.pipeline.removeAt(taskId);
+        end
+        
+        function loadBatchOfForceCurves(this, path)
+            this.Project.DataAccessor.loadQueue(path);
+            this.notifyProjectDataChangeSystemwise();
         end
     end
 end

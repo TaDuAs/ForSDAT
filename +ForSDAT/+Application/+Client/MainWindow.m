@@ -82,7 +82,7 @@ classdef MainWindow < mvvm.view.MainAppView
         function onCongifEditedByUser(this, ~, ~)
             controller = this.getModel();
             controller.analyzeCurve();
-            this.PlotPanel.plot();
+%             this.PlotPanel.plot();
         end
     end
 end

@@ -23,6 +23,8 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
         % used to identify the results of a specific measurement in the
         % experiments repository
         RunningExperimentId;
+        
+        AnalyzedSegment;
     end
     
     methods (Hidden) % meta data

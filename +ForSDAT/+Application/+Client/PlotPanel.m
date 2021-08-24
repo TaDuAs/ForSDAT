@@ -13,7 +13,7 @@ classdef PlotPanel < mvvm.view.ComponentView
             this.Controller = controller;
         end
         
-        function plot(this)
+        function plot(this, ~, ~)
             this.Controller.plotLastAnalyzedCurve([], this.Axis);
         end
     end

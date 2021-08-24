@@ -1,15 +1,10 @@
 classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
     %ForceSpecAnalysisController exposes the API for running a data
     % analysis
-    properties (Dependent, SetObservable)
-        AnalyzedSegment;
-    end
-    
     properties (Access=private)
         restorePointPath;
         processingProgressListener;
         progressbar util.ConsoleProggressBar;
-        serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
     
     methods % property accessors
@@ -28,7 +23,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             if isa(settingsFilePath, 'ForSDAT.Core.RawDataAnalyzer')
                 curveAnalyzer = settingsFilePath;
             else
-                curveAnalyzer = this.serializer.load(settingsFilePath);
+                curveAnalyzer = this.Serializer.load(settingsFilePath);
             end
             
             if isempty(curveAnalyzer) || ~isa(curveAnalyzer, 'ForSDAT.Core.RawDataAnalyzer')
@@ -41,7 +36,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             if isa(settingsFilePath, 'ForSDAT.Application.Workflows.CookedDataAnalyzer')
                 analyzer = settingsFilePath;
             else
-                analyzer = this.serializer.load(settingsFilePath);
+                analyzer = this.Serializer.load(settingsFilePath);
             end
             
             if isempty(analyzer) || ~isa(analyzer, 'ForSDAT.Application.Workflows.CookedDataAnalyzer')
@@ -54,32 +49,19 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             if isa(settingsFilePath, 'dao.DataAccessor')
                 this.Project.DataAccessor = settingsFilePath;
             else
-                this.Project.DataAccessor = this.serializer.load(settingsFilePath);
+                this.Project.DataAccessor = this.Serializer.load(settingsFilePath);
             end
-        end
-        
-        function set.AnalyzedSegment(this, value)
-            this.App.Context.set([class(this), '_AnalyzedSegment'], value);
-        end
-        function obj = get.AnalyzedSegment(this)
-            obj = this.App.Context.get([class(this), '_AnalyzedSegment']);
         end
         function setAnalyzedSegment(this, seg)
-            this.AnalyzedSegment = seg;
-        end
-        
-        function setProject(this, project)
-            if isa(project, 'ForSDAT.Application.Models.ForSpecProj')
-                this.Project = project;
-            else
-                this.Project = this.serializer.load(project);
-            end
+            % only for backward compatibility for a massive amount of
+            % scripts.
+            this.Project.AnalyzedSegment = seg;
         end
     end
     
     methods % ctor
         function this = ForceSpecAnalysisController(serializer)
-            this.serializer = serializer;
+            this@ForSDAT.Application.ProjectController(serializer);
         end
     end
     
@@ -98,7 +80,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
                 this.Project.RawAnalyzer,...
                 this.Project.CookedAnalyzer,...
                 this.Project.DataAccessor,...
-                this.AnalyzedSegment);
+                this.Project.AnalyzedSegment);
         end
         
         function reportProgress(this, args)
@@ -125,7 +107,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             end
             
             % get restore point
-            restorePoint = this.serializer.load(this.restorePointPath);
+            restorePoint = this.Serializer.load(this.restorePointPath);
             
             % get permission to commit restore
             message = mvvm.RelayMessage(ForSDAT.Application.AppMessages.RestoreProcess, restorePoint);
@@ -141,7 +123,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             % reload last unfinished process from app preferences
             this.setProject(restorePoint.Project);
             this.Project.CookedAnalyzer.restoreProcess(restorePoint.CookedAnalyzerRestorePoint);
-            this.AnalyzedSegment = restorePoint.AnalyzedSegment;
+%             this.AnalyzedSegment = restorePoint.AnalyzedSegment;
             
             % set the last edited curve
             wf = this.buildWF();
@@ -161,11 +143,11 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             restorePoint.Project = this.Project;
             restorePoint.LastItemID = currCurveName;
             restorePoint.CookedAnalyzerRestorePoint = this.Project.CookedAnalyzer.createRestorePoint();
-            restorePoint.AnalyzedSegment = this.AnalyzedSegment;
+%             restorePoint.AnalyzedSegment = this.AnalyzedSegment;
             
             % save project restoration point in Application Preferences,
             % this will be automatically reloaded next time the app starts
-            this.serializer.save(restorePoint, this.restorePointPath);
+            this.Serializer.save(restorePoint, this.restorePointPath);
         end
         
         function [results, progress, workLeft] = getAnalysisReport(this)
@@ -215,7 +197,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             
             wf = this.buildWF();
             data = wf.getCurrentCurveAnalysis();
-            plotTask.plotData(data, view);
+            plotTask.plotData(view, data);
         end
         
         function [data, newCurveName] = rejectAndNext(this, plotTask)
@@ -271,7 +253,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         
         function settings = loadSettings(this, settingsFile)
             if nargin > 1 && ~isempty(settingsFile)
-                settings = this.serializer.load(settingsFile);
+                settings = this.Serializer.load(settingsFile);
             else
                 % default settings
                 
