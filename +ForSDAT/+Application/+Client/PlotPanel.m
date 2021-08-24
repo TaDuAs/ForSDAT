@@ -21,7 +21,11 @@ classdef PlotPanel < mvvm.view.ComponentView
     methods (Access=protected)
         
         function initializeComponents(this)
-            this.Axis = axes(this.ContainerBox.getContainerHandle(), 'Position', [0 0 1 1]);
+            container = this.getContainerHandle();
+            container.BackgroundColor = 'w';
+            
+            this.Axis = axes(container, 'Position', [0.1 0.1 0.85 0.85]);
+            
             
             % plot again after switching FDC
             this.Messenger.register('ForSDAT.Client.FDC_Analyzed', @this.plot);

@@ -34,9 +34,11 @@ classdef EditPanel < mvvm.view.ComponentView
         function initializeComponents(this)
             initializeComponents@mvvm.view.ComponentView(this);
             
-%             this.SubViewsBinder = mvvm.Repeater('Project.RawAnalyzer.pipeline', this.getContainerHandle(), ...
-%                 ForSDAT.Application.Client.EditSubViewTemplate(this, this.ViewManager));
-            this.Frame = sui.ViewSwitch('OwnerView', this, 'Parent', this.getContainerHandle());
+            container = this.getContainerHandle();
+            container.BackgroundColor = 'w';
+            
+            this.Frame = sui.ViewSwitch('OwnerView', this, 'Parent', container,...
+                'BackgroundColor', 'w');
             this.CurrentFrameBinder = mvvm.Binder('Project.CurrentEditedTask.name', this.Frame, 'ActiveViewId',...
                 'BindingManager', this.BindingManager);
             
