@@ -60,6 +60,8 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+
             if ismethod(this.filter, 'init')
                 this.filter.init(settings);
             end

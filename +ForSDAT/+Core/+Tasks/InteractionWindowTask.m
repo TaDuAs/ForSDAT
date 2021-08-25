@@ -39,6 +39,8 @@ classdef InteractionWindowTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescri
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.filter, 'init')
                 this.filter.init(settings);
             end

@@ -54,6 +54,8 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.chainFitter, 'init')
                 this.chainFitter.init(settings);
             end

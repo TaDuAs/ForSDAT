@@ -70,6 +70,8 @@ classdef AdhesionForceTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Ta
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.detector, 'init')
                 this.detector.init(settings);
             end

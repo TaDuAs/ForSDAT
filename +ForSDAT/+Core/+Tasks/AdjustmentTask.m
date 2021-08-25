@@ -87,6 +87,8 @@ classdef AdjustmentTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.adjuster, 'init')
                 this.adjuster.init(settings);
             end

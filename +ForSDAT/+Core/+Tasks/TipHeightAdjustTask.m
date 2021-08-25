@@ -44,6 +44,8 @@ classdef TipHeightAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescript
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.adjuster, 'init')
                 this.adjuster.init(settings);
             end

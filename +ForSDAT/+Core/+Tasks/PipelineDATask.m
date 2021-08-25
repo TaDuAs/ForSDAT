@@ -3,6 +3,7 @@ classdef PipelineDATask < lists.PipelineTask
     %   Detailed explanation goes here
     
     properties (SetObservable)
+        settings = [];
         yChannel = '';
         xChannel = '';
         segment = '';
@@ -30,6 +31,10 @@ classdef PipelineDATask < lists.PipelineTask
         function data = process(this, data)
             % Must implement this method in derived class
             error('not implemented task');
+        end
+        
+        function init(this, settings)
+            this.settings = settings;
         end
         
         function clearPlot(this, h)
@@ -83,6 +88,37 @@ classdef PipelineDATask < lists.PipelineTask
         function [rangeX, rangeY] = setPlotAxes(this, x, y)
             [rangeX, rangeY] = this.getPlotAxesBounds(x, y);
             axis([rangeX rangeY]);
+            
+            this.setPlotXLabel();
+            this.setPlotYLabel();
+        end
+        
+        function setPlotXLabel(this)
+            if isempty(this.xChannel)
+                xlbl = 'Distance';
+            else
+                xlbl = this.xChannel;
+            end
+            
+            xlabel([xlbl, ' (', this.getXAxisUnits(this.settings.ZOOM), ')']);
+        end
+        
+        function u = getXAxisUnits(this, oom)
+            u = [oom.getPrefix(), 'm'];
+        end
+        
+        function setPlotYLabel(this)
+            if isempty(this.yChannel)
+                ylbl = 'Distance';
+            else
+                ylbl = this.yChannel;
+            end
+            
+            ylabel([ylbl, ' (', this.getYAxisUnits(this.settings.FOOM), ')']);
+        end
+        
+        function u = getYAxisUnits(this, oom)
+            u = [oom.getPrefix(), 'N'];
         end
         
         function chnl = getXChannel(this)

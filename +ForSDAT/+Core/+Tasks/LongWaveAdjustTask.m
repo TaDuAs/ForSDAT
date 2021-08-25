@@ -38,6 +38,8 @@ classdef LongWaveAdjustTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.adjuster, 'init')
                 this.adjuster.init(settings);
             end
