@@ -65,6 +65,16 @@ classdef ProjectController < mvvm.AppController
             if ~this.ignoreProjectUpdate
                 this.raiseProjectSetEvent();
             end
+            
+            % when loading project select the first task for editing and
+            % viewing
+            if ~isempty(this.Project) && ...
+               ~isempty(this.Project.RawAnalyzer) &&...
+               ~this.Project.RawAnalyzer.pipeline.isempty()
+                this.Project.CurrentEditedTask = this.Project.RawAnalyzer.getTask(1);
+                this.Project.CurrentViewedTask = this.Project.RawAnalyzer.getTask(1);
+            end
+           
         end
         
         function raiseProjectSetEvent(this)
