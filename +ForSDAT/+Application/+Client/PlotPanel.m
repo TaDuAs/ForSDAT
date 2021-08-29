@@ -5,6 +5,7 @@ classdef PlotPanel < mvvm.view.ComponentView
     properties (GetAccess=public, SetAccess=protected)
         Controller ForSDAT.Application.ForceSpecAnalysisController;
         Axis matlab.graphics.axis.Axes;
+        CurrentViewedTaskBinder mvvm.MessageBinder;
     end
     
     methods
@@ -26,9 +27,11 @@ classdef PlotPanel < mvvm.view.ComponentView
             
             this.Axis = axes(container, 'Position', [0.1 0.1 0.85 0.85]);
             
-            
             % plot again after switching FDC
-            this.Messenger.register('ForSDAT.Client.FDC_Analyzed', @this.plot);
+            this.Messenger.register(ForSDAT.Application.AppMessages.FDC_Analyzed, @this.plot);
+            this.Messenger.register(ForSDAT.Application.AppMessages.CurrentProjectDataChanged, @this.plot);
+            this.CurrentViewedTaskBinder = mvvm.MessageBinder('Project.CurrentViewedTask', ...
+                @this.plot, this, 'BindingManager', this.BindingManager);
         end
     end
 end

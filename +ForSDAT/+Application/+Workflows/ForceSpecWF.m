@@ -104,8 +104,12 @@ classdef ForceSpecWF < handle
             % Get the curve from the queue
             [fdc, curveName] = this.getCurveFromQueue(curveName);
             
-            % Analyze the curve
-            data = this.doAnalyzeCurve(curveName, fdc);
+            if isempty(curveName)
+                data = [];
+            else
+                % Analyze the curve
+                data = this.doAnalyzeCurve(curveName, fdc);
+            end
         end
         
         function [data, curveName] = acceptCurve(this, curveName)

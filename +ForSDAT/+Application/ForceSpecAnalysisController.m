@@ -171,7 +171,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             end
             [data, curveName] = wf.analyzeCurve(curveFileName);
             
-            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
+            this.App.Messenger.send(ForSDAT.Application.AppMessages.FDC_Analyzed);
         end
 
         function [data, newCurveName] = acceptAndNext(this, plotTask)
@@ -179,7 +179,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             
             [data, newCurveName] = wf.acceptCurve();
             
-            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
+            this.App.Messenger.send(ForSDAT.Application.AppMessages.FDC_Analyzed);
         end
         
         function plotLastAnalyzedCurve(this, plotTask, view)
@@ -197,6 +197,11 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             
             wf = this.buildWF();
             data = wf.getCurrentCurveAnalysis();
+            if isempty(data)
+                return;
+                cla(sui.gca(view));
+            end
+            
             plotTask.plotData(view, data);
         end
         
@@ -205,7 +210,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             
             [data, newCurveName] = wf.rejectCurve();
 
-            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
+            this.App.Messenger.send(ForSDAT.Application.AppMessages.FDC_Analyzed);
         end
 
         function [data, newCurveName] = undoLastDecision(this, plotTask)
@@ -213,7 +218,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
 
             [data, newCurveName] = wf.undo();
             
-            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
+            this.App.Messenger.send(ForSDAT.Application.AppMessages.FDC_Analyzed);
         end
         
         function analyzeAutomatically(this)
@@ -228,7 +233,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
 
             [data, newCurveName] = wf.makeDecision();
             
-            this.App.Messenger.send('ForSDAT.Client.FDC_Analyzed');
+            this.App.Messenger.send(ForSDAT.Application.AppMessages.FDC_Analyzed);
         end
         
         function tf = discloseDecision(this)
