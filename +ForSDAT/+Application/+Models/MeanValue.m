@@ -36,7 +36,7 @@ classdef MeanValue
             if nargin < 2 || isempty(a); a = 0.05; end
             if nargin < 3 || isempty(flag); flag = 'omitnan'; end
             
-            if strcmp(flag, 'zeronan')
+            if strcmp(flag, 'zeronan') && isnumeric(arr)
                 arr(isnan(arr)) = 0;
                 flag = 'omitnan';
             end
@@ -53,7 +53,7 @@ classdef MeanValue
     % combining groups
     methods 
         function n = calcN(A, arr, flag)
-            if nargin < 3 || isempty(flag); flag = 'omitnan'; end
+            if nargin < 3 || isempty(flag) || strcmp(flag, 'zeronan'); flag = 'omitnan'; end
             if nargin < 2
                 n = sum(arrayfun(@(mv) mv.N, A), flag);
             elseif isnumeric(arr)
@@ -78,9 +78,17 @@ classdef MeanValue
             for i = 1:numel(A)
                 mv = A(i);
                 n(i) = mv.N;
-                u(i) = mv.Value;
+                
+                if isnan(mv.Value) && strcmp(flag, 'zeronan')
+                    u(i) = 0;
+                else
+                    u(i) = mv.Value;
+                end
             end
             
+            if strcmp(flag, 'zeronan')
+                flag = 'omitnan';
+            end
             combinedMean = sum(u.*n, flag)/sum(n, flag);
         end
         
@@ -110,6 +118,8 @@ classdef MeanValue
                 
                 if isnan(u2) && strcmp(flag, 'omitnan')
                     continue;
+                elseif isnan(u2) && strcmp(flag, 'zeronan')
+                    u2 = 0;
                 end
                 
                 % see Cochrane handbook Version 6.1, 2020, table 6.5.a
