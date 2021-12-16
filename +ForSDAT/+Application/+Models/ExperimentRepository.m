@@ -8,6 +8,7 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
     
     properties (Access=private)
         Repository_ lists.Dictionary;
+        BatchResults ForSDAT.Application.Models.ExperimentRepositoryResultsArchive;
     end
     
     methods (Access=private)
