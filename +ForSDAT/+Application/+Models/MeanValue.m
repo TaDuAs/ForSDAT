@@ -81,6 +81,7 @@ classdef MeanValue
                 
                 if isnan(mv.Value) && strcmp(flag, 'zeronan')
                     u(i) = 0;
+                    n(i) = 0;
                 else
                     u(i) = mv.Value;
                 end
@@ -120,6 +121,7 @@ classdef MeanValue
                     continue;
                 elseif isnan(u2) && strcmp(flag, 'zeronan')
                     u2 = 0;
+                    v2 = 0;
                 end
                 
                 % see Cochrane handbook Version 6.1, 2020, table 6.5.a
