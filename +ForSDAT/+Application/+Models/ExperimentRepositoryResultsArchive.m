@@ -1,20 +1,109 @@
-classdef ExperimentRepositoryResultsArchive < lists.IDictionary & lists.IObservable & mfc.IDescriptor
+classdef ExperimentRepositoryResultsArchive < lists.IDictionary
     
     properties
-        Property1
+        Archive gen.ZipArchive;
+        Serializer mxml.ISerializer = mxml.XmlSerializer.empty();
     end
     
     methods
-        function obj = ExperimentRepositoryResultsArchive(inputArg1,inputArg2)
-            %EXPERIMENTREPOSITORYBATCHRESULTS Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+        function this = ExperimentRepositoryResultsArchive(repositoryId, path, serializer)
+            this.Serializer = serializer;
+            this.Archive = gen.ZipArchive(fullfile(path, [char(repositoryId), '.zip']), path);
         end
         
         function outputArg = method1(obj,inputArg)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             outputArg = obj.Property1 + inputArg;
+        end
+    end
+    
+    methods % lists.IDictionary
+        % adds a new item to the dictionary
+        function add(this, key, value)
+            this.setv(key, value);
+        end
+        
+        % replaces all items in the dictionary with a new key-value set
+        function setVector(~, ~, ~)
+            throw(MException(...
+                'ForSDAT:Application:Models:ExperimentRepositoryResultsArchive:ClearArchiveNotSupported',...
+                'Clearing an ExperimentRepositoryResultsArchive is not supported'));
+        end
+        
+        % clears the dictionary
+        function clear(~)
+            throw(MException(...
+                'ForSDAT:Application:Models:ExperimentRepositoryResultsArchive:ClearArchiveNotSupported',...
+                'Clearing an ExperimentRepositoryResultsArchive is not supported'));
+        end
+        
+        % Gets all stored keys
+        function keys = keys(this)
+            keys = this.Archive.listFiles();
+        end
+        
+        % Gets all stored values
+        function items = values(this)
+            % extract the archive
+            tempFolder = this.Archive.extract();
+            
+            % get all files in the archive
+            [~, ~, files] = this.Archive.listFiles(tempFolder, '**');
+            
+            % load and deserialize each file in the archive
+            n = numel(files);
+            items = cell(1, n);
+            for i = 1:n
+                items{i} = this.Serializer.load(files{i});
+            end
+        end
+        
+        % Determines whether the cache stores a value with the specified
+        % key
+        function tf = isKey(this, key)
+            tf = ismember(key, this.keys());
+        end
+    end
+    
+    methods % lists.ICollection
+        function n = length(this)
+            n = numel(this.keys());
+        end
+        
+        function tf = isempty(this)
+            tf = isempty(this.keys());
+        end
+        
+        function s = size(this, dim)
+            if nargin > 1
+                s = size(this.keys(), dim);
+            else
+                s = size(this.keys());
+            end
+        end
+        
+        function value = getv(this, key)
+            fn = this.Archive.extractFile(key);
+            value = this.Serializer.load(fn);
+        end
+        
+        function setv(this, key, value)
+            % make zip archive extract its contents
+            tempFolder = this.Archive.extract();
+            
+            % write the object to a temp file
+            tempfilePath = fullfile(tempFolder, key);
+            this.Serializer.save(value, tempfilePath);
+            
+            % save the temp file with the archive
+            this.Archive.putFile(tempfilePath);
+        end
+        
+        function removeAt(~, ~)
+            throw(MException(...
+                'ForSDAT:Application:Models:ExperimentRepositoryResultsArchive:ClearArchiveNotSupported',...
+                'Removing entries from an ExperimentRepositoryResultsArchive is not supported'));
         end
     end
 end

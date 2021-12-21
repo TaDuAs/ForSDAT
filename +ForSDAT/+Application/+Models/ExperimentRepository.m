@@ -1,4 +1,4 @@
-classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDescriptor
+classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDescriptor & mxml.IMXmlIgnoreFields
     %EXPERIMENTREPOSITORY Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -8,7 +8,20 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
     
     properties (Access=private)
         Repository_ lists.Dictionary;
+        
+        % non serializable field
         BatchResults ForSDAT.Application.Models.ExperimentRepositoryResultsArchive;
+    end
+    
+    methods (Access={?ForSDAT.Application.IO.ExperimentRepositoryDAO})
+        function setResultsArchive(this, archive)
+            arguments
+                this (1,1) ForSDAT.Application.Models.ExperimentRepository
+                archive (1,1) ForSDAT.Application.Models.ExperimentRepositoryResultsArchive
+            end
+            
+            this.BatchResults = archive;
+        end
     end
     
     methods (Access=private)
@@ -149,6 +162,12 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
         end
         function tf = containsIndex(this, key)
             tf = this.isKey(key);
+        end
+    end
+    
+    methods % mxml.IMXmlIgnoreFields interface
+        function ignoreList = getMXmlIgnoreFieldsList(this)
+            ignoreList = {'BatchResults'};
         end
     end
 end

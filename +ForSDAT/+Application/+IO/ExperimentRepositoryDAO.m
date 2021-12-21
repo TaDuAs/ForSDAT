@@ -56,6 +56,7 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
             end
             
             repo = this.DAO.load(filePath);
+            repo.setResultsArchive();
             
             % validate repository
             this.validateLoadedRepository(repo, filePath);
