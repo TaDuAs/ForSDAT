@@ -1,20 +1,14 @@
 classdef ExperimentRepositoryResultsArchive < lists.IDictionary
     
     properties
-        Archive gen.ZipArchive;
-        Serializer mxml.ISerializer = mxml.XmlSerializer.empty();
+        Archive dao.IArchive;
+        DAO dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
     end
     
     methods
-        function this = ExperimentRepositoryResultsArchive(repositoryId, path, serializer)
-            this.Serializer = serializer;
-            this.Archive = gen.ZipArchive(fullfile(path, [char(repositoryId), '.zip']), path);
-        end
-        
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+        function this = ExperimentRepositoryResultsArchive(dao, archive)
+            this.DAO = dao;
+            this.Archive = archive;
         end
     end
     
@@ -46,7 +40,7 @@ classdef ExperimentRepositoryResultsArchive < lists.IDictionary
         % Gets all stored values
         function items = values(this)
             % extract the archive
-            tempFolder = this.Archive.extract();
+            tempFolder = this.Archive.extractAll();
             
             % get all files in the archive
             [~, ~, files] = this.Archive.listFiles(tempFolder, '**');
@@ -55,7 +49,7 @@ classdef ExperimentRepositoryResultsArchive < lists.IDictionary
             n = numel(files);
             items = cell(1, n);
             for i = 1:n
-                items{i} = this.Serializer.load(files{i});
+                items{i} = this.DAO.load(files{i});
             end
         end
         
@@ -85,16 +79,16 @@ classdef ExperimentRepositoryResultsArchive < lists.IDictionary
         
         function value = getv(this, key)
             fn = this.Archive.extractFile(key);
-            value = this.Serializer.load(fn);
+            value = this.DAO.load(fn);
         end
         
         function setv(this, key, value)
             % make zip archive extract its contents
-            tempFolder = this.Archive.extract();
+            tempFolder = this.Archive.extractAll();
             
             % write the object to a temp file
             tempfilePath = fullfile(tempFolder, key);
-            this.Serializer.save(value, tempfilePath);
+            this.DAO.save(value, tempfilePath);
             
             % save the temp file with the archive
             this.Archive.putFile(tempfilePath);

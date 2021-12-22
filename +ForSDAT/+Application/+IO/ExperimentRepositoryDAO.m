@@ -56,7 +56,9 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
             end
             
             repo = this.DAO.load(filePath);
-            repo.setResultsArchive();
+            fileArchive = dao.ZipArchive(this.generateRepositoryArchivePath(name), this.RepositoryPath);
+            repoArchive = ForSDAT.Application.Models.ExperimentRepositoryResultsArchive(this.DAO, fileArchive);
+            repo.setResultsArchive(repoArchive);
             
             % validate repository
             this.validateLoadedRepository(repo, filePath);
@@ -82,6 +84,10 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
         
         function path = generateRepositoryFilePath(this, name)
             path = fullfile(this.RepositoryPath, this.appendPostfixToPath(name));
+        end
+        
+        function path = generateRepositoryArchivePath(this, name)
+            path = fullfile(this.RepositoryPath, [char(name), '.zip']);
         end
         
         function path = appendPostfixToPath(this, path)          

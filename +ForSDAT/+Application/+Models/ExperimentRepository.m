@@ -60,6 +60,11 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
             ctorParams = {'Name'};
             defaultValues = {'Name', ''};
         end
+        
+        % mxml.IMXmlIgnoreFields interface
+        function ignoreList = getMXmlIgnoreFieldsList(this)
+            ignoreList = {'BatchResults'};
+        end
     end
     
     methods
@@ -162,12 +167,6 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
         end
         function tf = containsIndex(this, key)
             tf = this.isKey(key);
-        end
-    end
-    
-    methods % mxml.IMXmlIgnoreFields interface
-        function ignoreList = getMXmlIgnoreFieldsList(this)
-            ignoreList = {'BatchResults'};
         end
     end
 end
