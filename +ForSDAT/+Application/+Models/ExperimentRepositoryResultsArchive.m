@@ -1,7 +1,7 @@
 classdef ExperimentRepositoryResultsArchive < lists.IDictionary
     
     properties
-        Archive dao.IArchive;
+        Archive dao.IArchive = dao.ZipArchive.empty();
         DAO dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
     end
     

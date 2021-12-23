@@ -91,6 +91,11 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
             value = this.Repository_.getv(key);
         end
         
+        function setExperimentResults(this, key, results, dataList)
+            this.setv(key, results);
+            this.BatchResults.setv(key, dataList);
+        end
+        
         function setv(this, key, value)
             if this.isKey(key)
                 action = 'change';

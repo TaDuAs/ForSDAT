@@ -269,7 +269,7 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             % if the results are valid add them to the experiments
             % repository
             if isvalid
-                this.addExperimentToRepository(results);
+                this.addExperimentToRepository(results, dataList);
             else
                 % otherwise, remove experiment from repository 
                 this.removeExperimentFromRepository(results);
@@ -551,10 +551,12 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
     
     methods (Access=protected)
         
-        function addExperimentToRepository(this, experiment)
+        function addExperimentToRepository(this, experiment, dataList)
             repo = this.ExperimentRepository;
             
-            repo.setv(experiment.Id, experiment);
+            % save cooked data and summary results in the experiment 
+            % repository
+            repo.setExperimentResults(experiment.Id, experiment, dataList);
         end
         
         function removeExperimentFromRepository(this, experiment)
