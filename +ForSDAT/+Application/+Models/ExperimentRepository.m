@@ -16,8 +16,8 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
     methods (Access={?ForSDAT.Application.IO.ExperimentRepositoryDAO})
         function setResultsArchive(this, archive)
             arguments
-                this (1,1) ForSDAT.Application.Models.ExperimentRepository
-                archive (1,1) ForSDAT.Application.Models.ExperimentRepositoryResultsArchive
+                this ForSDAT.Application.Models.ExperimentRepository {gen.valid.mustBeValidScalar(this)}
+                archive ForSDAT.Application.Models.ExperimentRepositoryResultsArchive {gen.valid.mustBeValidScalar(archive)}
             end
             
             this.BatchResults = archive;
