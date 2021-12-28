@@ -78,7 +78,14 @@ classdef ExperimentRepositoryResultsArchive < lists.IDictionary
         end
         
         function value = getv(this, key)
-            fn = this.Archive.extractFile(key);
+            postfix = this.DAO.outputFilePostfix;
+            if endsWith(key, ['.', postfix])
+                fileArchiveName = key;
+            else
+                fileArchiveName = [key, '.', postfix];
+            end
+            
+            fn = this.Archive.extractFile(fileArchiveName);
             value = this.DAO.load(fn);
         end
         
