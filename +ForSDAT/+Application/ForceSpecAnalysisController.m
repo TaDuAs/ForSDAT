@@ -69,7 +69,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         function init(this, app)
             init@ForSDAT.Application.ProjectController(this, app);
             
-            this.restorePointPath = fullfile(app.RootPath, 'Temp', 'projectResorePoint.xml');
+            this.restorePointPath = fullfile(app.RootPath, 'Temp', 'projectResorePoint.forsdatRestoreXml');
         end
     end
     
