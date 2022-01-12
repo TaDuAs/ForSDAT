@@ -6,7 +6,7 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
         Name;
     end
     
-    properties (Access=private)
+    properties (GetAccess=public, SetAccess=private)
         Repository_ lists.Dictionary;
         
         % non serializable field

@@ -1,6 +1,6 @@
 classdef ExperimentRepositoryResultsArchive < lists.IDictionary
     
-    properties
+    properties (GetAccess=public, SetAccess=private)
         Archive dao.IArchive = dao.ZipArchive.empty();
         DAO dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
     end
@@ -94,7 +94,7 @@ classdef ExperimentRepositoryResultsArchive < lists.IDictionary
             tempFolder = this.Archive.extractAll();
             
             % write the object to a temp file
-            tempfilePath = fullfile(tempFolder, key);
+            tempfilePath = fullfile(tempFolder, [key '.' this.DAO.outputFilePostfix()]);
             this.DAO.save(value, tempfilePath);
             
             % save the temp file with the archive
