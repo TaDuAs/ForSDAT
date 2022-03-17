@@ -130,6 +130,16 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             end
         end
         
+        function loadExperimentRepository(this, name)
+            % backup current experiments repository
+            if ~isempty(this.ExperimentRepository)
+                this.ExperimentRepositoryDAO.save(this.ExperimentRepository);
+            end
+            
+            % import wanted repository
+            this.ExperimentRepository = this.ExperimentRepositoryDAO.load(name);
+        end
+        
         function importExperimentsRepository(this, path)
             % backup current experiments repository
             if ~isempty(this.ExperimentRepository)
@@ -494,7 +504,7 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             kBT = chemo.PhysicalConstants.kB * chemo.PhysicalConstants.RT;
             
             for i = 1:numel(repositoryNames)
-                this.importExperimentsRepository(repositoryNames{i});
+                this.loadExperimentRepository(repositoryNames{i});
                 
                 params = this.bellEvansFit();
                 chi(i, :) = [params.Chi, params.ChiErr];

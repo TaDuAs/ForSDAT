@@ -253,7 +253,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         end
         
         function loadExperimentRepository(this, path)
-            this.Project.CookedAnalyzer.importExperimentsRepository(path);
+            this.Project.CookedAnalyzer.loadExperimentRepository(path);
         end
         
         function settings = loadSettings(this, settingsFile)

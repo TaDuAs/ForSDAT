@@ -94,9 +94,21 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
     methods
         function data = getRepositoryData(this, repo)
             if nargin >= 2 && ~isempty(repo) && gen.isSingleString(repo)
-                this.importExperimentsRepository(repo);
+                this.loadExperimentRepository(repo);
             end
             data = [this.ExperimentRepository.values{:}];
+        end
+        
+        function [summary, ds] = getRepositoryFullDataSet(this, repo)
+            if nargin < 2; repo = []; end
+            summary = this.getRepositoryData(repo);
+            
+            repoKeys = this.ExperimentRepository.keys();
+            for i = 1:numel(repoKeys)
+                expId = repoKeys{i};
+                
+                results = this.ExperimentRepository.BatchResults.getv(expId);
+            end
         end
     end
     
