@@ -34,6 +34,10 @@ classdef MainWindow < mvvm.view.MainAppView
             this.Fig.MenuBar = 'none';
             this.Fig.ToolBar = 'none';
             this.Fig.Tag = 'ForSDAT_Main_Window';
+            
+            fileMenu = uimenu(this.Fig, 'Text', '&File');
+            newProjectMenuAction = uimenu(fileMenu, 'Text', '&New Project');
+            newProjectCommand = mvvm.Command('', newProjectMenuAction, 'MenuSelected');
         end
     end
     

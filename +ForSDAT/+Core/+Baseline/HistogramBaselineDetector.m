@@ -129,7 +129,7 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             hold on;
             
             % plot the baseline estimation
-            plot(baseline, amplitudeForDisplay, 'rv', 'MarkerFaceColor', 'r');
+            plot(baseline, amplitude, 'rv', 'MarkerFaceColor', 'r');
             
             % prepare legends
             legendText = cell(1, this.gaussFitOpts.order + 2);

@@ -5,6 +5,7 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
         restorePointPath;
         processingProgressListener;
         progressbar util.ConsoleProggressBar;
+        progressResetPermitListener event.listener;
     end
     
     methods % property accessors
@@ -81,6 +82,8 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
                 this.Project.CookedAnalyzer,...
                 this.Project.DataAccessor,...
                 this.Project.AnalyzedSegment);
+            
+            this.progressResetPermitListener = addlistener(wf, 'ProgressResetting', @this.raiseResetProgressNotification);
         end
         
         function reportProgress(this, args)
@@ -189,17 +192,15 @@ classdef ForceSpecAnalysisController < ForSDAT.Application.ProjectController
             
             if nargin < 2 || isempty(plotTask)
                 plotTask = this.Project.CurrentViewedTask;
-%                 wf.plotLastAnalyzedCurve(view);
             elseif ischar(plotTask) || isnumeric(plotTask)
                 plotTask = this.Project.RawAnalyzer.getTask(plotTask);
-%                 wf.plotLastAnalyzedCurve(view, plotTask);
             end
             
             wf = this.buildWF();
             data = wf.getCurrentCurveAnalysis();
             if isempty(data)
-                return;
                 cla(sui.gca(view));
+                return;
             end
             
             plotTask.plotData(view, data);

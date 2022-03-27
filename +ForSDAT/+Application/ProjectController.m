@@ -53,6 +53,11 @@ classdef ProjectController < mvvm.AppController
     end
     
     methods
+        function raiseResetProgressNotification(this)
+            message = mvvm.RelayMessage(ForSDAT.Application.AppMessages.CurrentProjectRequestProgressResetPermit);
+            this.App.Messenger.send(message);
+        end
+        
         function notifyProjectChangeSystemwise(this)
             this.ignoreProjectUpdate = true;
             
