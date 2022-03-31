@@ -10,6 +10,10 @@ classdef ExperimentRepositoryResultsArchive < lists.IDictionary
             this.DAO = dao;
             this.Archive = archive;
         end
+        
+        function loadArchive(this)
+            this.Archive.extractAll();
+        end
     end
     
     methods % lists.IDictionary

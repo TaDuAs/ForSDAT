@@ -92,6 +92,15 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
     
     % post analysis
     methods
+        function t = allocateResultsTable(this, n)
+            if nargin < 2; n = 0; end
+            
+            varnames = {'Repository', 'ExperimentId', 'CurveId', 'PosX',   'PosY',   'PosIndex', 'MaxAdhesionForce', 'MaxAdhesionDistance', 'DetachmentWork', 'NRuptures', 'MeanRuptureForce', 'MaxRuptureDistance', 'MeanInterRuptureDistance'};
+            vartypes = {'string',     'string',       'string',  'double', 'double', 'int32',    'double',           'double',              'double',         'int32',     'double',           'double',             'double'};
+            
+            t = table('Size', [n, numel(varnames)], 'VariableTypes', vartypes, 'VariableNames', varnames);
+        end
+        
         function data = getRepositoryData(this, repo)
             if nargin >= 2 && ~isempty(repo) && gen.isSingleString(repo)
                 this.loadExperimentRepository(repo);
@@ -101,13 +110,82 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
         
         function [summary, ds] = getRepositoryFullDataSet(this, repo)
             if nargin < 2; repo = []; end
+            % load repository
             summary = this.getRepositoryData(repo);
             
+            % allocate the combined repository data table
+            batchInfo = [summary.BatchInfo];
+            combinedResults = this.allocateResultsTable(sum([batchInfo.N]));
+            totalRows = 0;
+            
+            % load the complete archive instead of loading a single entry
+            % each iteration
+            this.ExperimentRepository.BatchResults.loadArchive();
+            
+            % build data table from all experiments in repository
             repoKeys = this.ExperimentRepository.keys();
             for i = 1:numel(repoKeys)
                 expId = repoKeys{i};
                 
+                % fetch experiment from archive
                 results = this.ExperimentRepository.BatchResults.getv(expId);
+                
+                % append experiment results to the repository data table
+                rowsInCurrDS = numel(results);
+                combinedResults((totalRows + 1):(totalRows + rowsInCurrDS), :) = this.extractDataOfInterest(results);
+                
+                % burn the experiment ID to the data
+                combinedResults{(totalRows + 1):(totalRows + rowsInCurrDS), 'ExperimentId'} = string(expId);
+                totalRows = totalRows + rowsInCurrDS;
+            end
+            
+            % burn repository id to the dataset
+            combinedResults{:, 'Repository'} = string(this.ExperimentRepository.Name);
+            
+            % return the data table
+            if totalRows < size(combinedResults, 1)
+                ds = combinedResults(1:totalRows, :);
+            else
+                ds = combinedResults;
+            end
+        end
+        
+        function t = extractDataOfInterest(this, dataList)
+            t = this.allocateResultsTable(numel(dataList));
+            
+            % extract relevant data from the data list
+            for i = 1:numel(dataList)
+                item = dataList(i);
+                if ~isempty(item.file)
+                    t{i, 'CurveId'} = string(item.file);
+                end
+                if ~isempty(item.posx)
+                    t{i, 'PosX'} = item.posx;
+                end
+                if ~isempty(item.posy)
+                    t{i, 'PosY'} = item.posy;
+                end
+                if ~isempty(item.f)
+                    t{i, 'MaxAdhesionForce'} = item.f;
+                end
+                if ~isempty(item.z)
+                    t{i, 'MaxAdhesionDistance'} = item.z;
+                end
+                if ~isempty(item.energy)
+                    t{i, 'DetachmentWork'} = item.energy;
+                end
+                if ~isempty(item.nRuptures)
+                    t{i, 'NRuptures'} = item.nRuptures;
+                end
+                if ~isempty(item.maxAdhesionDistance)
+                    t{i, 'MaxRuptureDistance'} = item.maxAdhesionDistance;
+                end
+                if ~isempty(item.maxAdhesionDistance)
+                    t{i, 'MeanRuptureForce'} = mean(item.ruptureForce);
+                end
+                if ~isempty(item.maxAdhesionDistance)
+                    t{i, 'MeanInterRuptureDistance'} = mean(diff(item.ruptureDistance));
+                end
             end
         end
     end

@@ -150,6 +150,16 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             this.ExperimentRepository = this.ExperimentRepositoryDAO.import(path);
         end
         
+        function data = getRepositoryData(this, repo)
+            throw(MException('ForSDAT:Application:Workflows:CookedDataAnalyzer:NotImplementedException', ...
+                            'The getRepositoryData method wasn''t implemented for cooked analyzers of type %s. If you need it, better get to work.', class(this)));
+        end
+        
+        function [summary, ds] = getRepositoryFullDataSet(this, repo)
+            throw(MException('ForSDAT:Application:Workflows:CookedDataAnalyzer:NotImplementedException', ...
+                            'The getRepositoryFullDataSet method wasn''t implemented for cooked analyzers of type %s. If you need it, better get to work.', class(this)));
+        end
+        
         function [results, keys] = getAcceptedResults(this)
         % Gets the list of accepted data
         % results - returns the list of accepted data items
