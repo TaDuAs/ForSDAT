@@ -24,7 +24,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO', 'DataAnalyzer'};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', '%ExperimentRepositoryDAO', 'DataAnalyzer'};
             defaultValues = {'ExperimentRepositoryDAO', ForSDAT.Application.IO.ExperimentRepositoryDAO.empty(), 'DataAnalyzer', []};
         end
     end

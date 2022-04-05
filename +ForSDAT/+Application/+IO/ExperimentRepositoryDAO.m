@@ -9,6 +9,7 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
     properties
         RepositoryPath;
         DAO dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
+        DataSetDAO dao.FSOutputDataExporter = dao.TableDataExporter.empty();
     end
     
     
@@ -31,14 +32,15 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%mxml.XmlSerializer'};
+            ctorParams = {'%ExperimentRepositoryExporter', '%csvTableExporter'};
             defaultValues = {};
         end
     end
     
     methods
-        function this = ExperimentRepositoryDAO(serializer)
-            this.DAO = dao.MXmlDataExporter(serializer);
+        function this = ExperimentRepositoryDAO(repoDAO, dsDAO)
+            this.DAO = repoDAO;
+            this.DataSetDAO = dsDAO;
         end
     end
     
@@ -108,12 +110,51 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
             % load the repository - hope for the best.
             repo = this.load(name);
         end
+        
+        function saveFullRepositoryDataSet(this, repo, ds)
+            this.DataSetDAO.save(ds, [], this.generateRepositoryFullDataSetFilePath(repo));
+        end
+        
+        function ds = loadFullRepositoryDataSet(this, repo)
+            [doesExist, path] = this.doesFullRepositoryDataSetExist(repo);
+            if doesExist
+                ds = this.DataSetDAO.load(path);
+            else
+                ds = table();
+            end
+        end
+        
+        function [tf, path] = doesFullRepositoryDataSetExist(this, repo)
+            path = this.generateRepositoryFullDataSetFilePath(repo);
+            
+            tf = exist(path, 'file');
+        end
+        
+        function deleteFullRepositoryDataSet(this, repo)
+            [doesExist, path] = this.doesFullRepositoryDataSetExist(repo);
+            if doesExist
+                delete(path);
+            end
+        end
     end
     
     methods (Access=private)
         
         function path = generateRepositoryFilePath(this, name)
             path = fullfile(this.RepositoryPath, this.appendPostfixToPath(name));
+        end
+        
+        function path = generateRepositoryFullDataSetFilePath(this, repo)
+            if isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')
+                name = repo.Name;
+            elseif gen.isSingleString(repo)
+                name = repo;
+            else
+                throw(MException('ForSDAT:Application:IO:ExperimentRepositoryDAO:InvalidNameType',...
+                                 'Experiment repository or experiment repository name expected'));
+            end
+            
+            path = fullfile(this.RepositoryPath, [char(name), '_fullDS', '.', this.DataSetDAO.outputFilePostfix()]);
         end
         
         function path = generateRepositoryArchivePath(this, name)

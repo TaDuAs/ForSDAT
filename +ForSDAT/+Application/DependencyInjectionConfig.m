@@ -11,10 +11,12 @@ classdef DependencyInjectionConfig < handle
                 {'xml', 'forsdatRestoreXml', 'json'}, ...
                 IoC.Injectable(["mxml.XmlSerializer", "mxml.XmlSerializer", "mxml.JsonSerializer"]), ...
                 '@Factory', 'MFactory');
+            ioc.set('AnalyzerConfigFilePath', @(app) fullfile(app.ResourcePath, 'Settings', 'Defaults.xml'), 'App');
+            
+            % ForSDAT Application layer persistence contexts
             ioc.set('AnalysisContext', @(ses) ses.Context, 'Session');
             ioc.set('ExperimentCollectionContext', @(context) context, 'AppContext');
             ioc.set('AppContext', @(app) app.Context, 'App');
-            ioc.set('AnalyzerConfigFilePath', @(app) fullfile(app.ResourcePath, 'Settings', 'Defaults.xml'), 'App');
             
             % Flow framework
             ioc.setSingleton('BindingManager', @mvvm.BindingManager);
@@ -29,6 +31,12 @@ classdef DependencyInjectionConfig < handle
             ioc.set('NoiseAnomallyFetcher', @IoC.DependencyFetcher, 'IoC', '$NoiseAnomally');
             
             % ForSDAT Core
+            
+            % ForSDAT WF layer
+            ioc.set('ExperimentRepositoryDAO', @ForSDAT.Application.IO.ExperimentRepositoryDAO, 'ExperimentRepositoryExporter', 'csvTableExporter');
+            ioc.set('ExperimentRepositoryExporter', @dao.MXmlDataExporter, 'mxml.XmlSerializer');
+            ioc.set('csvExporter', @dao.DelimiterValuesDataExporter, '$,');
+            ioc.set('csvTableExporter', @dao.TableDataExporter, '$,');
             
             % gui
             ioc.set('MainView', @ForSDAT.Application.Client.MainWindow, 'App', 'BindingManager', 'ViewManager');

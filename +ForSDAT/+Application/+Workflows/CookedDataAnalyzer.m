@@ -682,6 +682,7 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
     methods (Access=private)
         function onRepositoryUpdated(this, repo, ~)
             this.ExperimentRepositoryDAO.save(repo);
+            this.ExperimentRepositoryDAO.deleteFullRepositoryDataSet(repo);
         end
     end
 end
