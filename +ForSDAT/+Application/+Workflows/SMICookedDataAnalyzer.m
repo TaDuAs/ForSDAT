@@ -91,5 +91,16 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
             bool = mvvm.getobj(data, 'SingleInteraction.didDetect', false, 'nowarn');
         end
     end
+    
+    methods % Experiment Repository and methods for reports
+        function t = allocateResultsTable(this, n)
+            throw(MException("ForSDAT:App:Workflow:SMICookedDataAnalyzer:NotImplementedException", "Method is not yet implemented in %s", class(this)));
+        end
+    end
+    methods (Access=protected)
+        function t = extractDataOfInterest(this, dataList)
+            throw(MException("ForSDAT:App:Workflow:SMICookedDataAnalyzer:NotImplementedException", "Method is not yet implemented in %s", class(this)));
+        end
+    end
 end
 

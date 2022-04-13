@@ -52,49 +52,7 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
                     item.maxAdhesionDistance = max(ruptures.distance);
                 end
             end
-        end
-        
-        function ds = generateFullRepositoryDataSet(this, summary)
-            % generate a full dataset from the archive of the current 
-            % experiment repository 
-            
-            % allocate the combined repository data table
-            batchInfo = [summary.BatchInfo];
-            combinedResults = this.allocateResultsTable(sum([batchInfo.N]));
-            totalRows = 0;
-            
-            % load the complete archive instead of loading a single entry
-            % each iteration
-            this.ExperimentRepository.BatchResults.loadArchive();
-            
-            % build data table from all experiments in repository
-            repoKeys = this.ExperimentRepository.keys();
-            for i = 1:numel(repoKeys)
-                expId = repoKeys{i};
-                
-                % fetch experiment from archive
-                results = this.ExperimentRepository.BatchResults.getv(expId);
-                
-                % append experiment results to the repository data table
-                rowsInCurrDS = numel(results);
-                combinedResults((totalRows + 1):(totalRows + rowsInCurrDS), :) = this.extractDataOfInterest(results);
-                
-                % burn the experiment ID to the data
-                combinedResults{(totalRows + 1):(totalRows + rowsInCurrDS), 'ExperimentId'} = string(expId);
-                totalRows = totalRows + rowsInCurrDS;
-            end
-            
-            % burn repository id to the dataset
-            combinedResults{:, 'Repository'} = string(this.ExperimentRepository.Name);
-            
-            % return the data table
-            if totalRows < size(combinedResults, 1)
-                ds = combinedResults(1:totalRows, :);
-            else
-                ds = combinedResults;
-            end
-        end
-        
+        end 
     end
     
     methods
@@ -132,7 +90,7 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
         end
     end
     
-    % post analysis
+    % reporting
     methods
         function t = allocateResultsTable(this, n)
             if nargin < 2; n = 0; end
@@ -142,31 +100,9 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
             
             t = table('Size', [n, numel(varnames)], 'VariableTypes', vartypes, 'VariableNames', varnames);
         end
-        
-        function data = getRepositoryData(this, repo)
-            if nargin >= 2 && ~isempty(repo) && gen.isSingleString(repo)
-                this.loadExperimentRepository(repo);
-            end
-            data = [this.ExperimentRepository.values{:}];
-        end
-        
-        function [summary, ds] = getRepositoryFullDataSet(this, repo)
-            if nargin < 2; repo = []; end
-            
-            % load repository
-            summary = this.getRepositoryData(repo);
-            
-            % if full dataset was already generated from archive, load that
-            % file for beter performance
-            if this.ExperimentRepositoryDAO.doesFullRepositoryDataSetExist(repo)
-                ds = this.ExperimentRepositoryDAO.loadFullRepositoryDataSet(repo);
-            else
-                % generate full data set of the repository from archive
-                ds = this.generateFullRepositoryDataSet(summary);
-                this.ExperimentRepositoryDAO.saveFullRepositoryDataSet(repo, ds);
-            end
-        end
-        
+    end
+    
+    methods (Access=protected)
         function t = extractDataOfInterest(this, dataList)
             t = this.allocateResultsTable(numel(dataList));
             
