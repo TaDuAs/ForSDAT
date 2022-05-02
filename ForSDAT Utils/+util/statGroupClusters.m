@@ -1,23 +1,112 @@
 function clusters = statGroupClusters(pht, means, varargin)
-% util.statGroupClusters generates clusters of groups according to
-% similarity determined by a post-hoc test.
+% util.statGroupClusters generates clusters of groups according to 
+% similarity determined by a post-hoc test. The cluster names can be 
+% annotated on top of a plot.
 %
+%--------------------------------------------------------------------------
 % Input:
-%   pht   - Post-hoc table. Determines statistically significant differences
-%           between different groups of data.
-%   means - The group means matrix retrieved from multcompare.
+%   pht:
+%       Post-hoc table. Determines statistically significant differences
+%       between different groups of data retrieved from multcompare.
+%
+%   means:
+%       The group means matrix retrieved from multcompare.
 %
 % Opntional Name-Value Pairs Input:
-%   Alpha - Numeric scalar value between zero and one determining the alpha
-%           value.
+%   Alpha:
+%       Numeric scalar value between zero and one determining the alpha
+%       value.
+%       The default value is 0.05.
 %
+%   FirstClusterCharacter:
+%       The character to use as first letter to denote the different
+%       groups. Generally this is used to determine if you want it as
+%       upper/lower case letters or to use some non-latin alphabet.
+%       The default is value 'A'.
+%
+%--------------------------------------------------------------------------
 % Output:
-%   groupClusters - A character cell array containing the alphabetical
-%       cluster designation for each group. The clusters are sorted 
-%       according to the enumeration in the supplied post-hoc table.
-% 
-% Written by TADA Apr 2022
+%   clusters:
+%       A character cell array containing the alphabetical cluster 
+%       designation for each group. The clusters are sorted according to 
+%       the enumeration in the supplied post-hoc table.
 %
+%--------------------------------------------------------------------------
+% Example:
+%
+%   load hogg;
+%   alpha = 0.05;
+%   [p, ~, stat] = anova1(hogg, [], 'off');
+%   [pht, means, ~, groupNames] = multcompare(stat, 'Alpha', alpha, 'Display', 'off');
+%   clusters = util.statGroupClusters(pht, means, 'Alpha', alpha);
+%   
+%     pht(:, [1,2,6]) = 
+%           1.0000    2.0000    0.0059
+%           1.0000    3.0000    0.0013
+%           1.0000    4.0000    0.0001
+%           1.0000    5.0000    0.2119
+%           2.0000    3.0000    0.9719
+%           2.0000    4.0000    0.5544
+%           2.0000    5.0000    0.4806
+%           3.0000    4.0000    0.8876
+%           3.0000    5.0000    0.1905
+%           4.0000    5.0000    0.0292
+%           
+%     clusters =
+%       1×5 cell array
+%           {'A'}    {'BC'}    {'BC'}    {'B'}    {'AC'}
+%     groupNames(:)' = 
+%           1        2         3         4        5
+%
+%--------------------------------------------------------------------------
+% Example 1 Output explanation:
+%
+% The tuckey test results indicate that group 1 is significantly different 
+% from groups 2, 3 and 4, but not 5.
+% Groups 2 and 3 is significantly different from group 1 but not from all 
+% the other groups.
+% Group 4 is significantly different from groups 1 and 5 but similar to 2 
+% and 3
+% Group 5 is significantly different from group 4, but similar to the rest.
+% Therefore, the clusters are arranged as follows:
+%   'A' - groups 1 and 5
+%   'C' - Groups 2, 3 and 5
+%   'B' - Groups 2, 3 and 4
+%
+%--------------------------------------------------------------------------
+% Example 2: lower case clusters (or numeric values) - this can also be
+%            used to generate clusters of non-latin alphabets, in case this
+%            is necessary.
+%
+%   load hogg;
+%   alpha = 0.05;
+%   [p, ~, stat] = anova1(hogg, [], 'off');
+%   [pht, means, ~, groupNames] = multcompare(stat, 'Alpha', alpha, 'Display', 'off');
+%   lowerCaseClusters = util.statGroupClusters(pht, means, 'Alpha', alpha, 'FirstClusterCharacter', 'a');
+%   greekAlphabetClusters = util.statGroupClusters(pht, means, 'Alpha', alpha, 'FirstClusterCharacter', char(945));
+%   numericClusters = util.statGroupClusters(pht, means, 'Alpha', alpha, 'FirstClusterCharacter', '1');
+%   
+%     lowerCaseClusters =
+%       1×5 cell array
+%           {'a'}    {'bc'}    {'bc'}    {'b'}    {'ac'}
+%
+%     greekAlphabetClusters =
+%       1×5 cell array
+%           {'α'}    {'βγ'}    {'βγ'}    {'β'}    {'αγ'}
+%
+%     numericClusters =
+%       1×5 cell array
+%           {'1'}    {'23'}    {'23'}    {'2'}    {'13'}
+%       
+%--------------------------------------------------------------------------
+% Written by TADA Apr 2022
+% Comments:
+% I tested the runtime duration within a for loop of 1000 repeats, with the 
+% hogg dataset. It took roughly 0.6 ms per iteration. This is probably not
+% the most efficient method. However, it is not likely to perform statistical 
+% analysis of this sort over that many more groups. This means that the
+% runtime of this method should not be too long even for extreme cases.
+% 
 
     config = parseInputVars(varargin{:});
     ng = numel(unique(pht(:, 1))) + 1;
@@ -135,7 +224,7 @@ function clusters = reassignClusterNames(groupClustersUnsorted, unsortClusterRem
         end
         
         % assign remapped group clusters to the output
-        clusters{grpIdx} = currGroupClusters;
+        clusters{grpIdx} = sort(currGroupClusters);
     end
 end
 
