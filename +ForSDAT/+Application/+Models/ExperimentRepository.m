@@ -69,6 +69,16 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
     
     methods
         function this = ExperimentRepository(name)
+            % generates a new experiment repository object with the given
+            % name.
+            %
+            % Call the Experiment Repository Ctor only from the Experiment
+            % Repository DAO create method.
+            % access is not limited via matlab access validation mechanism 
+            % to allow access for MXML serializers and dependency injection
+            % But seriously, use the ExperimentRepositoryDAO.create method!
+            %
+            
             this.Name = name;
             this.Repository_ = lists.Dictionary();
         end

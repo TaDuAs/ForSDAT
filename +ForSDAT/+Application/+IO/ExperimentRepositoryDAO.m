@@ -49,6 +49,39 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
             this.DAO.save(repo, this.generateRepositoryFilePath(repo.Name));
         end
         
+        function repo = loadOrCreate(this, name)
+            repo = this.load(name);
+            
+            if repo.isemptyHandle()
+                repo = this.create(name);
+            end
+        end
+        
+        function repo = create(this, name)
+            % Creates a new experiment repository and an accompanying 
+            % results archive. If an experiment repository with the given
+            % name already exists, an exception is thrown.
+            filePath = this.generateRepositoryFilePath(name);
+            
+            if exist(filePath, 'file')
+                throw(MException('ForSDAT:Application:IO:ExperimentRepositoryDAO:RepositoryNameAlreadyExists', ...
+                    'Can''t create a new repository with the name %s. A repository with this name already exists.', name));
+            else
+                repo = ForSDAT.Application.Models.ExperimentRepository(name);
+                
+                % validate repository
+                this.validateLoadedRepository(repo, filePath);
+
+                % generate batch results archive
+                fileArchive = dao.ZipArchive(this.generateRepositoryArchivePath(name), this.RepositoryPath);
+                repoArchive = ForSDAT.Application.Models.ExperimentRepositoryResultsArchive(this.DAO, fileArchive);
+                repo.setResultsArchive(repoArchive);
+                
+                % save the new repository
+                this.save(repo);
+            end
+        end
+        
         function repo = load(this, name)
             % loads an experiment repository from ForSDATs default location
             % When no repository exists, an empty repository is generated.
@@ -59,15 +92,15 @@ classdef ExperimentRepositoryDAO < dao.IExImportDAO & mfc.IDescriptor
             else
                 % load repository from file
                 repo = this.DAO.load(filePath);
+            
+                % validate repository
+                this.validateLoadedRepository(repo, filePath);
+
+                % generate batch results archive
+                fileArchive = dao.ZipArchive(this.generateRepositoryArchivePath(name), this.RepositoryPath);
+                repoArchive = ForSDAT.Application.Models.ExperimentRepositoryResultsArchive(this.DAO, fileArchive);
+                repo.setResultsArchive(repoArchive);
             end
-            
-            % generate batch results archive
-            fileArchive = dao.ZipArchive(this.generateRepositoryArchivePath(name), this.RepositoryPath);
-            repoArchive = ForSDAT.Application.Models.ExperimentRepositoryResultsArchive(this.DAO, fileArchive);
-            repo.setResultsArchive(repoArchive);
-            
-            % validate repository
-            this.validateLoadedRepository(repo, filePath);
         end
         
         function repo = import(this, filePath)

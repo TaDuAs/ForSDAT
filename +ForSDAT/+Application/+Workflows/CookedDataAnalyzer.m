@@ -117,14 +117,9 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
             if nargin >= 5 && ~isempty(experimentRepoName) && ...
                     (isempty(this.ExperimentRepository) || ~strcmp(experimentRepoName, this.ExperimentRepository.Name))
                 
-                % load experiment repository from file
-                repo = this.ExperimentRepositoryDAO.load(experimentRepoName);
-                
-                % if the file is missing or is empty or is corrupted
-                if repo.isemptyHandle() || ~isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')
-                    repo = ForSDAT.Application.Models.ExperimentRepository(experimentRepoName);
-                    this.ExperimentRepositoryDAO.save(repo);
-                end
+                % load experiment repository from file or create a new
+                % experiment repository if none exist with the given name
+                repo = this.ExperimentRepositoryDAO.loadOrCreate(experimentRepoName);
                 
                 this.ExperimentRepository = repo;
             end
@@ -136,7 +131,7 @@ classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
                 this.ExperimentRepositoryDAO.save(this.ExperimentRepository);
             end
             
-            % import wanted repository
+            % load wanted repository from file
             this.ExperimentRepository = this.ExperimentRepositoryDAO.load(name);
         end
         
