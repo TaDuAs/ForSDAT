@@ -34,6 +34,22 @@ classdef RawDataAnalyzer < handle & mfc.IDescriptor
             task = this.pipeline.getTask(i);
         end
         
+        function task = getTaskByName(this, name)
+            % get analysis task by name - helps distinguish between
+            % adjustment tasks
+            
+            task = lists.PipelineTask.empty();
+            wantedName = strrep(lower(name), ' ', '');
+            for j = this.pipeline.length():-1:1
+                curr = this.pipeline.getv(j);
+                currName = strrep(lower(curr.name), ' ', '');
+                if strcmp(currName, wantedName)
+                    task = curr;
+                    return;
+                end
+            end
+        end
+        
         function dataFieldNames = getAvaliableDataFields(this, task)
             nTasks = this.pipeline.length();
             availableFields = cell(1, nTasks);

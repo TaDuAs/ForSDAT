@@ -53,7 +53,7 @@ classdef ProjectController < mvvm.AppController
     end
     
     methods
-        function raiseResetProgressNotification(this, e)
+        function raiseResetProgressNotification(this, ~, e)
             message = mvvm.CancelEventPermissionMessage(ForSDAT.Application.AppMessages.CurrentProjectRequestProgressResetPermit, e);
             this.App.Messenger.send(message);
             
