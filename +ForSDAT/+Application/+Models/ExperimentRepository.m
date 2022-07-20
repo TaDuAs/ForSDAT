@@ -62,8 +62,8 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
         end
         
         % mxml.IMXmlIgnoreFields interface
-        function ignoreList = getMXmlIgnoreFieldsList(this)
-            ignoreList = {'BatchResults'};
+        function ignoreList = getMXmlIgnoreFieldsList(~)
+            ignoreList = {'BatchResults', 'Repository_'};
         end
     end
     
