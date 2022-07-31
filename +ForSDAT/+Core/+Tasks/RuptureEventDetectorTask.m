@@ -95,21 +95,27 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             dist = this.getChannelData(data, 'x');
             frc = this.getChannelData(data, 'y');
             
+            % validate plot flags
             plotFlags = mvvm.getobj(extras, 'plotFlags', [false true true true true]);
             if ~islogical(plotFlags) || length(plotFlags) ~= 5
                 error('Rupture plotting is determined by the flags vector, which determines what to plot as follows [FDC, loadingStartPoint, ruptureStartPoint, ruptureEndPoint, force-derivative]');
             end
             
+            % plot loading start position
             if plotFlags(2)
                 plot(dist(data.Rupture.i(1,:)), frc(data.Rupture.i(1,:)), 'cs', 'MarkerFaceColor', 'c', 'MarkerSize', 7);
             end
+            
+            % plot rupture start position
             if plotFlags(3)
                 plot(dist(data.Rupture.i(2,:)), frc(data.Rupture.i(2,:)), 'gs', 'MarkerFaceColor', 'g', 'MarkerSize', 7);
             end
+            
+            % plot rupture end position
             if plotFlags(4)
                 plot(dist(data.Rupture.i(3,:)), frc(data.Rupture.i(3,:)), 'rs', 'MarkerFaceColor', 'r', 'MarkerSize', 7);
             end
-
+            
             % plot derivative
             if plotFlags(5) && exist('yyaxis')
                 yyaxis right;
@@ -126,6 +132,9 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             cla(ax);
             yyaxis(ax, 'left');
             cla(ax);
+            
+            % hide right y axis
+            ax.YAxis(2).Visible='off';
         end
     end
 end
