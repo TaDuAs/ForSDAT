@@ -1,16 +1,14 @@
-classdef ForSpecAnalysisWindow < mvvm.view.ComponentView
-    %FSANALYSISWINDOW Summary of this class goes here
-    %   Detailed explanation goes here
+classdef ForSpecAnalysisView < mvvm.view.ComponentView & ForSDAT.Application.Client.AnalysisViewFacade.IAnalysisViewFacade
     
     properties
         MainContainer;
         HeaderPanel;
         FooterPanel;
-        PipelinePanel ForSDAT.Application.Client.PipelinePanel;
+        PipelinePanel ForSDAT.Application.Client.ForspecAnalysisView.PipelinePanel;
         MainInfoContainer;
         TopPanel uix.HBox;
-        PlotPanel ForSDAT.Application.Client.PlotPanel;
-        EditPanel ForSDAT.Application.Client.EditPanel;
+        PlotPanel ForSDAT.Application.Client.ForspecAnalysisView.PlotPanel;
+        EditPanel ForSDAT.Application.Client.ForspecAnalysisView.EditPanel;
         
         EditProjectButton;
         EditProjectCommand mvvm.Command = mvvm.Command.empty();
@@ -19,7 +17,7 @@ classdef ForSpecAnalysisWindow < mvvm.view.ComponentView
     end
     
     methods
-        function this = ForSpecAnalysisWindow(parent, parentView, app, bindingManager, viewManager)
+        function this = ForSpecAnalysisView(parent, parentView, app, bindingManager, viewManager)
             this@mvvm.view.ComponentView(parent, 'OwnerView', parentView, 'App', app, ...
                 'BindingManager', bindingManager, 'ViewManager', viewManager,...
                 'ModelProvider', mvvm.providers.ControllerProvider('ForceSpecAnalysisController', app));
@@ -69,7 +67,7 @@ classdef ForSpecAnalysisWindow < mvvm.view.ComponentView
             
             % create the pipeline panel and align it after the edit project
             % button
-            this.PipelinePanel = ForSDAT.Application.Client.PipelinePanel(...
+            this.PipelinePanel = ForSDAT.Application.Client.ForspecAnalysisView.PipelinePanel(...
                 this.TopPanel, this, this.App,...
                 mvvm.providers.ControllerProvider('ProcessSetupController', this.App),... % model provider
                 this.BindingManager,...
@@ -87,9 +85,9 @@ classdef ForSpecAnalysisWindow < mvvm.view.ComponentView
             set(this.MainContainer, 'Sizes', [100, -10]);
             
             controller = this.App.getController('ForceSpecAnalysisController');
-            this.PlotPanel = ForSDAT.Application.Client.PlotPanel(this.MainInfoContainer, this, this.Messenger, controller, this.BindingManager);
+            this.PlotPanel = ForSDAT.Application.Client.ForspecAnalysisView.PlotPanel(this.MainInfoContainer, this, this.Messenger, controller, this.BindingManager);
             this.PlotPanel.Id = 'PlotTaskPanel';
-            this.EditPanel = ForSDAT.Application.Client.EditPanel(...
+            this.EditPanel = ForSDAT.Application.Client.ForspecAnalysisView.EditPanel(...
                 this.MainInfoContainer, this, this.Messenger, this.BindingManager, ...
                 mvvm.providers.ControllerProvider('ProcessSetupController', this.App),... % model provider
                 this.ViewManager, this.App.IocContainer.get('mxml.XmlSerializer'));

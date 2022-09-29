@@ -3,6 +3,7 @@ classdef MainWindow < mvvm.view.MainAppView
     %   Detailed explanation goes here
     
     properties
+        MainMenuControl ForSDAT.Application.Client.MainMenuPanel;
         
     end
     
@@ -35,9 +36,9 @@ classdef MainWindow < mvvm.view.MainAppView
             this.Fig.ToolBar = 'none';
             this.Fig.Tag = 'ForSDAT_Main_Window';
             
-            fileMenu = uimenu(this.Fig, 'Text', '&File');
-            newProjectMenuAction = uimenu(fileMenu, 'Text', '&New Project');
-            newProjectCommand = mvvm.Command('', newProjectMenuAction, 'MenuSelected');
+            this.MainMenuControl = ForSDAT.Application.Client.MainMenuPanel(this.Fig, this, this.App, this.ModelProvider, this.BindingManager);
+            
+            
         end
     end
     
