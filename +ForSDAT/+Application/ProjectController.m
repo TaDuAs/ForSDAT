@@ -7,13 +7,16 @@ classdef ProjectController < mvvm.AppController
     properties (Access=protected)
         ignoreProjectUpdate = false;
         Serializer mxml.ISerializer = mxml.XmlSerializer.empty();
+        currentProjectUpdatedListener;
     end
     
     methods % property accessors
         function set.Project(this, obj)
             prevObj = this.Project;
             
-            if (numel(obj) ~= numel(prevObj)) || (~isempty(obj) && ~eq(obj, prevObj))
+            if (isempty(obj) && ~isempty(prevObj)) || ...
+               (~isempty(obj) && isempty(prevObj)) || ...
+               (~isempty(obj) && ~isempty(obj) && ~eq(obj, prevObj))
                 this.App.Context.set('CurrentProject', obj);
                 this.notifyProjectChangeSystemwise();
             end
@@ -23,9 +26,16 @@ classdef ProjectController < mvvm.AppController
         end
     end
     
-    methods % ctor
+    methods % ctor & dtor
         function this = ProjectController(serializer)
             this.Serializer = serializer;
+        end
+        
+        function delete(this)
+            this.Serializer = mxml.XmlSerializer.empty();
+            delete(this.currentProjectUpdatedListener);
+            
+            delete@mvvm.AppController(this);
         end
     end
     
@@ -36,7 +46,7 @@ classdef ProjectController < mvvm.AppController
                 this.startNewProject();
             end
             
-            this.App.Messenger.register(ForSDAT.Application.AppMessages.CurrentProjectUpdated, @this.onProjectUpdated);
+            this.currentProjectUpdatedListener = this.App.Messenger.register(ForSDAT.Application.AppMessages.CurrentProjectUpdated, @this.onProjectUpdated);
         end
         
         function startNewProject(this)

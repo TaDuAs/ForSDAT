@@ -8,6 +8,10 @@ classdef EditPanel < mvvm.view.ComponentView
         Serialzier mxml.XmlSerializer;
     end
     
+    properties (Access=private)
+        PreEditedTaskChangeListener;
+    end
+    
     methods
         function this = EditPanel(parent, parentView, messenger, bindingManager, modelProvider, viewManager, serialzier)
             this@mvvm.view.ComponentView(parent, 'OwnerView', parentView, ...
@@ -18,10 +22,11 @@ classdef EditPanel < mvvm.view.ComponentView
             
             this.Serialzier = serialzier;
             
-            this.Messenger.register(ForSDAT.Application.AppMessages.PreEditedTaskChange, @this.editedTaskChanging);
+            this.PreEditedTaskChangeListener = this.Messenger.register(ForSDAT.Application.AppMessages.PreEditedTaskChange, @this.editedTaskChanging);
         end
         
         function delete(this)
+            delete(this.PreEditedTaskChangeListener);
             delete(this.CurrentFrameBinder);
             this.CurrentFrameBinder = mvvm.Binder.empty();
             delete(this.Frame);

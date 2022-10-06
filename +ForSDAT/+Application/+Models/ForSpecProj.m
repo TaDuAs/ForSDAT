@@ -52,7 +52,7 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
         end
     end
     
-    methods % Ctor
+    methods % Ctor & Dtor
         function this = ForSpecProj(context)
             this@ForSDAT.Application.Models.ForSProj(context);
             
@@ -62,6 +62,18 @@ classdef ForSpecProj < ForSDAT.Application.Models.ForSProj & mfc.IDescriptor
             this.onChangeListeners_(4) = addlistener(this, 'Settings', 'PostSet', @this.notifyAllAnalzers);
             this.onChangeListeners_(5) = addlistener(this, 'ExperimentCollectionName', 'PostSet', @this.notifyCookedAnalyzer);
             this.onChangeListeners_(6) = addlistener(this, 'RunningExperimentId', 'PostSet', @this.notifyCookedAnalyzer);
+        end
+        
+        function delete(this)
+            for i = 1:numel(this.onChangeListeners_)
+                delete(this.onChangeListeners_(i));
+            end
+            this.onChangeListeners_ = [];
+            this.RawAnalyzer = ForSDAT.Core.RawDataAnalyzer.empty();
+            this.Settings = ForSDAT.Core.Setup.AnalysisSettings.empty();
+            this.CookedAnalyzer = ForSDAT.Application.Workflows.SMICookedDataAnalyzer.empty();
+            
+            delete@ForSDAT.Application.Models.ForSProj(this);
         end
     end
     
