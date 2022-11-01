@@ -87,7 +87,7 @@ classdef ContactPointDetector < handle
         function [contact, coefficients] = findSoftSurfaceContactPoint(this, x, y, baseline)
             i = find(y <= baseline(1), 1, 'first');
             contact = x(i);
-            a = (baseline - y(1))/(contact - x(1));
+            a = (baseline(end) - y(1))/(contact - x(1));
             b = y(1) - a*x(1);
             coefficients = [a, b];
         end
