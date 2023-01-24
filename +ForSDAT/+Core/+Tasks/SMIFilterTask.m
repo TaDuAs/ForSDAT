@@ -27,6 +27,12 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             name = 'Specific Interaction Detector';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = [...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.SMI, 'SingleInteraction'),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.DecisionFlag, 'SmiDecision')];
+        end
+        
         function this = SMIFilterTask(filter, xChannel, yChannel, segment, secondaryXChannel, ruptureChannel, prefilteredRuptureChannel)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';
@@ -54,6 +60,8 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+
             if ismethod(this.filter, 'init')
                 this.filter.init(settings);
             end
@@ -116,6 +124,8 @@ classdef SMIFilterTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
                 singleInteraction.apparentLoadingRate = [];
             end
             data.SingleInteraction = singleInteraction;
+            data.SmiDecision = struct();
+            data.SmiDecision.Flag = singleInteraction.didDetect;
         end
         
         function plotData(this, fig, data, extras)

@@ -22,7 +22,7 @@ classdef ContactPointDetector < handle
             end
         end
         
-        function [contact, x, coefficients, s, mu] = detect(this, x, y, baseline)
+        function [contact, x, coefficients, s, msd] = detect(this, x, y, baseline)
         % Find the contact point of the curve by finding the point of
         % contact between the baseline and the contact linear extrapolation
         % Returns:
@@ -30,20 +30,17 @@ classdef ContactPointDetector < handle
         %   x - the x varriable, after adjustment if any was done
         %   coefficients - the coefficients of the contact force polynomial fit
         %   s - standard error values
-        %   mu - [avg, std]
+        %   msd - mean and standard deviation of the residuals {mean, std}
             
-            if ~exist('baseline', 'var')
-                baseline = [0 0];
-            end
+            if nargin < 4; baseline = [0 0]; end
             
             if this.isSorftSurface
                 contact = findSoftSurfaceContactPoint(this, x, y, baseline);
                 coefficients = [];
                 s = [];
-                mu = {0 0}; 
+                msd = {0 0}; 
             else
-                [contact, coefficients, s, mu] = findHardSurfaceContactPoint(this, x, y, baseline);
-                mu = {mu(1) mu(2)};
+                [contact, coefficients, s, msd] = findHardSurfaceContactPoint(this, x, y, baseline);
             end
         end
         
@@ -61,10 +58,10 @@ classdef ContactPointDetector < handle
     
     methods (Access=private)
         
-        function [contact, coefficients, s, mu] = findHardSurfaceContactPoint(this, x, y, baseline)
+        function [contact, coefficients, s, msd] = findHardSurfaceContactPoint(this, x, y, baseline)
             % Fit 1st order polynom to the beginning of the curve
             [xSeg, ySeg] = this.getXYSegment(x, y);
-            [coefficients, s, mu] = polyfit(xSeg, ySeg, 1);
+            [coefficients, s] = polyfit(xSeg, ySeg, 1);
             R2 = util.getFitR2(ySeg, s);
             
             if (R2 > this.iterativeApproachR2Threshold)
@@ -77,20 +74,20 @@ classdef ContactPointDetector < handle
                     coefficients = [zeros(1,bslLength-coeffLength) coefficients];
                 end
                 contact = -(coefficients(2)-baseline(2))/(coefficients(1)-baseline(1));
+                residuals = polyval(coefficients, xSeg, s) - ySeg;
+                msd = {mean(residuals), std(residuals)};
             else
                 % Bug fix for curves with extremely noisy contact domain
                 bsl = baseline(length(baseline));
                 [contact, coefficients] = this.findSoftSurfaceContactPoint(x, y, bsl);
+                msd = {0, 0};
             end
         end
         
         function [contact, coefficients] = findSoftSurfaceContactPoint(this, x, y, baseline)
-            i = 1;
-            while i < length(x) && y(i) > baseline
-                i = i+1;
-            end
+            i = find(y <= baseline(1), 1, 'first');
             contact = x(i);
-            a = (baseline - y(1))/(contact - x(1));
+            a = (baseline(end) - y(1))/(contact - x(1));
             b = y(1) - a*x(1);
             coefficients = [a, b];
         end

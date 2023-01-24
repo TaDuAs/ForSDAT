@@ -22,7 +22,7 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO'};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', '%ExperimentRepositoryDAO'};
             defaultValues = {};
         end
     end
@@ -52,7 +52,7 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
                     item.maxAdhesionDistance = max(ruptures.distance);
                 end
             end
-        end
+        end 
     end
     
     methods
@@ -76,6 +76,10 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
             
             avgInterRuptDistance = arrayfun(@(x) mean(diff(x.ruptureDistance)), dataList);
             results.InterRuptureDistance = ForSDAT.Application.Models.MeanValue(avgInterRuptDistance);
+            
+            % lists
+            results.RuptureForceList = [dataList.ruptureForce];
+            results.RuptureDistanceList = [dataList.ruptureDistance];
         end
 
         function bool = examineCurveAnalysisResults(this, data)
@@ -84,13 +88,60 @@ classdef SCFSCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyz
 %             bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
             bool = true;
         end
-        
-        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
-        % Loads previously processed data
-            importDetails.path = path;
-            importDetails.keyField = 'file';
-            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
+    end
+    
+    % reporting
+    methods
+        function t = allocateResultsTable(this, n)
+            if nargin < 2; n = 0; end
+            
+            varnames = {'Repository', 'ExperimentId', 'CurveId', 'PosX',   'PosY',   'PosIndex', 'MaxAdhesionForce', 'MaxAdhesionDistance', 'DetachmentWork', 'NRuptures', 'MeanRuptureForce', 'MaxRuptureDistance', 'MeanInterRuptureDistance'};
+            vartypes = {'string',     'string',       'string',  'double', 'double', 'int32',    'double',           'double',              'double',         'int32',     'double',           'double',             'double'};
+            
+            t = table('Size', [n, numel(varnames)], 'VariableTypes', vartypes, 'VariableNames', varnames);
         end
     end
+    
+    methods (Access=protected)
+        function t = extractDataOfInterest(this, dataList)
+            t = this.allocateResultsTable(numel(dataList));
+            
+            % extract relevant data from the data list
+            for i = 1:numel(dataList)
+                item = dataList(i);
+                if ~isempty(item.file)
+                    t{i, 'CurveId'} = string(item.file);
+                end
+                if ~isempty(item.posx)
+                    t{i, 'PosX'} = item.posx;
+                end
+                if ~isempty(item.posy)
+                    t{i, 'PosY'} = item.posy;
+                end
+                if ~isempty(item.f)
+                    t{i, 'MaxAdhesionForce'} = item.f;
+                end
+                if ~isempty(item.z)
+                    t{i, 'MaxAdhesionDistance'} = item.z;
+                end
+                if ~isempty(item.energy)
+                    t{i, 'DetachmentWork'} = item.energy;
+                end
+                if ~isempty(item.nRuptures)
+                    t{i, 'NRuptures'} = item.nRuptures;
+                end
+                if ~isempty(item.maxAdhesionDistance)
+                    t{i, 'MaxRuptureDistance'} = item.maxAdhesionDistance;
+                end
+                if ~isempty(item.maxAdhesionDistance)
+                    t{i, 'MeanRuptureForce'} = mean(item.ruptureForce);
+                end
+                if ~isempty(item.maxAdhesionDistance)
+                    t{i, 'MeanInterRuptureDistance'} = mean(diff(item.ruptureDistance));
+                end
+            end
+        end
+    end
+    
 end
 

@@ -34,7 +34,7 @@ classdef Peptide < chemo.Polymer
         end
          
         function x = getSize(this)
-            x = this.backboneLength(this);
+            x = backboneLength(this);
         end
         
         function l = backboneLength(this)

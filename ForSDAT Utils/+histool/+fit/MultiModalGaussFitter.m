@@ -8,7 +8,9 @@ classdef MultiModalGaussFitter < histool.fit.IHistogramFitter & matlab.mixin.Set
     
     methods
         function this = MultiModalGaussFitter(varargin)
-            this.set(varargin{:});
+            if ~isempty(varargin)
+                this.set(varargin{:});
+            end
         end
         
         function tf = isNormalized(~)

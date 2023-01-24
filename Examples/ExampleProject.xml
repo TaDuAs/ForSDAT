@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <document _type="ForSDAT.Application.Models.ForSpecProj" _version="3"
-          ExperimentCollectionName="Example01">
+          ExperimentCollectionName="Example01"
+          AnalyzedSegment="retract">
     <CookedAnalyzer _type="ForSDAT.Application.Workflows.SMICookedDataAnalyzer">
         <DataAnalyzer _type="ForSDAT.Core.StepsDataAnalyzer" BinningMethod="fd" Model="gauss" ErrorType="confi">
             <MinimalBins _type="double">15</MinimalBins>

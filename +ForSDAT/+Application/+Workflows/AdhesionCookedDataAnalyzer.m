@@ -24,7 +24,7 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO', 'dataAnalyzer'};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', '%ExperimentRepositoryDAO', 'dataAnalyzer'};
             defaultValues = {'dataAnalyzer', []};
         end
     end
@@ -83,13 +83,6 @@ classdef AdhesionCookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAn
         % Examine the analysis results of a single curve and determine
         % whether adhesion event was detected
             bool = mvvm.getobj(data, 'AdhesionForce.AboveThreshold', false, 'nowarn');
-        end
-        
-        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
-        % Loads previously processed data
-            importDetails.path = path;
-            importDetails.keyField = 'file';
-            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
         end
     end
 end

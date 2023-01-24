@@ -1,0 +1,3 @@
+classdef IAnalysisViewFacade < handle
+end
+

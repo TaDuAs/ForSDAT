@@ -49,6 +49,11 @@ classdef ForSDATApp < mvvm.GuiApp
                 this.MainView = this.IocContainer.get('MainView');
             end
         end
+        
+        function onSessionStarted(this, key, session)
+            controller = session.getController('ForceSpecAnalysisController');
+            controller.resumeLastProcess();
+        end
     end
     
     methods (Static)

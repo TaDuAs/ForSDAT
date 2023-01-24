@@ -10,6 +10,15 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             'useMatlabFit', true,...
             'order', 1);
         stdScore = 2;
+        isBaselineTilted = false;
+        
+        % setup
+        speed = [];
+        samplingRate = [];
+        
+        % data manipulations
+        minimalDistance = [];
+        maximalDistance = [];
     end
     
     methods
@@ -44,6 +53,11 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             end
         end
         
+        function init(this, settings)
+            this.speed = settings.Measurement.Speed;
+            this.samplingRate = settings.Measurement.SamplingRate;
+        end
+        
         function [baseline, y, noiseAmp, coefficients, s, mu] = detect(this, x, y)
         % Finds the baseline of the curve
         % Returns:
@@ -53,29 +67,50 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
         %   coefficients - the coefficients of the baseline polynomial fit
         %   s - standard error values
         %   mu - [avg, std]
-            
+        
             histModel = this.prepModel();
-            statData = histool.stats(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
             
-            % get distribution data from object
-            baseline = statData.MPV;
-            stdev = statData.StandardDeviation;
-            amplitude = this.calcNormAmp(statData);
+            useHistModeling = true;
             
-            % if the gaussian order is greater than 1 decide which gaussian
-            % provides the best estimate for the baseline
-            [baseline, amplitude, stdev] = this.getMostLikelyBaselineEstimation(y, baseline, amplitude, stdev);
+            % handle tilted baseline
+            if this.isBaselineTilted
+                % if we are using > 1 gaussian series model, we should fit
+                % the model to the histogram after subtracting the tilted
+                % baseline
+                useHistModeling = histModel.Order > 1;
+                
+                % use force plateau to extract tilted baseline
+                [baseline, y, coefficients, stdev] = this.histPlateauLinFit(x, y);
+            end
+            
+            % use gaussian fit to extract baseline
+            if useHistModeling
+                [~, yCropped] = this.cropData(x, y);
+                statData = histool.stats(yCropped, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
+
+                % get distribution data from object
+                baseline = statData.MPV;
+                stdev = statData.StandardDeviation;
+                amplitude = this.calcNormAmp(statData);
+
+                % if the gaussian order is greater than 1 decide which gaussian
+                % provides the best estimate for the baseline
+                [baseline, ~, stdev] = this.getMostLikelyBaselineEstimation(y, baseline, amplitude, stdev);
+                
+                % this is a 0th order polynomial
+                coefficients = baseline;
+            end
             
             s = [];
             mu = {baseline, stdev};
-            coefficients = baseline;
             noiseAmp = this.stdScore * stdev;
         end
         
         function [h1, bins, freq, fitOutput] = plotHistogram(this, x, y)
             
+            [~, yCropped] = this.cropData(x, y);
             histModel = this.prepModel();
-            [statData, h] = histool.histdist(y, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
+            [statData, h] = histool.histdist(yCropped, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins, 'Model', histModel);
             
             h1 = h(1);
             bins = statData.BinEdges;
@@ -94,7 +129,7 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
             hold on;
             
             % plot the baseline estimation
-            plot(baseline, amplitudeForDisplay, 'rv', 'MarkerFaceColor', 'r');
+            plot(baseline, amplitude, 'rv', 'MarkerFaceColor', 'r');
             
             % prepare legends
             legendText = cell(1, this.gaussFitOpts.order + 2);
@@ -152,6 +187,98 @@ classdef HistogramBaselineDetector < ForSDAT.Core.Baseline.BaselineDetector
                 stdev = stdev(baselineGaussianIndex(1));
             end
             
+        end
+        
+        function [baseline, yOut, coefficients, sig] = histPlateauLinFit(this, x, y)
+            % prepare histogram data
+            [xCropped, yCropped] = this.cropData(x, y);
+            statData = histool.stats(yCropped, 'BinningMethod', this.binningMethod, 'MinimalBins', this.minimalBins);
+
+            % find plateau
+            avgFreq = mean(statData.Frequencies);
+            stdFreq = std(statData.Frequencies);
+            plateauThreshold = avgFreq + 1*stdFreq;
+            
+            % find the frequencies and force values in the plateau
+            freqPlateau = statData.Frequencies(statData.Frequencies > plateauThreshold);
+            forcePlateau = statData.BinEdges(statData.Frequencies > plateauThreshold);
+            
+            % prepare mask of the data that corresponds to the plateau
+            plateauMask = yCropped >= min(forcePlateau) & yCropped <= max(forcePlateau);
+
+            % backcalculate the expected distance vector which corresponds
+            % to the sampled force values according to the scanner speed
+            % and sampling rate under the assumption of constant scanner
+            % speed and under the assumptions that the contribution of 
+            % anything other than the baseline/force plateaus is minimal
+            % also assume the slope is approximately uniform
+            dx = this.speed*(freqPlateau/this.samplingRate);
+            dy_dx = diff(forcePlateau)./dx(2:end);
+            
+            % start by estimating the baeline shift by the mean value of
+            % the plateau
+            baseline = mean(forcePlateau);
+            slope = mean(dy_dx);
+
+            % estimate tilted baseline with either positive or negative
+            % slope for the plateau corresponding regions
+            xPlateauRegion = xCropped(plateauMask);
+            yPlateauRegion = yCropped(plateauMask);
+            minX = xPlateauRegion(1);
+            yTiltPos = (xPlateauRegion-minX)*slope + baseline;
+            yTiltNeg = -(xPlateauRegion-minX)*slope + baseline;
+            
+            % calculate the residuals for both positive and negative 
+            % baseline slopes
+            posResiduals = yPlateauRegion - yTiltPos;
+            negResiduals = yPlateauRegion - yTiltNeg;
+
+            % determine the better fit according to the residuals RMS
+            if rms(negResiduals) < rms(posResiduals)
+                slope = -slope;
+                
+                % subtract the tilted baseline from the force data
+                tiltedBaselineComplete = -(x-x(1))*slope + baseline;
+                
+                % calculate noise amplitude from the standard deviation of
+                % the residuals
+                realResiduals = negResiduals;
+            else
+                % subtract the tilted baseline from the force data
+                tiltedBaselineComplete = (x-x(1))*slope + baseline;
+                
+                % calculate noise amplitude from the standard deviation of
+                % the residuals
+                realResiduals = posResiduals;
+            end
+            
+            % return values
+            yOut = y - tiltedBaselineComplete;
+            sig = std(realResiduals);
+            coefficients = [slope, baseline];
+        end
+    end
+    
+    methods (Access=private)
+        function [x, y] = cropData(this, x, y)
+            mask = [];
+            if ~isempty(this.minimalDistance)
+                mask = x >= this.minimalDistance;
+            end
+            if ~isempty(this.maximalDistance)
+                mask2 = x <= this.maximalDistance;
+                
+                if isempty(mask)
+                    mask = mask2;
+                else
+                    mask = mask & mask2;
+                end
+            end
+            
+            if ~isempty(mask)
+                x = x(mask);
+                y = y(mask);
+            end
         end
     end
     

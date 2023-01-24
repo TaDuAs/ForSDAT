@@ -16,21 +16,25 @@ classdef PolynomialLoadFitter < ChainFit
             end
         end
         
-        function [func, isGoodFit, s, mu] = dofit(this, x, y)
-            [p, s, mu] = polyfit(x, y, this.order);
+        function [func, isGoodFit, s, msd] = dofit(this, x, y)
+            [p, s] = polyfit(x, y, this.order);
             func = util.matex.Polynomial(p);
+            
+            estimateY = polyval(p, x, s);
+            residues = y - estimateY;
+            msd = [mean(residues), std(residues)];
             
             % Determine if the fit was good
             isGoodFit = true;
             if ~isempty(this.constraintsFunc)
-                isGoodFit = this.constraintsFunc(func, p, s, mu);
+                isGoodFit = this.constraintsFunc(func, p, s, msd);
             end
         end
         
-        function isGood = evaluateFitQuality(this, func, s, mu)
+        function isGood = evaluateFitQuality(this, func, s, msd)
             isGood = true;
             if ~isempty(this.constraintsFunc)
-                isGood = this.constraintsFunc(func, s, mu);
+                isGood = this.constraintsFunc(func, s, msd);
             end
         end
     end

@@ -16,7 +16,7 @@ classdef BaselineDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescrip
             ctorParams = {'detector', 'baselineOffsetFactorMultiplier', 'xChannel', 'yChannel', 'segment', 'applyToYChannels'};
             defaultValues = {...
                 'detector', ForSDAT.Core.Baseline.BaselineDetector.empty(), ...
-                'baselineOffsetFactorMultiplier', [], ...
+                'baselineOffsetFactorMultiplier', 1, ...
                 'xChannel', '', 'yChannel', '', 'segment', '', ...
                 'applyToYChannels', {}};
         end
@@ -25,6 +25,13 @@ classdef BaselineDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescrip
     methods
         function name = getTaskName(this)
             name = 'Baseline';
+        end
+        
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = [...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Baseline, 'Baseline'),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Noise, 'NoiseAmplitude'),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Threshold, 'BaselineOffsetFactor')];
         end
         
         function this = BaselineDetectorTask(detector, baselineOffsetFactorMultiplier, xChannel, yChannel, segment, applyToYChannels)
@@ -81,6 +88,8 @@ classdef BaselineDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescrip
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.detector, 'init')
                 this.detector.init(settings);
             end

@@ -9,7 +9,7 @@ function statData = stats(x, varargin)
 % Output: 
 %   statData - histogram analysis data object (histool.HistStatData)
 %
-% statData = histdist(x, Name, Value)
+% statData = histdist(x, [Name, Value])
 %   also takes in additional options specified as one or more Name-Value
 %   pairs.
 % 

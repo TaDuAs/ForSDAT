@@ -14,6 +14,10 @@ classdef BaselineDetector < handle
         function [baseline, y, noiseAmp, coefficients, s, mu] = detect(this, x, y)
             error('not implemented');
         end
+        
+        function init(~, varargin)
+            % noop
+        end
     end
     
 end

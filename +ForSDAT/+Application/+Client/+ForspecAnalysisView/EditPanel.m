@@ -3,10 +3,13 @@ classdef EditPanel < mvvm.view.ComponentView
     %   Detailed explanation goes here
     
     properties
-%         SubViewsBinder mvvm.Repeater;
         Frame sui.ViewSwitch;
         CurrentFrameBinder mvvm.Binder;
         Serialzier mxml.XmlSerializer;
+    end
+    
+    properties (Access=private)
+        PreEditedTaskChangeListener;
     end
     
     methods
@@ -19,10 +22,11 @@ classdef EditPanel < mvvm.view.ComponentView
             
             this.Serialzier = serialzier;
             
-            this.Messenger.register(ForSDAT.Application.AppMessages.PreEditedTaskChange, @this.editedTaskChanging);
+            this.PreEditedTaskChangeListener = this.Messenger.register(ForSDAT.Application.AppMessages.PreEditedTaskChange, @this.editedTaskChanging);
         end
         
         function delete(this)
+            delete(this.PreEditedTaskChangeListener);
             delete(this.CurrentFrameBinder);
             this.CurrentFrameBinder = mvvm.Binder.empty();
             delete(this.Frame);
@@ -35,25 +39,28 @@ classdef EditPanel < mvvm.view.ComponentView
         function initializeComponents(this)
             initializeComponents@mvvm.view.ComponentView(this);
             
-%             this.SubViewsBinder = mvvm.Repeater('Project.RawAnalyzer.pipeline', this.getContainerHandle(), ...
-%                 ForSDAT.Application.Client.EditSubViewTemplate(this, this.ViewManager));
-            this.Frame = sui.ViewSwitch('OwnerView', this, 'Parent', this.getContainerHandle());
+            container = this.getContainerHandle();
+            container.BackgroundColor = 'w';
+            
+            this.Frame = sui.ViewSwitch('OwnerView', this, 'Parent', container,...
+                'BackgroundColor', 'w');
             this.CurrentFrameBinder = mvvm.Binder('Project.CurrentEditedTask.name', this.Frame, 'ActiveViewId',...
                 'BindingManager', this.BindingManager);
             
             % One day this should be passed over to some app-map of sorts,
             % or at least a proper factory
-            this.Frame.add("OOM Adjuster", @ForSDAT.Application.Client.TaskViews.OOMAdjusterView);
-            this.Frame.add("Baseline", @this.mxmlTaskEditor);
-            this.Frame.add("Chain Fit", @this.mxmlTaskEditor);
-            this.Frame.add("Contact Point Detector", @this.mxmlTaskEditor);
-            this.Frame.add("Interaction Window", @this.mxmlTaskEditor);
-            this.Frame.add("Rupture Detector", @this.mxmlTaskEditor);
-            this.Frame.add("Smoothing", @this.mxmlTaskEditor);
-            this.Frame.add("Specific Interaction Detector", @this.mxmlTaskEditor);
-            this.Frame.add("Tip Height Adjuster", @this.mxmlTaskEditor);
-            this.Frame.add("Adhesion Energy", @this.mxmlTaskEditor);
-            this.Frame.add("Adhesion Force", @this.mxmlTaskEditor);
+            this.Frame.add("OOM Adjuster", @ForSDAT.Application.Client.TaskViews.Adjusters.OOMAdjusterView);
+            this.Frame.add("Baseline", @ForSDAT.Application.Client.TaskViews.BaselineAndContact.BaselineTaskView);
+            this.Frame.add("Chain Fit", @ForSDAT.Application.Client.TaskViews.Ruptures.ChainFitTaskView);
+            this.Frame.add("Contact Point Detector", @ForSDAT.Application.Client.TaskViews.BaselineAndContact.ContactPointTaskView);
+            this.Frame.add("Interaction Window", @ForSDAT.Application.Client.TaskViews.Ruptures.InteractionWindowView);
+            this.Frame.add("Rupture Detector", @ForSDAT.Application.Client.TaskViews.Ruptures.RuptureDetectorView);
+            this.Frame.add("Smoothing", @ForSDAT.Application.Client.TaskViews.Adjusters.SmoothingAdjusterView);
+            this.Frame.add("Distance Smoothing", @ForSDAT.Application.Client.TaskViews.Adjusters.DistanceSmoothingView);
+            this.Frame.add("Specific Interaction Detector", @ForSDAT.Application.Client.TaskViews.Ruptures.SmootingSMIView);
+            this.Frame.add("Tip Height Adjuster", @ForSDAT.Application.Client.TaskViews.Adjusters.TipHeightAdjusterView);
+            this.Frame.add("Adhesion Energy", @ForSDAT.Application.Client.TaskViews.Adhesion.DetachmentWorkView);
+            this.Frame.add("Adhesion Force", @ForSDAT.Application.Client.TaskViews.Adhesion.MaxAdhesionForceView);
             this.Frame.add("Oscillatory Baseline Adjuster", @this.mxmlTaskEditor);
         end
         

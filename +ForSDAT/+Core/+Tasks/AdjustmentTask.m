@@ -35,6 +35,12 @@ classdef AdjustmentTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             name = this.adjuster.name;
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = [...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Distance, this.outputXChannel),...
+                ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Force, this.outputYChannel)];
+        end
+        
         function this = AdjustmentTask(adjuster, xChannel, yChannel, segment, shouldAdjustOriginalData, shouldAffectOriginalData, outputXChannel, outputYChannel)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';
@@ -81,6 +87,8 @@ classdef AdjustmentTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.adjuster, 'init')
                 this.adjuster.init(settings);
             end

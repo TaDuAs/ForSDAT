@@ -1,7 +1,6 @@
-classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
+classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & ForSDAT.Core.Tasks.ICareAboutRuptureDistanceTask & mfc.IDescriptor
     properties
         detector;
-        rupturesChannel = 'Rupture';
     end
     
     methods % meta data
@@ -18,6 +17,10 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
     methods
         function name = getTaskName(this)
             name = 'Adhesion Energy';
+        end
+        
+        function fieldIds = getGeneratedFields(~)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Adhesion, 'AdhesionEnergy');
         end
         
         function this = AdhesionEnergyTask(detector, xChannel, yChannel, segment)
@@ -54,6 +57,7 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             x = this.getChannelData(data, 'x');
             y = this.getChannelData(data, 'y');
             ruptureDist = this.getRuptureDistances(data);
+            
             areaMask = y < 0 & this.detector.getBoundsMask(x, y, ruptureDist);
             
             % plot curve picking analysis
@@ -64,16 +68,9 @@ classdef AdhesionEnergyTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescripto
             hold off;
         end
         
-        function ruptureDist = getRuptureDistances(this, data)
-            ruptures = this.getChannelData(data, this.rupturesChannel, false);
-            if ~isempty(ruptures)
-                ruptureDist = ruptures.distance;
-            else
-                ruptureDist = 0;
-            end
-        end
-        
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.detector, 'init')
                 this.detector.init(settings);
             end

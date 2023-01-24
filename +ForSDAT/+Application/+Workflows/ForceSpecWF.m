@@ -13,6 +13,7 @@ classdef ForceSpecWF < handle
     
     events
         ReportProgress;
+        ProgressResetting;
     end
     
     methods % property accessors
@@ -37,7 +38,16 @@ classdef ForceSpecWF < handle
     
     methods % API Methods
 
-        function start(this)
+        function resetPermit = start(this)
+            
+            % notify before reseting the progress on an active process
+            resetPermit = this.notifyBeforeResetProgess();
+            
+            % stop if reset permit was not granted
+            if ~resetPermit
+                return;
+            end
+            
             this.clearDataQueue();
             
             % prepare batch info
@@ -65,6 +75,32 @@ classdef ForceSpecWF < handle
             results = this.cookedAnalyzer.getAcceptedResults();
         end
         
+        function [data, curveName] = getCurrentCurveAnalysis(this, curveName)
+            % Gets the analysis of the current curve in the queue from
+            % cache, or analyzes it, if it's not there.
+            % getCurrentCurveAnalysis(this)
+            %   uses the current curve in the queue
+            % getCurrentCurveAnalysis(this, curveName)
+            %   jumps to the specified curveName in the queue if necessary
+            
+            if nargin < 2; curveName = []; end
+            
+            % Get current curve
+            [~, curveName] = this.getCurveFromQueue(curveName);
+            
+            % Get current curve analysis from cache
+            [data, lastAnalyzedItemKey] = this.getLastAnalyzedItem();
+            
+            % Check if the current curve mathces the current analysis from
+            % cache
+            if isempty(data) || ~strcmp(lastAnalyzedItemKey, curveName)
+                % If not, analyze the curve (the new curve is now the
+                % current curve since we moved the queue to the position of
+                % the curve matching curveName
+                data = this.analyzeCurve();
+            end
+        end
+        
         function [data, curveName] = analyzeCurve(this, curveName)
             % analyzeCurve() - Analyzes the current curve in the queue. Use
             %       this option when updating the analysis process pipeline
@@ -78,8 +114,12 @@ classdef ForceSpecWF < handle
             % Get the curve from the queue
             [fdc, curveName] = this.getCurveFromQueue(curveName);
             
-            % Analyze the curve
-            data = this.doAnalyzeCurve(curveName, fdc);
+            if isempty(curveName)
+                data = [];
+            else
+                % Analyze the curve
+                data = this.doAnalyzeCurve(curveName, fdc);
+            end
         end
         
         function [data, curveName] = acceptCurve(this, curveName)
@@ -216,26 +256,6 @@ classdef ForceSpecWF < handle
             
             tf = this.cookedAnalyzer.examineCurveAnalysisResults(data);
         end
-        
-        function plotLastAnalyzedCurve(this, fig, taskNameOrIndex)
-            % Plots the last analyzed curve, if 
-            if nargin < 3
-                taskNameOrIndex = [];
-            end
-            data = this.getLastAnalyzedItem();
-  
-            % If didn't analyze yet, analyze now
-            if isempty(data)
-                data = this.analyzeCurve();
-            end
-            
-            % If there are no curves to analyze, don't plot anything
-            if isempty(data)
-                return;
-            end
-            
-            this.rawAnalyzer.plotData(fig, data, taskNameOrIndex);
-        end
     end
     
     methods (Access=private)
@@ -273,32 +293,6 @@ classdef ForceSpecWF < handle
             end
         end
         
-        function [data, curveName] = getCurrentCurveAnalysis(this, curveName)
-            % Gets the analysis of the current curve in the queue from
-            % cache, or analyzes it, if it's not there.
-            % getCurrentCurveAnalysis(this)
-            %   uses the current curve in the queue
-            % getCurrentCurveAnalysis(this, curveName)
-            %   jumps to the specified curveName in the queue if necessary
-            
-            if nargin < 2; curveName = []; end;
-            
-            % Get current curve
-            [~, curveName] = this.getCurveFromQueue(curveName);
-            
-            % Get current curve analysis from cache
-            [data, lastAnalyzedItemKey] = this.getLastAnalyzedItem();
-            
-            % Check if the current curve mathces the current analysis from
-            % cache
-            if isempty(data) || ~strcmp(lastAnalyzedItemKey, curveName)
-                % If not, analyze the curve (the new curve is now the
-                % current curve since we moved the queue to the position of
-                % the curve matching curveName
-                data = this.analyzeCurve();
-            end
-        end
-        
         function raiseReportProgress(this, progressReported, itemsProcessed, itemsRemaining)
             notify(this, 'ReportProgress', util.ProcessProgressED(progressReported, itemsProcessed, itemsRemaining));
         end
@@ -306,6 +300,39 @@ classdef ForceSpecWF < handle
     
     methods (Access=protected)
 
+        function tf = isProjectActive(this)
+            repKey = [class(this) '_dataQueue'];
+            
+            % if there is NO data queue in context, the analysis did not
+            % start - return false
+            if ~this.context.hasEntry(repKey)
+                tf = false;
+                return;
+            end
+            
+            % if the data queue in context does not match the current data
+            % accessor object - i.e. an old and irrelevant data queue, it
+            % is the same as having no data queue at all. The analysis did
+            % not start - return false
+            queue = this.context.get(repKey);
+            if ~queue.DataLoader.equals(this.dataAccessor)
+                tf = false;
+                return;
+            end
+            
+            % if no curves were analyzed already, the process did not
+            % start - return false
+            nCurvesAnalyzed = queue.progress();
+            if nCurvesAnalyzed == 0
+                tf = false;
+                return;
+            end
+            
+            % if reached this line, then the analysis process started
+            % already - return true
+            tf = true;
+        end
+        
         function queue = getDataQueue(this)
             repKey = [class(this) '_dataQueue'];
             if ~this.context.hasEntry(repKey)
@@ -343,6 +370,20 @@ classdef ForceSpecWF < handle
             item.data = data;
             item.key = key;
             this.context.set(this.getLastAnalyzedItemContainerKey(), item);
+        end
+        
+        function resetPermit = notifyBeforeResetProgess(this)
+            resetPermit = true;
+            
+            if this.isProjectActive()
+                % raise project active message
+                e = gen.CancelEventData();
+                this.notify('ProgressResetting', e);
+                
+                if e.Cancel
+                    resetPermit = false;
+                end
+            end
         end
     end
     

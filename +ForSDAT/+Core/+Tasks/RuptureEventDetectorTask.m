@@ -2,7 +2,8 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
     %RUPTUREEVENTDETECTORTASK Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetObservable)
+        outputXChannel = '';
         ruptureDetector;
         loadingDomainDetector;
     end
@@ -25,6 +26,10 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             name = 'Rupture Detector';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Rupture, 'Rupture');
+        end
+        
         function this = RuptureEventDetectorTask(ruptureDetector, xChannel, yChannel, segment, loadingDomainDetector)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';
@@ -38,11 +43,13 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             if exist('loadingDomainDetector', 'var') && ~isempty(loadingDomainDetector)
                 this.loadingDomainDetector = loadingDomainDetector;
             else
-                this.loadingDomainDetector = PreviousRuptureEndLoadingDomain();
+                this.loadingDomainDetector = ForSDAT.Core.Ruptures.PreviousRuptureEndLoadingDomain();
             end
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.ruptureDetector, 'init')
                 this.ruptureDetector.init(settings);
             end
@@ -67,6 +74,11 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             % rebuild rupture index matrix as follows: [loadingStart; ruptureStart; ruptureEnd]
             lsRsRe = [loadingDomainStartIndices; events([1,2], :)];
             
+            % replace distance by fixed distance if needed
+            if ~isempty(this.outputXChannel)
+                x = this.getChannelData(data,this.outputXChannel);
+            end
+            
             % Build output data struct
             data = ForSDAT.Core.Tasks.buildRuptureOutputStructure(data, 'Rupture', x, lsRsRe, events(3,:), 1:size(events, 2), derivative);
         end
@@ -83,21 +95,27 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             dist = this.getChannelData(data, 'x');
             frc = this.getChannelData(data, 'y');
             
+            % validate plot flags
             plotFlags = mvvm.getobj(extras, 'plotFlags', [false true true true true]);
             if ~islogical(plotFlags) || length(plotFlags) ~= 5
                 error('Rupture plotting is determined by the flags vector, which determines what to plot as follows [FDC, loadingStartPoint, ruptureStartPoint, ruptureEndPoint, force-derivative]');
             end
             
+            % plot loading start position
             if plotFlags(2)
                 plot(dist(data.Rupture.i(1,:)), frc(data.Rupture.i(1,:)), 'cs', 'MarkerFaceColor', 'c', 'MarkerSize', 7);
             end
+            
+            % plot rupture start position
             if plotFlags(3)
                 plot(dist(data.Rupture.i(2,:)), frc(data.Rupture.i(2,:)), 'gs', 'MarkerFaceColor', 'g', 'MarkerSize', 7);
             end
+            
+            % plot rupture end position
             if plotFlags(4)
                 plot(dist(data.Rupture.i(3,:)), frc(data.Rupture.i(3,:)), 'rs', 'MarkerFaceColor', 'r', 'MarkerSize', 7);
             end
-
+            
             % plot derivative
             if plotFlags(5) && exist('yyaxis')
                 yyaxis right;
@@ -106,6 +124,17 @@ classdef RuptureEventDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             end
             
             hold off;
+        end
+        
+        function clearPlot(this, h)
+            ax = sui.gca(h);
+            yyaxis(ax, 'right');
+            cla(ax);
+            yyaxis(ax, 'left');
+            cla(ax);
+            
+            % hide right y axis
+            ax.YAxis(2).Visible='off';
         end
     end
 end

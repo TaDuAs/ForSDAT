@@ -1,4 +1,4 @@
-classdef (Abstract) CookedDataAnalyzer < handle
+classdef (Abstract) CookedDataAnalyzer < handle & mxml.IMXmlIgnoreFields
     % CookedDataAnalyzer is a base class for cooked data analyzers.
     % Cooked data analyzers saves and analyzes the processed raw data and
     % manage experminet repository for post-processing the results of 
@@ -11,7 +11,13 @@ classdef (Abstract) CookedDataAnalyzer < handle
                                    % Li et al. Langmuir 2014, https://doi.org/10.1021/la501189n
         BellEvansAlpha = 0.95;
     end
-        
+    
+    methods (Hidden)
+        function ignoreList = getMXmlIgnoreFieldsList(~)
+            ignoreList = {'ExperimentRepository', 'RepositoryContext', 'ExperimentRepositoryListener'};
+        end
+    end
+    
     % 
     % Current running analysis properties
     %
@@ -30,6 +36,12 @@ classdef (Abstract) CookedDataAnalyzer < handle
         
         % The batch info of current analyzed experiment
         CurrentBatchInfo ForSDAT.Application.Models.BatchInfo;
+        
+        % The method used to evaluate outliers
+        OutlierEvalMethod char {mustBeMember(OutlierEvalMethod, {'movmedian', 'movmean'})} = 'movmedian';
+        
+        % The logarithmic (natural logarithm) window for outlier evaluation
+        OutlierEvalLogarithmicWindow double = 1.5;
     end
     
     %
@@ -105,17 +117,22 @@ classdef (Abstract) CookedDataAnalyzer < handle
             if nargin >= 5 && ~isempty(experimentRepoName) && ...
                     (isempty(this.ExperimentRepository) || ~strcmp(experimentRepoName, this.ExperimentRepository.Name))
                 
-                % load experiment repository from file
-                repo = this.ExperimentRepositoryDAO.load(experimentRepoName);
-                
-                % if the file is missing or is empty or is corrupted
-                if repo.isemptyHandle() || ~isa(repo, 'ForSDAT.Application.Models.ExperimentRepository')
-                    repo = ForSDAT.Application.Models.ExperimentRepository(experimentRepoName);
-                    this.ExperimentRepositoryDAO.save(repo);
-                end
+                % load experiment repository from file or create a new
+                % experiment repository if none exist with the given name
+                repo = this.ExperimentRepositoryDAO.loadOrCreate(experimentRepoName);
                 
                 this.ExperimentRepository = repo;
             end
+        end
+        
+        function loadExperimentRepository(this, name)
+            % backup current experiments repository
+            if ~isempty(this.ExperimentRepository)
+                this.ExperimentRepositoryDAO.save(this.ExperimentRepository);
+            end
+            
+            % load wanted repository from file
+            this.ExperimentRepository = this.ExperimentRepositoryDAO.load(name);
         end
         
         function importExperimentsRepository(this, path)
@@ -158,18 +175,64 @@ classdef (Abstract) CookedDataAnalyzer < handle
             this.rejectData(curveKey);
         end
         
-        function experimentId = loadPreviouslyProcessedDataOutput(this, importDetails)
-        % Loads previously processed data
+        function restorePoint = createRestorePoint(this, data, results)
+        % Creates a process-in-progress restoration point struct
+        
+            restorePoint = struct();
+            
+            % prep accepted curve data object list
+            if nargin < 2 || isempty(data)
+                valuesCellArray = this.getDataList().values;
+                restorePoint.data = [valuesCellArray{:}];
+            else
+                restorePoint.data = data;
+            end
+            
+            % set meta data restoration info
+            if nargin < 3 || isempty(results)
+                restorePoint.results = struct();
+                restorePoint.results.BatchInfo = this.CurrentBatchInfo;
+                restorePoint.results.Id = this.RunningExperimentId;
+            else
+                restorePoint.results = results;
+            end
+        end
+        
+        function experimentId = restoreProcess(this, restorePoint)
+        % Restores a process-in-progress from a previous restoration point
+        % or exported analyzed data
+            
             this.clearDataList();
-            [data, results] = this.DataAccessor.importResults(importDetails);
+            
+            if ~isfield(restorePoint, 'data')
+                data = [];
+            else
+                data = restorePoint.data;
+            end
+            results = restorePoint.results;
+            
+            % restore batch info and experiment id
             this.CurrentBatchInfo = results.BatchInfo;
             this.RunningExperimentId = results.Id;
             
+            % return experiment id
             experimentId = results.Id;
             
+            % the field of each data item used as unique id
+            keyField = this.getDataItemKeyField();
+            
+            % add all restored data items to the accepted data list
             for i = 1:length(data)
-                this.addToDataList(data(i), data(i).(importDetails.keyField));
+                currItem = data(i);
+                this.addToDataList(currItem, currItem.(keyField));
             end
+        end
+        
+        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
+        % Loads previously processed data
+            importDetails = this.getImportDetails(path);
+            [data, results] = this.DataAccessor.importResults(importDetails);
+            experimentId = this.restoreProcess(this.createRestorePoint(data, results));
         end
         
         function startFresh(this, batchInfo)
@@ -211,7 +274,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
             % if the results are valid add them to the experiments
             % repository
             if isvalid
-                this.addExperimentToRepository(results);
+                this.addExperimentToRepository(results, dataList);
             else
                 % otherwise, remove experiment from repository 
                 this.removeExperimentFromRepository(results);
@@ -221,7 +284,112 @@ classdef (Abstract) CookedDataAnalyzer < handle
                 warning('ForSDAT:CookedDataAnalyzer:ResultsRejected', warningMessage);
             end
         end
+    end
+    
+    methods % Generate Report Data from Experiment Repository Archives
+        function data = getRepositoryData(this, repo)
+        % Loads an experiment repository and gets the summary results of 
+        % that repository.
+        % 
+        % Input:
+        %   repo - The name of desired experiments repository.
+        %
+            
+            if nargin >= 2 && ~isempty(repo) && gen.isSingleString(repo)
+                this.loadExperimentRepository(repo);
+            end
+            data = [this.ExperimentRepository.values{:}];
+        end
         
+        function [summary, ds] = getRepositoryFullDataSet(this, repo)
+        % Loads an experiment repository and gets the results of that 
+        % repository. Returns summary data and full data list from archive.
+        % If no archive exists, an error may be thrown.
+        %
+        % Input:
+        %   repo    - The name of desired experiments repository.
+        % Output:
+        %   summary - A struct array of summary data for each experiment in
+        %             the repository
+        %   ds      - A table containing the full data list of all 
+        %             experiments in the repository. Each record in the
+        %             table is uniquely identified by a combination of 3 
+        %             variables: "Repository", "ExperimentId", "CurveId"
+        %             The other variables in the table are generated by 
+        %             deriving classes.
+        %
+            if nargin < 2; repo = []; end
+            
+            % load repository
+            summary = this.getRepositoryData(repo);
+            
+            % if full dataset was already generated from archive, load that
+            % file for beter performance
+            if this.ExperimentRepositoryDAO.doesFullRepositoryDataSetExist(repo)
+                ds = this.ExperimentRepositoryDAO.loadFullRepositoryDataSet(repo);
+                this.validateResultsTable(ds);
+            else
+                % generate full data set of the repository from archive
+                ds = this.generateFullRepositoryDataSet(summary);
+                this.validateResultsTable(ds);
+                this.ExperimentRepositoryDAO.saveFullRepositoryDataSet(repo, ds);
+            end
+        end
+        
+        function ds = getCombinedRepositoriesFullDataSet(this, repos, recordsPerRepository)
+        % Gets the archived results of a list of experiment repositories. 
+        % 
+        % ds = analyzer.getCombinedRepositoriesFullDataSet(repos, [recordsPerRepository])
+        % 
+        % Input:
+        %   repos                - A list of repository names
+        %   recordsPerRepository - Optional. An expected number of curves
+        %                          per repository. Used for table
+        %                          preallocation. Default value is 1000.
+        % Output:
+        %   ds - A table containing the full data list of all experiments 
+        %        in the repository. Each record in the table is uniquely 
+        %        identified by a combination of 3 variables: 
+        %        "Repository", "ExperimentId", "CurveId"
+        %        The other variables in the table are generated by deriving
+        %        classes.
+        %
+            if nargin < 3 || ~isempty(recordsPerRepository); recordsPerRepository = 1000; end
+            
+            % preallocate according to expected number of records per repository
+            cookedData = analyzer.allocateResultsTable(recordsPerRepository * repoNum);
+            this.validateResultsTable(cookedData);
+        
+            % Load results for each repository and compile all into single
+            % table. each row is uniquely identified by three columns:
+            %   Repository   - The name of the repository to which the record belongs to
+            %   ExperimentId - The id of the experiment in the repository during which the record was acquired
+            %   CurveId      - The id of the record/curve
+            % Allthough in practice, the CurveId is likely unique.
+            totalRows = 0;
+            for i = 1:repoNum
+                % load repository data
+                [~, repoDS] = analyzer.getRepositoryFullDataSet(repos{i});
+
+                % append repository dataset to the combined dataset
+                rowsInCurrDS = size(repoDS, 1);
+                cookedData(totalRows + 1:totalRows + rowsInCurrDS, :) = repoDS;
+                totalRows = totalRows + rowsInCurrDS;
+            end
+
+            % return the data table
+            if totalRows < size(cookedData, 1)
+                cookedData = cookedData(1:totalRows, :);
+            end
+            
+            ds = cookedData;
+            
+            %TODO: Add caching ability.
+        end
+        
+    end
+    
+    methods % Bell-Evans Post-Analysis
         function [params, p, R2] = bellEvansPlot(this, fig, showParams, varargin)
             % Plots the Bell-Evans curve for a set of MPFs and LRs
             % Returns:
@@ -256,6 +424,16 @@ classdef (Abstract) CookedDataAnalyzer < handle
                     'MarkerFaceColor', 'b',...
                     'MarkerEdgeColor', 'b',...
                     'LineStyle', 'none'};
+                regPlotParams = {};
+            else
+                regParamsMask = cellfun(@(p) isequal(p, 'RegressionPlotParams'), varargin);
+                if ~any(regParamsMask)
+                    regPlotParams = {};
+                else
+                    regParamsIdx = find(regParamsMask, 1, 'first');
+                    regPlotParams = varargin{regParamsIdx + 1};
+                    varargin(regParamsIdx:regParamsIdx+1) = [];
+                end
             end
             
             if nargin < 2 || isempty(fig)
@@ -270,7 +448,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
             
             hold on;
             regY = polyval(p, x);
-            plot(x, regY);
+            plot(x, regY, regPlotParams{:});
             
             % Create xlabel
             xlabel({'ln(r)'}, 'FontSize', 24);
@@ -426,7 +604,7 @@ classdef (Abstract) CookedDataAnalyzer < handle
             kBT = chemo.PhysicalConstants.kB * chemo.PhysicalConstants.RT;
             
             for i = 1:numel(repositoryNames)
-                this.importExperimentsRepository(repositoryNames{i});
+                this.loadExperimentRepository(repositoryNames{i});
                 
                 params = this.bellEvansFit();
                 chi(i, :) = [params.Chi, params.ChiErr];
@@ -447,14 +625,48 @@ classdef (Abstract) CookedDataAnalyzer < handle
                 refForce(i, :) = [frc, frcErr];
             end
         end
+        
+        function [mpf, mpfErr, x, xErr] = prepareBellEvansData(this)
+        % Gets the full list of MPF vs. ln(r) values from the current
+        % experiment repository.
+        % Where MPF is the most probable force and r is the loading rate of
+        % of a given experiment 
+        % 
+        % prepareBellEvansData(analyzer)
+        % Output:
+        %   mpf -    row vector of the MPFs of all experiments in the 
+        %            current experiments repository
+        %   mpfErr - row vector of the MPF errors of all experiments in the 
+        %            current experiments repository
+        %   x -      row vector of the ln(r) of all experiments in the 
+        %            current experiments repository
+        %   xErr -   row vector of the ln(r) errors of all experiments in 
+        %            the current experiments repository
+        %
+        
+            data = [this.ExperimentRepository.values{:}];
+            
+            validValues = data(~[data.IsOutlier]);
+            
+            lr = vertcat(validValues.LoadingRate);
+            lrErr = vertcat(validValues.LoadingRateErr);
+            mpf = vertcat(validValues.MostProbableForce);
+            mpfErr = vertcat(validValues.ForceErr);
+            
+            % Calculate reggression
+            x = log(lr);
+            xErr = lrErr./lr;
+        end
     end
     
     methods (Access=protected)
         
-        function addExperimentToRepository(this, experiment)
+        function addExperimentToRepository(this, experiment, dataList)
             repo = this.ExperimentRepository;
             
-            repo.setv(experiment.Id, experiment);
+            % save cooked data and summary results in the experiment 
+            % repository
+            repo.setExperimentResults(experiment.Id, experiment, dataList);
         end
         
         function removeExperimentFromRepository(this, experiment)
@@ -507,6 +719,77 @@ classdef (Abstract) CookedDataAnalyzer < handle
             map = this.getDataList();
             map.remove(map.keys);
         end
+        
+%         function markOutlierExperiments(this, window)
+%             if nargin < 2 || isempty(window)
+%                 window = this.OutlierEvalLogarithmicWindow;
+%             end
+%             
+%             [mpf, ~, lnr] = this.prepareBellEvansData();
+%             
+%             [x, i] = sort(lnr);
+%             dx = [1, diff(x)];
+%             incrementMask = dx == 0;
+%             x(incrementMask) = x(incrementMask) + abs(0.0001*dx(find(incrementMask) - 1));
+%             y = mpf(i);
+%             
+%             % determine which experiments are outliers
+%             % the outlier mask should match the order of the original data
+%             otlierMask(i) = isoutlier(y, this.OutlierEvalMethod, window, 'SamplePoints', x);
+%             
+%             for i = find(otlierMask)
+%                 experiment = this.ExperimentRepository.getv(i);
+%             end
+%         end
+
+
+        function ds = generateFullRepositoryDataSet(this, summary)
+            % generate a full dataset from the archive of the current 
+            % experiment repository 
+            
+            % allocate the combined repository data table
+            batchInfo = [summary.BatchInfo];
+%             combinedResults = this.
+            (sum([batchInfo.N]));
+            totalRows = 0;
+            
+            % load the complete archive instead of loading a single entry
+            % each iteration
+            this.ExperimentRepository.BatchResults.loadArchive();
+            
+            % build data table from all experiments in repository
+            repoKeys = this.ExperimentRepository.keys();
+            for i = 1:numel(repoKeys)
+                expId = repoKeys{i};
+                
+                % fetch experiment from archive
+                results = this.ExperimentRepository.BatchResults.getv(expId);
+                
+                % append experiment results to the repository data table
+                rowsInCurrDS = numel(results);
+                combinedResults((totalRows + 1):(totalRows + rowsInCurrDS), :) = this.extractDataOfInterest(results);
+                
+                % burn the experiment ID to the data
+                combinedResults{(totalRows + 1):(totalRows + rowsInCurrDS), 'ExperimentId'} = string(expId);
+                totalRows = totalRows + rowsInCurrDS;
+            end
+            
+            % burn repository id to the dataset
+            combinedResults{:, 'Repository'} = string(this.ExperimentRepository.Name);
+            
+            % return the data table
+            if totalRows < size(combinedResults, 1)
+                ds = combinedResults(1:totalRows, :);
+            else
+                ds = combinedResults;
+            end
+        end
+        
+        function validateResultsTable(this, cookedData)
+            if ~all(ismember({'Repository', 'ExperimentId', 'CurveId'}, cookedData.Properties.VariableNames))
+                throw(MException('ForSDAT:Application:Workflow:CookedDataAnalyzer:MissingKeyVarriable', 'Results table generated by deriving cooked analyzer doesn''t have all Key varriables "Repository", "ExperimentId" and "CurveId"'));
+            end
+        end
     end
     
     methods (Abstract, Access=protected)
@@ -522,25 +805,37 @@ classdef (Abstract) CookedDataAnalyzer < handle
         % Examine the analysis results of a single curve and determine
         % whether should accept or reject it.
         bool = examineCurveAnalysisResults(this, data)
+        
+        % Generates a results-table with n empty records for preallocation
+        % purposes
+        % The table should include three variables used to uniquely
+        % identify the records in the table: 
+        % "Repository", "ExperimentId", "CurveId"
+        % The other variables in the table are generated by deriving 
+        % classes according to the relevant data structures analyzed.
+        t = allocateResultsTable(this, n)
+    end
+    
+    methods (Abstract, Access=protected)
+        % Generates a results-table from cooked-data list
+        t = extractDataOfInterest(this, dataList)
+    end
+    
+    methods (Access=protected)
+        function importDetails = getImportDetails(this, path)
+            importDetails.path = path;
+            importDetails.keyField = this.getDataItemKeyField();
+        end
+        
+        function keyField = getDataItemKeyField(this)
+            keyField = 'file';
+        end
     end
     
     methods (Access=private)
         function onRepositoryUpdated(this, repo, ~)
             this.ExperimentRepositoryDAO.save(repo);
-        end
-        
-        function [mpf, mpfErr, x, xErr] = prepareBellEvansData(this)
-            
-            data = [this.ExperimentRepository.values{:}];
-            
-            lr = vertcat(data.LoadingRate);
-            lrErr = vertcat(data.LoadingRateErr);
-            mpf = vertcat(data.MostProbableForce);
-            mpfErr = vertcat(data.ForceErr);
-            
-            % Calculate reggression
-            x = log(lr);
-            xErr = lrErr./lr;
+            this.ExperimentRepositoryDAO.deleteFullRepositoryDataSet(repo);
         end
     end
 end

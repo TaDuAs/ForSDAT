@@ -29,6 +29,10 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
             name = 'Chain Fit';
         end
         
+        function fieldIds = getGeneratedFields(this)
+            fieldIds = ForSDAT.Core.Fields.FieldID(ForSDAT.Core.Fields.FieldType.Model, 'ChainFit');
+        end
+        
         function this = ChainFitTask(chainFitter, smoothingAdjuster, xChannel, yChannel, segment, ruptureChannel, plotChainfitFromContactPoint)
             if ~exist('xChannel', 'var') || isempty(xChannel)
                 xChannel = 'Distance';
@@ -50,6 +54,8 @@ classdef ChainFitTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDescriptor
         end
         
         function init(this, settings)
+            init@ForSDAT.Core.Tasks.PipelineDATask(this, settings);
+            
             if ismethod(this.chainFitter, 'init')
                 this.chainFitter.init(settings);
             end

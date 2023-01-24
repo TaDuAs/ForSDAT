@@ -82,6 +82,7 @@ classdef AnalyzedFDCData < mfc.IDescriptorStruct
         function result = eq(a,b)
             result = ((isempty(a) || a.isEmpty) && (isempty(b) || b.isEmpty)) || strcmp(a.file, b.file);
         end
+        
         function result = ne(a,b)
             result = ~(a.eq(b));
         end

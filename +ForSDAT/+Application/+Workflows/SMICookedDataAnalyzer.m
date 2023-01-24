@@ -24,7 +24,7 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         %   Get parameter value from dependency injection:
         %       Parameter name starts with '%'
         function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
-            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', 'ExperimentRepositoryDAO', 'DataAnalyzer'};
+            ctorParams = {'%AnalysisContext', '%ExperimentCollectionContext', '%ExperimentRepositoryDAO', 'DataAnalyzer'};
             defaultValues = {'ExperimentRepositoryDAO', ForSDAT.Application.IO.ExperimentRepositoryDAO.empty(), 'DataAnalyzer', []};
         end
     end
@@ -90,12 +90,16 @@ classdef SMICookedDataAnalyzer < ForSDAT.Application.Workflows.CookedDataAnalyze
         % whether a single molecule interaction (SMI) was detected
             bool = mvvm.getobj(data, 'SingleInteraction.didDetect', false, 'nowarn');
         end
-        
-        function experimentId = loadPreviouslyProcessedDataOutput(this, path)
-        % Loads previously processed data
-            importDetails.path = path;
-            importDetails.keyField = 'file';
-            experimentId = loadPreviouslyProcessedDataOutput@ForSDAT.Application.Workflows.CookedDataAnalyzer(this, importDetails);
+    end
+    
+    methods % Experiment Repository and methods for reports
+        function t = allocateResultsTable(this, n)
+            throw(MException("ForSDAT:App:Workflow:SMICookedDataAnalyzer:NotImplementedException", "Method is not yet implemented in %s", class(this)));
+        end
+    end
+    methods (Access=protected)
+        function t = extractDataOfInterest(this, dataList)
+            throw(MException("ForSDAT:App:Workflow:SMICookedDataAnalyzer:NotImplementedException", "Method is not yet implemented in %s", class(this)));
         end
     end
 end

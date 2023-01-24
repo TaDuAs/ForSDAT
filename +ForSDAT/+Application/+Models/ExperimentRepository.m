@@ -1,4 +1,4 @@
-classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDescriptor
+classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDescriptor & mxml.IMXmlIgnoreFields
     %EXPERIMENTREPOSITORY Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -6,8 +6,22 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
         Name;
     end
     
-    properties (Access=private)
+    properties (GetAccess=public, SetAccess=private)
         Repository_ lists.Dictionary;
+        
+        % non serializable field
+        BatchResults ForSDAT.Application.Models.ExperimentRepositoryResultsArchive;
+    end
+    
+    methods (Access={?ForSDAT.Application.IO.ExperimentRepositoryDAO})
+        function setResultsArchive(this, archive)
+            arguments
+                this ForSDAT.Application.Models.ExperimentRepository {gen.valid.mustBeValidScalar(this)}
+                archive ForSDAT.Application.Models.ExperimentRepositoryResultsArchive {gen.valid.mustBeValidScalar(archive)}
+            end
+            
+            this.BatchResults = archive;
+        end
     end
     
     methods (Access=private)
@@ -46,10 +60,25 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
             ctorParams = {'Name'};
             defaultValues = {'Name', ''};
         end
+        
+        % mxml.IMXmlIgnoreFields interface
+        function ignoreList = getMXmlIgnoreFieldsList(~)
+            ignoreList = {'BatchResults', 'Repository_'};
+        end
     end
     
     methods
         function this = ExperimentRepository(name)
+            % generates a new experiment repository object with the given
+            % name.
+            %
+            % Call the Experiment Repository Ctor only from the Experiment
+            % Repository DAO create method.
+            % access is not limited via matlab access validation mechanism 
+            % to allow access for MXML serializers and dependency injection
+            % But seriously, use the ExperimentRepositoryDAO.create method!
+            %
+            
             this.Name = name;
             this.Repository_ = lists.Dictionary();
         end
@@ -70,6 +99,11 @@ classdef ExperimentRepository < lists.IDictionary & lists.IObservable & mfc.IDes
         
         function value = getv(this, key)
             value = this.Repository_.getv(key);
+        end
+        
+        function setExperimentResults(this, key, results, dataList)
+            this.setv(key, results);
+            this.BatchResults.setv(key, dataList);
         end
         
         function setv(this, key, value)
