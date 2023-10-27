@@ -29,7 +29,7 @@ supervise = true;
 [~, session] = app.startSession();
 controller = session.getController('ForceSpecAnalysisController');
 controller.setProject(gen.localPath('ExampleProject.xml'));
-controller.AnalyzedSegment = 'retract';
+controller.Project.AnalyzedSegment = 'retract';
 
 % cofigure data accessor to save accepted curves in the processed folder
 % This could also be configured in the config file ofcourse
