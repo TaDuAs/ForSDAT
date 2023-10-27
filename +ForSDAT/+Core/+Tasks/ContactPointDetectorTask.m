@@ -101,7 +101,7 @@ classdef ContactPointDetectorTask < ForSDAT.Core.Tasks.PipelineDATask & mfc.IDes
             if plotFlags(3)
                 plot(dst, baseline, 'k', 'LineWidth', 1);
             end
-            if plotFlags(4)
+            if plotFlags(4) && ~isempty(data.Contact.coeff)
                 plot(dst, polyval([data.Contact.coeff(1), 0], dst), 'Color', rgb('Gold'), 'LineWidth', 1);
             end
             if plotFlags(5)
